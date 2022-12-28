@@ -1,9 +1,13 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import com.mojang.logging.LogUtils;
+import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChangeListener;
+import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -20,20 +24,29 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.checkerframework.checker.units.qual.C;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class MonobankBlockEntity extends BlockEntity implements MenuProvider {
+public class MonobankBlockEntity extends BlockEntity implements IInventoryChangeListener, MenuProvider {
     private Component name;
 
-    private @Nullable Item storedItem = null;
-    private @Nullable CompoundTag storedItemTag = null;
-    private int storedItemCount = 0;
+    private final MonobankItemStackHandler inventory;
+    private final LazyOptional<IItemHandler> inventoryHandler;
+
+//    private @Nullable Item storedItem = null;
+//    private @Nullable CompoundTag storedItemTag = null;
+//    private int storedItemCount = 0;
     private boolean locked = false;
 
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
+        this.inventory = new MonobankItemStackHandler(this, 1);
+        this.inventoryHandler = LazyOptional.of(() -> inventory);
     }
 
     @Override
@@ -43,13 +56,15 @@ public class MonobankBlockEntity extends BlockEntity implements MenuProvider {
             tag.putString("CustomName", Component.Serializer.toJson(this.name));
         }
 
-        if (storedItem != null && storedItem != Items.AIR && storedItemCount > 0) {
-            tag.putString("Item", ForgeRegistries.ITEMS.getKey(storedItem).toString());
-            tag.putInt("Count", storedItemCount);
+        tag.put("Inventory", inventory.serializeNBT());
 
-            if (storedItemTag != null)
-                tag.put("ItemTag", storedItemTag);
-        }
+//        if (storedItem != null && storedItem != Items.AIR && storedItemCount > 0) {
+//            tag.putString("Item", ForgeRegistries.ITEMS.getKey(storedItem).toString());
+//            tag.putInt("Count", storedItemCount);
+//
+//            if (storedItemTag != null)
+//                tag.put("ItemTag", storedItemTag);
+//        }
     }
 
     @Override
@@ -57,61 +72,64 @@ public class MonobankBlockEntity extends BlockEntity implements MenuProvider {
         if (tag == null)
             tag = new CompoundTag();
         super.load(tag);
+        inventory.deserializeNBT(tag.getCompound("Inventory"));
         if (tag.contains("CustomName", 8))
             this.name = Component.Serializer.fromJson(tag.getString("CustomName"));
 
-        try {
-            if (tag.contains("Item")) {
-                storedItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("Item")));
-
-                if (tag.contains("Count"))
-                    storedItemCount = tag.getInt("Count");
-                if (tag.contains("ItemTag"))
-                    storedItemTag = (CompoundTag) tag.get("ItemTag");
-            }
-        }
-        catch (Exception e) {
-            LogUtils.getLogger().error("Failed to load MonobankBlockEntity data from tag: {}", e);
-        }
-    }
-
-    public int getCapacity() {
-        // TODO: config for capacity
-        return Integer.MAX_VALUE;
+//        try {
+//            if (tag.contains("Item")) {
+//                storedItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString("Item")));
+//
+//                if (tag.contains("Count"))
+//                    storedItemCount = tag.getInt("Count");
+//                if (tag.contains("ItemTag"))
+//                    storedItemTag = (CompoundTag) tag.get("ItemTag");
+//            }
+//        }
+//        catch (Exception e) {
+//            LogUtils.getLogger().error("Failed to load MonobankBlockEntity data from tag: {}", e);
+//        }
     }
 
     public boolean isEmpty() {
-        return storedItem == null || storedItem == Items.AIR || storedItemCount <= 0;
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (!inventory.getStackInSlot(i).isEmpty())
+                return false;
+        }
+        return true;
+//        return storedItem == null || storedItem == Items.AIR || storedItemCount <= 0;
     }
 
     public boolean canDeposit(ItemStack stackToDeposit) {
         if (isEmpty())
             return true;
 
-        if (storedItemCount == Integer.MAX_VALUE)
-            return false;
+        return inventory.isItemValid(0, stackToDeposit);
 
-        ItemStack existing = new ItemStack(storedItem, 1, storedItemTag);
-        return ItemStack.isSameItemSameTags(existing, stackToDeposit);
+//        if (storedItemCount == Integer.MAX_VALUE)
+//            return false;
+//
+//        ItemStack existing = new ItemStack(storedItem, 1, storedItemTag);
+//        return ItemStack.isSameItemSameTags(existing, stackToDeposit);
     }
 
 
-    public boolean tryDepositItemStack(ItemStack stackToAdd) {
+    public ItemStack tryDepositItemStack(ItemStack stackToAdd) {
 
         if (!canDeposit(stackToAdd))
-            return false;
+            return stackToAdd;
 
-        if (isEmpty()) {
-            storedItem = stackToAdd.getItem();
-            storedItemTag = stackToAdd.getTag();
-            storedItemCount = stackToAdd.split(getCapacity()).getCount();
-        }
-        else {
-            storedItemCount += stackToAdd.split(getCapacity() - storedItemCount).getCount();
-        }
+//        if (isEmpty()) {
+//            storedItem = stackToAdd.getItem();
+//            storedItemTag = stackToAdd.getTag();
+//            storedItemCount = stackToAdd.split(Monobank.getSlotCapacity()).getCount();
+//        }
+//        else {
+//            storedItemCount += stackToAdd.split(Monobank.getSlotCapacity() - storedItemCount).getCount();
+//        }
 
-        inventoryChanged();
-        return true;
+        return inventory.insertItem(0, stackToAdd, false);
+//        inventoryChanged(0);
     }
 
     /**
@@ -131,64 +149,53 @@ public class MonobankBlockEntity extends BlockEntity implements MenuProvider {
         if (isEmpty())
             return ItemStack.EMPTY;
 
-        ItemStack itemStack = new ItemStack(getStoredItem());
-        count = Math.min(count, itemStack.getMaxStackSize());
-        itemStack.setCount(Math.min(getStoredItemCount(), count));
-        itemStack.setTag(storedItemTag);
+        return inventory.extractItem(0, count, false);
 
-        this.storedItemCount -= itemStack.getCount();
-        if (storedItemCount <= 0)
-            clearStoredItem();
-
-        inventoryChanged();
-
-        return itemStack;
+//        ItemStack itemStack = new ItemStack(getStoredItem());
+//        count = Math.min(count, itemStack.getMaxStackSize());
+//        itemStack.setCount(Math.min(getStoredItemCount(), count));
+//        itemStack.setTag(storedItemTag);
+//
+//        this.storedItemCount -= itemStack.getCount();
+//        if (storedItemCount <= 0)
+//            clearStoredItem();
+//
+//        inventoryChanged();
+//
+//        return itemStack;
     }
 
-    public void clearStoredItem() {
-        this.storedItem = null;
-        this.storedItemTag = null;
-        this.storedItemCount = 0;
-    }
-
-
-    public Item getStoredItem() {
-        return this.storedItem;
-    }
-
-    public CompoundTag getStoredItemTag() {
-        return this.storedItemTag;
-    }
-
-    public int getStoredItemCount() {
-        return this.storedItemCount;
-    }
+//    public void clearStoredItem() {
+//        this.storedItem = null;
+//        this.storedItemTag = null;
+//        this.storedItemCount = 0;
+//    }
+//
+//
+//    public Item getStoredItem() {
+//        return this.storedItem;
+//    }
+//
+//    public CompoundTag getStoredItemTag() {
+//        return this.storedItemTag;
+//    }
+//
+//    public int getStoredItemCount() {
+//        return this.storedItemCount;
+//    }
 
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-        return new MonobankMenu(containerID, playerInventory, this, createContainerData());
+        return new MonobankMenu(containerID, playerInventory, this);
     }
 
-    private ContainerData createContainerData() {
-        return new ContainerData() {
-            @Override
-            public int get(int index) {
-                return index == 0 ? MonobankBlockEntity.this.storedItemCount : 0;
-            }
-
-            @Override
-            public void set(int index, int value) {
-                if (index == 0)
-                    MonobankBlockEntity.this.storedItemCount = value;
-            }
-
-            @Override
-            public int getCount() {
-                return 1;
-            }
-        };
+    @NotNull
+    @Override
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        return !this.remove && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? this.inventoryHandler.cast()
+                : super.getCapability(cap, side);
     }
 
     // Name
@@ -218,18 +225,23 @@ public class MonobankBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+        CompoundTag compoundTag = saveWithoutMetadata();
+        return compoundTag;
     }
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        boolean a = true;
         load(pkt.getTag());
     }
 
-    protected void inventoryChanged() {
+    public void inventoryChanged(int changedSlot) {
         super.setChanged();
         if (level != null)
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
     }
+
+//    @Override
+//    public void handleUpdateTag(CompoundTag tag) {
+//        super.handleUpdateTag(tag);
+//    }
 }

@@ -33,4 +33,9 @@ public class Monobank
     public static final ResourceLocation resource(String path) {
         return new ResourceLocation(ID, path);
     }
+
+    public static int getSlotCapacity() {
+        // TODO: config max size
+        return Integer.MAX_VALUE;
+    }
 }

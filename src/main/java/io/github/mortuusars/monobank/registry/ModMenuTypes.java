@@ -13,7 +13,7 @@ public class ModMenuTypes {
     private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, Monobank.ID);
 
     public static final RegistryObject<MenuType<MonobankMenu>> MONOBANK = MENU_TYPES
-            .register("monobank", () -> IForgeMenuType.create(MonobankMenu::new));
+            .register("monobank", () -> IForgeMenuType.create(MonobankMenu::fromBuffer));
 
     public static final void register(IEventBus modEventBus) {
         MENU_TYPES.register(modEventBus);

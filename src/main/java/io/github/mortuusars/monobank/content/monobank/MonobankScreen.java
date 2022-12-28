@@ -29,23 +29,25 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
 
     @Override
     protected void containerTick() {
-        Item storedItem = this.getMenu().blockEntity.getStoredItem();
-        CompoundTag storedItemTag = this.getMenu().blockEntity.getStoredItemTag();
-
-        if (getMenu().blockEntity.isEmpty()) {
-            storedItemStack = null;
-            count = 0;
-        }
-        else {
-            storedItemStack = new ItemStack(storedItem, 1);
-            storedItemStack.setTag(storedItemTag);
-            count = this.getMenu().blockEntity.getStoredItemCount();
-        }
+//        Item storedItem = this.getMenu().blockEntity.;
+//        CompoundTag storedItemTag = this.getMenu().blockEntity.getStoredItemTag();
+//
+//        if (getMenu().blockEntity.isEmpty()) {
+//            storedItemStack = null;
+//            count = 0;
+//        }
+//        else {
+//            storedItemStack = new ItemStack(storedItem, 1);
+//            storedItemStack.setTag(storedItemTag);
+//            count = this.getMenu().blockEntity.getStoredItemCount();
+//        }
     }
 
     @Override
     protected void init() {
         super.init();
+
+//        title = getMenu().blockEntity.getCustomName();
 
         containerTick();
 
@@ -72,7 +74,7 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
         this.renderBackground(pPoseStack);
         super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
 
-//        this.font.draw(pPoseStack, Integer.toString(count), this.getGuiLeft() + imageWidth / 2 + 13, this.getGuiTop() + 28, 0xffffff);
+        this.renderTooltip(pPoseStack, pMouseX, pMouseY);
     }
 
     @Override
@@ -84,6 +86,7 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
     protected void renderLabels(PoseStack pPoseStack, int pMouseX, int pMouseY) {
         super.renderLabels(pPoseStack, pMouseX, pMouseY);
 
+        // TODO: Shortened count and full count in tooltip
         if (count > 1 && storedItemStack != null) {
             String countString = Integer.toString(count);
             pPoseStack.translate(0.0D, 0.0D, (double)(getMinecraft().getItemRenderer().blitOffset + 200.0F));
@@ -98,9 +101,11 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
         RenderSystem.setShaderTexture(0, BACKGROUND_TEXTURE);
         this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-        if (storedItemStack != null) {
-            this.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(storedItemStack, this.getGuiLeft() + imageWidth / 2 - 8, this.getGuiTop() + 24);
-            this.getMinecraft().getItemRenderer().renderGuiItemDecorations(font, storedItemStack, this.getGuiLeft() + imageWidth / 2 - 8, this.getGuiTop() + 24);
-        }
+
+
+//        if (storedItemStack != null) {
+//            this.getMinecraft().getItemRenderer().renderAndDecorateFakeItem(storedItemStack, this.getGuiLeft() + imageWidth / 2 - 8, this.getGuiTop() + 24);
+//            this.getMinecraft().getItemRenderer().renderGuiItemDecorations(font, storedItemStack, this.getGuiLeft() + imageWidth / 2 - 8, this.getGuiTop() + 24);
+//        }
     }
 }
