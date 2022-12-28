@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "monobank:block/monobank",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "monobank:block/monobank"
+    },
+    "facing=west": {
+      "model": "monobank:block/monobank",
+      "y": 90
+    },
+    "facing=east": {
+      "model": "monobank:block/monobank",
+      "y": 270
+    }
+  }
+}

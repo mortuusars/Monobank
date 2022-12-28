@@ -21,6 +21,8 @@ public class Monobank
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(ClientSetup::init);
+        modEventBus.addListener(ClientSetup::registerRenderers);
+        modEventBus.addListener(ClientSetup::registerModels);
 
         ModBlocks.register(modEventBus);
         ModBlockEntityTypes.register(modEventBus);

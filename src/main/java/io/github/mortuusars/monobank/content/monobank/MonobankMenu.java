@@ -1,6 +1,6 @@
 package io.github.mortuusars.monobank.content.monobank;
 
-import io.github.mortuusars.monobank.content.monobank.inventory.BigSlotItemHandler;
+import io.github.mortuusars.monobank.content.monobank.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.registry.ModBlocks;
 import io.github.mortuusars.monobank.registry.ModMenuTypes;
@@ -30,10 +30,11 @@ public class MonobankMenu extends AbstractContainerMenu {
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
 
+        blockEntity.startOpen(playerInventory.player);
 
         // Monobank slot
         blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(itemHandler -> {
-            this.addSlot(new BigSlotItemHandler(((MonobankItemStackHandler) itemHandler), 0, 80, 25));
+            this.addSlot(new BigItemHandlerSlot(((MonobankItemStackHandler) itemHandler), 0, 80, 25));
         });
 
         // Player hotbar slots
@@ -53,30 +54,38 @@ public class MonobankMenu extends AbstractContainerMenu {
         return new MonobankMenu(containerID, playerInventory, getBlockEntity(playerInventory, buffer));
     }
 
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        this.blockEntity.stopOpen(player);
+    }
+
+    public MonobankBlockEntity getBlockEntity() {
+        return blockEntity;
+    }
+
     // This is called both clientside and serverside
     @Override
     public boolean clickMenuButton(Player player, int buttonActionID) {
-        ScreenKeyModifier screenKeyModifier = ScreenKeyModifier.fromID(buttonActionID);
-        WithdrawAction withdrawAction = WithdrawAction.fromKeyModifier(screenKeyModifier);
-
-        ItemStack withdrawnItemStack;
-
-        if (withdrawAction == WithdrawAction.STACK) {
-            withdrawnItemStack = blockEntity.withdrawStack();
-            player.addItem(withdrawnItemStack);
-        }
-        else if (withdrawAction == WithdrawAction.ALL) {
-            do {
-                withdrawnItemStack = blockEntity.withdrawStack();
-            }
-            while (player.addItem(withdrawnItemStack) && !withdrawnItemStack.isEmpty());
-        }
-        else {
-            withdrawnItemStack = blockEntity.withdraw(1);
-            player.addItem(withdrawnItemStack);
-        }
-
-//        player.drop(withdrawnItemStack, false);
+//        ScreenKeyModifier screenKeyModifier = ScreenKeyModifier.fromID(buttonActionID);
+//        WithdrawAction withdrawAction = WithdrawAction.fromKeyModifier(screenKeyModifier);
+//
+//        ItemStack withdrawnItemStack;
+//
+//        if (withdrawAction == WithdrawAction.STACK) {
+//            withdrawnItemStack = blockEntity.withdrawStack();
+//            player.addItem(withdrawnItemStack);
+//        }
+//        else if (withdrawAction == WithdrawAction.ALL) {
+//            do {
+//                withdrawnItemStack = blockEntity.withdrawStack();
+//            }
+//            while (player.addItem(withdrawnItemStack) && !withdrawnItemStack.isEmpty());
+//        }
+//        else {
+//            withdrawnItemStack = blockEntity.withdraw(1);
+//            player.addItem(withdrawnItemStack);
+//        }
 
         return true;
     }

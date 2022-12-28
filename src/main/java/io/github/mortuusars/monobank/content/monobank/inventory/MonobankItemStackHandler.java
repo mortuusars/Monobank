@@ -127,8 +127,6 @@ public class MonobankItemStackHandler implements IItemHandler, IItemHandlerModif
         if (existing.isEmpty())
             return ItemStack.EMPTY;
 
-//        LogUtils.getLogger().info(existing.toString());
-
         int toExtract = Math.min(amount, existing.getMaxStackSize());
 
         if (existing.getCount() <= toExtract)
