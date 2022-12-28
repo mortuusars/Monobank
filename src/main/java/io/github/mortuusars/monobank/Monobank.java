@@ -32,6 +32,9 @@ public class Monobank
         MinecraftForge.EVENT_BUS.register(this);
     }
 
+    /**
+     * Creates resource location in the mod namespace with the given path.
+     */
     public static final ResourceLocation resource(String path) {
         return new ResourceLocation(ID, path);
     }

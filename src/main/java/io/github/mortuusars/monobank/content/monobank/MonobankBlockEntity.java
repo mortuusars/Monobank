@@ -4,6 +4,7 @@ import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChange
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
 import io.github.mortuusars.monobank.util.TextUtil;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -31,8 +32,10 @@ import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings({"NullableProblems", "unused"})
 public class MonobankBlockEntity extends BlockEntity implements IInventoryChangeListener, MenuProvider, Nameable, LidBlockEntity {
 
     private static final String INVENTORY_KEY = "Inventory";
@@ -80,15 +83,14 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
         super.saveAdditional(tag);
         tag.put(INVENTORY_KEY, inventory.serializeNBT());
         tag.putBoolean(LOCKED_KEY, locked);
-        if (hasOwner())
-            tag.putUUID(OWNER_KEY, getOwnerUuid());
+        getOwnerUuid().ifPresent(uuid ->
+                tag.putUUID(OWNER_KEY, uuid));
         if (this.name != null)
             tag.putString(CUSTOM_NAME_KEY, Component.Serializer.toJson(this.name));
     }
 
     @Override
     public void load(CompoundTag tag) {
-        if (tag == null) tag = new CompoundTag();
         super.load(tag);
         inventory.deserializeNBT(tag.getCompound(INVENTORY_KEY));
         setLocked(tag.getBoolean(LOCKED_KEY)); // not setting the field here - we need to update DoorController to be in sync with client
@@ -101,16 +103,17 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
 
     // Ownership:
 
-    public @Nullable UUID getOwnerUuid() {
-        return this.ownerUuid;
+    public Optional<UUID> getOwnerUuid() {
+        return Optional.ofNullable(ownerUuid);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasOwner() {
-        return ownerUuid != null;
+        return ownerUuid != null && !ownerUuid.equals(Util.NIL_UUID);
     }
 
     public boolean isOwnedBy(Player player) {
-        return hasOwner() && getOwnerUuid().equals(player.getUUID());
+        return getOwnerUuid().orElse(Util.NIL_UUID).equals(player.getUUID());
     }
 
     public void setOwner(Player player) {
@@ -277,13 +280,15 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
 
     @Override
     public CompoundTag getUpdateTag() {
-        CompoundTag compoundTag = saveWithoutMetadata();
-        return compoundTag;
+        return saveWithoutMetadata();
     }
 
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        load(pkt.getTag());
+        @Nullable CompoundTag tag = pkt.getTag();
+        if (tag == null) // Sometimes it is null. IDK.
+            tag = new CompoundTag();
+        load(tag);
     }
 
     public void inventoryChanged(int changedSlot) {

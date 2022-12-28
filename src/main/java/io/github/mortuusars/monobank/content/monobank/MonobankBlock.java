@@ -29,8 +29,10 @@ import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings({"NullableProblems", "deprecation", "unused"})
 public class MonobankBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -50,7 +52,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return ModBlockEntityTypes.MONOBANK.get().create(pos, state);
     }
 
@@ -90,13 +92,13 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankBlockEntity))
             return InteractionResult.FAIL;
 
-        /**
-         *     State:     |     Owner     |        Others        |
-         *     -----------|---------------|----------------------|
-         *     Locked:    |     Unlock    |   Unlock With Code   |
-         *     Unlocked:  |   Lock, Open  |         Open         |
-         *     Public:    |      Open     |         Open         |
-         */
+        /*  ___________________________________________________
+           | State:     |     Owner     |        Others        |
+           |------------|---------------|----------------------|
+           | Locked:    |     Unlock    |   Unlock With Code   |
+           | Unlocked:  |   Lock, Open  |         Open         |
+           | Public:    |      Open     |         Open         |
+           |____________|_______________|______________________| */
 
         return player.isSecondaryUseActive() ?
                 tryLockOrUnlock(blockState, player, level, pos, monobankBlockEntity) :
@@ -106,7 +108,6 @@ public class MonobankBlock extends Block implements EntityBlock {
     private InteractionResult tryOpen(BlockState blockState, Player player, Level level, BlockPos pos, MonobankBlockEntity monobankEntity) {
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
-
 
         boolean locked = monobankEntity.isLocked();
         if (locked) {
@@ -129,7 +130,7 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (isPublic) { // Cannot lock public bank
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_public_bank"), true);
             level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,
-                    1f, level.getRandom().nextFloat() * 0.1f + 0.9f);
+                    0.8f, level.getRandom().nextFloat() * 0.1f + 0.9f);
             return InteractionResult.CONSUME;
         }
 
@@ -139,7 +140,7 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (isOwner) { // Lock/Unlock to the heart's content
             boolean newLockedValue = !locked;
             monobankEntity.setLocked(newLockedValue);
-//            level.setBlock(pos, blockState.setValue(LOCKED, newLockedValue), Block.UPDATE_ALL);
+            // ^ only setting it server-side - so we need to update clients as well(otherwise door open/closing will not render):
             level.sendBlockUpdated(pos, blockState, blockState, Block.UPDATE_ALL);
             player.displayClientMessage(TextUtil.translate("interaction.message.locking." +
                     (newLockedValue ? "locked" : "unlocked")), true);
