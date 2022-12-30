@@ -1,18 +1,20 @@
 package io.github.mortuusars.monobank.content.monobank;
 
+import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChangeListener;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
+import io.github.mortuusars.monobank.registry.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -45,11 +47,11 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            MonobankBlockEntity.playSound(level, pos, state, SoundEvents.CHEST_OPEN);
+            MonobankBlockEntity.playSound(level, pos, state, Registry.Sounds.MONOBANK_OPEN.get());
         }
 
         protected void onClose(Level level, BlockPos pos, BlockState state) {
-            MonobankBlockEntity.playSound(level, pos, state, SoundEvents.CHEST_CLOSE);
+            MonobankBlockEntity.playSound(level, pos, state, Registry.Sounds.MONOBANK_CLOSE.get());
         }
 
         protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int eventId, int eventParam) {
@@ -61,16 +63,19 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
         }
     };
 
-    private final DoorOpenNessController doorController = new DoorOpenNessController(0.1f, 0.2f);
+    private final DoorOpennessController doorController = new DoorOpennessController(0.5f,
+            0.35f, 0.6f, 0.6f, 0.36f);
 
-    private Component name;
+    private Component customName;
 
     private final MonobankItemStackHandler inventory;
     private final LazyOptional<IItemHandler> inventoryHandler;
 
-
     private @Nullable UUID ownerUuid;
     private boolean locked = false;
+    private boolean isUnlocking = false;
+    private int unlockingCountdown = 0;
+    private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
 
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(ModBlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
@@ -83,21 +88,27 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
         super.saveAdditional(tag);
         tag.put(INVENTORY_KEY, inventory.serializeNBT());
         tag.putBoolean(LOCKED_KEY, locked);
+
+        LogUtils.getLogger().info("Owner: " + ownerUuid);
+
         getOwnerUuid().ifPresent(uuid ->
                 tag.putUUID(OWNER_KEY, uuid));
-        if (this.name != null)
-            tag.putString(CUSTOM_NAME_KEY, Component.Serializer.toJson(this.name));
+        if (this.customName != null)
+            tag.putString(CUSTOM_NAME_KEY, Component.Serializer.toJson(this.customName));
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         inventory.deserializeNBT(tag.getCompound(INVENTORY_KEY));
-        setLocked(tag.getBoolean(LOCKED_KEY)); // not setting the field here - we need to update DoorController to be in sync with client
+
+        // cannot set the field directly here - we need to update DoorController to be in sync with client
+        setLocked(tag.getBoolean(LOCKED_KEY));
+
         if (tag.contains(OWNER_KEY))
             ownerUuid = tag.getUUID(OWNER_KEY);
         if (tag.contains(CUSTOM_NAME_KEY, 8))
-            this.name = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_KEY));
+            this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_KEY));
     }
 
 
@@ -129,9 +140,47 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
         return locked;
     }
 
-    public void setLocked(boolean locked) {
+    public boolean isUnlocking() {
+        return isLocked() && isUnlocking/* && unlockingCountdown > 0*/;
+    }
+
+    /**
+     * Starts the countdown after which Monobank will unlock.
+     */
+    public void startUnlocking() {
+        startUnlocking(30);
+    }
+
+    /**
+     * Starts the countdown for specified amount of ticks after which Monobank will unlock.
+     */
+    public void startUnlocking(int ticks) {
+        if (!isUnlocking()) {
+            isUnlocking = true;
+            unlockingCountdown = ticks;
+            unlockingCountdownMax = ticks;
+        }
+    }
+
+    public void lock() {
+        setLocked(true);
+    }
+
+    public void unlock() {
+        setLocked(false);
+    }
+
+    private void setLocked(boolean locked) {
         this.locked = locked;
         doorController.setLocked(locked);
+        isUnlocking = false;
+        unlockingCountdown = 0;
+        if (level != null && !level.isClientSide) { // Level is null when world loading, idk why.
+            SoundEvent sound = locked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
+            playSound(level, worldPosition, getBlockState(), sound, 1f);
+            // We need to update clients with new state (otherwise door open/closing will not render):
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL); // Sync client.
+        }
     }
 
     public ItemStack getStoredItemStack() {
@@ -204,7 +253,7 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
     }
 
     public static void playSound(Level level, BlockPos pos, BlockState state, SoundEvent sound) {
-        playSound(level, pos, state, sound, 0.6F, level.random.nextFloat() * 0.05F + 0.95F);
+        playSound(level, pos, state, sound, 0.8F, level.random.nextFloat() * 0.1F + 0.9F);
     }
 
     public static void playSound(Level level, BlockPos pos, BlockState state, SoundEvent sound, float volume) {
@@ -212,15 +261,37 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
     }
 
     public static void playSound(Level level, BlockPos pos, BlockState state, SoundEvent sound, float volume, float pitch) {
-        double x = pos.getX() + 0.5D;
+        // Offset sound source to door pos:
+        Vec3i facingNormal = state.getValue(MonobankBlock.FACING).getNormal();
+        double x = pos.getX() + 0.5D + (facingNormal.getX() * 0.5D);
         double y = pos.getY() + 0.5D;
-        double z = pos.getZ() + 0.5D;
+        double z = pos.getZ() + 0.5D + (facingNormal.getZ() * 0.5D);
+
         level.playSound(null, x, y, z, sound, SoundSource.BLOCKS, volume, pitch);
     }
     
-    public static <T extends BlockEntity> void doorAnimateTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
+    public static <T extends BlockEntity> void clientTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
         if (blockEntity instanceof MonobankBlockEntity monobankEntity)
             monobankEntity.doorController.tickDoor();
+    }
+
+    public static <T extends BlockEntity> void serverTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
+        if (blockEntity instanceof MonobankBlockEntity monobankEntity) {
+            if (monobankEntity.unlockingCountdown > 0) {
+                // Calculating frequency of clicks (closer to unlocking -> more time between clicks):
+                int countdown = monobankEntity.unlockingCountdown;
+                int countdownMax = monobankEntity.unlockingCountdownMax;
+                int max = (int)Math.ceil(Math.log(countdownMax)) + 1;
+                int current = (int)Math.ceil(Math.log(countdown));
+                int freq = max - current;
+                if (countdown % freq == 0)
+                    playSound(level, blockPos, blockState, Registry.Sounds.MONOBANK_CLICK.get(), 0.5f);
+
+                monobankEntity.unlockingCountdown--;
+            }
+            else if (monobankEntity.isUnlocking() && monobankEntity.unlockingCountdown <= 0)
+                monobankEntity.unlock();
+        }
     }
 
 
@@ -263,11 +334,11 @@ public class MonobankBlockEntity extends BlockEntity implements IInventoryChange
     }
 
     public @NotNull Component getName() {
-        return this.name != null ? this.name : TextUtil.translate("monobank");
+        return this.customName != null ? this.customName : TextUtil.translate("monobank");
     }
 
     public void setCustomName(Component customName) {
-        name = customName;
+        this.customName = customName;
     }
 
 

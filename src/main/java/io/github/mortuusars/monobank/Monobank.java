@@ -1,10 +1,7 @@
 package io.github.mortuusars.monobank;
 
 import io.github.mortuusars.monobank.event.ClientSetup;
-import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
-import io.github.mortuusars.monobank.registry.ModBlocks;
-import io.github.mortuusars.monobank.registry.ModItems;
-import io.github.mortuusars.monobank.registry.ModMenuTypes;
+import io.github.mortuusars.monobank.registry.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,6 +20,8 @@ public class Monobank
         modEventBus.addListener(ClientSetup::init);
         modEventBus.addListener(ClientSetup::registerRenderers);
         modEventBus.addListener(ClientSetup::registerModels);
+
+        Registry.register(modEventBus);
 
         ModBlocks.register(modEventBus);
         ModBlockEntityTypes.register(modEventBus);

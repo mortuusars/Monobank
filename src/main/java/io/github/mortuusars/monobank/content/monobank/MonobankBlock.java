@@ -1,10 +1,12 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
+import io.github.mortuusars.monobank.registry.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -84,7 +86,7 @@ public class MonobankBlock extends Block implements EntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> entityType) {
         return entityType == ModBlockEntityTypes.MONOBANK.get() && level.isClientSide ?
-               MonobankBlockEntity::doorAnimateTick : null;
+               MonobankBlockEntity::clientTick : MonobankBlockEntity::serverTick;
     }
 
     @Override
@@ -134,25 +136,28 @@ public class MonobankBlock extends Block implements EntityBlock {
             return InteractionResult.CONSUME;
         }
 
-        boolean locked = monobankEntity.isLocked();
+        boolean isLocked = monobankEntity.isLocked();
         boolean isOwner = monobankEntity.isOwnedBy(player);
 
         if (isOwner) { // Lock/Unlock to the heart's content
-            boolean newLockedValue = !locked;
-            monobankEntity.setLocked(newLockedValue);
-            // ^ only setting it server-side - so we need to update clients as well(otherwise door open/closing will not render):
-            level.sendBlockUpdated(pos, blockState, blockState, Block.UPDATE_ALL);
-            player.displayClientMessage(TextUtil.translate("interaction.message.locking." +
-                    (newLockedValue ? "locked" : "unlocked")), true);
+            boolean shouldBeLocked = !isLocked;
 
-            level.playSound(null, pos, SoundEvents.LANTERN_BREAK, SoundSource.BLOCKS,
-                    0.8f, level.getRandom().nextFloat() * 0.1f + 0.9f);
+            if (shouldBeLocked) {
+                monobankEntity.lock();
+                return InteractionResult.CONSUME;
+            }
+
+            if (monobankEntity.isUnlocking())
+                player.displayClientMessage(TextUtil.translate("interaction.message.unlocking"), true);
+            else
+                monobankEntity.startUnlocking();
+
             return InteractionResult.CONSUME;
         }
 
         // Not owner:
 
-        if (locked) { // Try to unlock with code (future)
+        if (isLocked) { // Try to unlock with code (future)
             // TODO: unlocking screen with item code
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_unlock_not_owner"), true);
             level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,

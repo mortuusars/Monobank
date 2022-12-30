@@ -52,9 +52,11 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
         // Rotate door around the hinge:
         poseStack.pushPose();
         poseStack.translate(pixel * 2, 0d, 0d); // Shift X by 2 pixels to place at the center.
-        float openNess = blockEntity.getOpenNess(partialTick); // Get how much door is open. From 0 to 1.
-        float openNessRotation = openNess * 112.5f; // 112.5 is the max door opening rotation degrees.
-        poseStack.mulPose(Vector3f.YP.rotationDegrees(openNessRotation));
+
+        float openness = blockEntity.getOpenNess(partialTick); // Get how much door is open. From 0 to 1.
+        openness = openness < 0.5 ? 4 * openness * openness * openness : (float) (1 - Math.pow(-2 * openness + 2, 3) / 2); // CubicInOut easing:
+        float opennessRotation = openness * 112.5f; // 112.5 is the max door opening rotation degrees.
+        poseStack.mulPose(Vector3f.YP.rotationDegrees(opennessRotation));
 
         // Idk what this does (Chest :
         int i = 0xFFFFFF;

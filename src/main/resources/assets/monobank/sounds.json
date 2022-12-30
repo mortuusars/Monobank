@@ -1,0 +1,34 @@
+{
+  "block.monobank.lock": {
+    "subtitle": "monobank.subtitles.monobank.lock",
+    "sounds": [
+      "monobank:block/monobank/lock"
+    ]
+  },
+  "block.monobank.unlock": {
+    "subtitle": "monobank.subtitles.monobank.unlock",
+    "sounds": [
+      "monobank:block/monobank/unlock"
+    ]
+  },
+  "block.monobank.open": {
+    "subtitle": "monobank.subtitles.monobank.open",
+    "sounds": [
+      "monobank:block/monobank/open_1"
+    ]
+  },
+  "block.monobank.close": {
+    "subtitle": "monobank.subtitles.monobank.close",
+    "sounds": [
+      "monobank:block/monobank/close_1",
+      "monobank:block/monobank/close_2"
+    ]
+  },
+  "block.monobank.click": {
+    "subtitle": "monobank.subtitles.monobank.click",
+    "sounds": [
+      "monobank:block/monobank/click_1",
+      "monobank:block/monobank/click_2"
+    ]
+  }
+}
