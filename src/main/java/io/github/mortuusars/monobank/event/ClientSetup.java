@@ -2,7 +2,7 @@ package io.github.mortuusars.monobank.event;
 
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.monobank.MonobankRenderer;
+import io.github.mortuusars.monobank.content.monobank.renderer.MonobankRenderer;
 import io.github.mortuusars.monobank.content.monobank.MonobankScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.client.event.EntityRenderersEvent;

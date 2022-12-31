@@ -34,6 +34,7 @@ public class Monobank
 
     public static int getSlotCapacity() {
         // TODO: config max size
-        return Integer.MAX_VALUE;
+//        return Integer.MAX_VALUE;
+        return 64;
     }
 }
