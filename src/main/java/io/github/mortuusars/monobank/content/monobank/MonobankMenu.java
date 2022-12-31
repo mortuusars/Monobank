@@ -1,14 +1,14 @@
 package io.github.mortuusars.monobank.content.monobank;
 
-import com.mojang.logging.LogUtils;
+import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
-import io.github.mortuusars.monobank.registry.ModBlocks;
-import io.github.mortuusars.monobank.registry.ModMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,7 +26,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     protected final Level level;
 
     public MonobankMenu(final int containerID, final Inventory playerInventory, final MonobankBlockEntity blockEntity) {
-        super(ModMenuTypes.MONOBANK.get(), containerID);
+        super(Registry.MenuTypes.MONOBANK.get(), containerID);
         this.blockEntity = blockEntity;
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
@@ -145,7 +145,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     // Called server-side.
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(canInteractWithCallable, player, ModBlocks.MONOBANK.get());
+        return stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
     }
 
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {

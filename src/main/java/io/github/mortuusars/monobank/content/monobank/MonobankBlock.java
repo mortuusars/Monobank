@@ -1,13 +1,10 @@
 package io.github.mortuusars.monobank.content.monobank;
 
-import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
-import io.github.mortuusars.monobank.registry.Registry;
+import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -54,7 +51,7 @@ public class MonobankBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return ModBlockEntityTypes.MONOBANK.get().create(pos, state);
+        return Registry.BlockEntityTypes.MONOBANK.get().create(pos, state);
     }
 
     @Override
@@ -86,13 +83,13 @@ public class MonobankBlock extends Block implements EntityBlock {
     public boolean triggerEvent(BlockState pState, Level pLevel, BlockPos pPos, int pId, int pParam) {
         super.triggerEvent(pState, pLevel, pPos, pId, pParam);
         BlockEntity blockentity = pLevel.getBlockEntity(pPos);
-        return blockentity == null ? false : blockentity.triggerEvent(pId, pParam);
+        return blockentity != null && blockentity.triggerEvent(pId, pParam);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> entityType) {
-        return entityType == ModBlockEntityTypes.MONOBANK.get() && level.isClientSide ?
+        return entityType == Registry.BlockEntityTypes.MONOBANK.get() && level.isClientSide ?
                MonobankBlockEntity::clientTick : MonobankBlockEntity::serverTick;
     }
 

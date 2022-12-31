@@ -1,11 +1,11 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import com.mojang.logging.LogUtils;
+import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
 import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChangeListener;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
-import io.github.mortuusars.monobank.registry.ModBlockEntityTypes;
-import io.github.mortuusars.monobank.registry.Registry;
+import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -82,7 +82,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
     private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
 
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
-        super(ModBlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
+        super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
         this.inventory = new MonobankItemStackHandler(this, 1);
         this.inventoryHandler = LazyOptional.of(() -> inventory);
     }

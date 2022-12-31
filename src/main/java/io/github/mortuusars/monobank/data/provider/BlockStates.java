@@ -1,9 +1,8 @@
 package io.github.mortuusars.monobank.data.provider;
 
 import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
-import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
-import io.github.mortuusars.monobank.registry.ModBlocks;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
@@ -20,7 +19,7 @@ public class BlockStates extends BlockStateProvider {
 
         ModelFile model = models().getExistingFile(modLoc("block/monobank"));
 
-        getVariantBuilder(ModBlocks.MONOBANK.get())
+        getVariantBuilder(Registry.Blocks.MONOBANK.get())
                 .forAllStates(blockState -> ConfiguredModel.builder()
                         .modelFile(model)
                         .rotationY(((int) blockState.getValue(MonobankBlock.FACING).toYRot()))

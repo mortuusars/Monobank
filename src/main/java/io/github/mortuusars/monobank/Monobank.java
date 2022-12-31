@@ -1,7 +1,6 @@
 package io.github.mortuusars.monobank;
 
 import io.github.mortuusars.monobank.event.ClientSetup;
-import io.github.mortuusars.monobank.registry.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,18 +22,13 @@ public class Monobank
 
         Registry.register(modEventBus);
 
-        ModBlocks.register(modEventBus);
-        ModBlockEntityTypes.register(modEventBus);
-        ModItems.register(modEventBus);
-        ModMenuTypes.register(modEventBus);
-
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     /**
      * Creates resource location in the mod namespace with the given path.
      */
-    public static final ResourceLocation resource(String path) {
+    public static ResourceLocation resource(String path) {
         return new ResourceLocation(ID, path);
     }
 
