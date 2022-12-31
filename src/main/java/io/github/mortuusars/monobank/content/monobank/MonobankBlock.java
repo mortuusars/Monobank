@@ -6,7 +6,6 @@ import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -82,6 +81,14 @@ public class MonobankBlock extends Block implements EntityBlock {
             monobankBlockEntity.setOwner(player);
     }
 
+    // Used to trigger door openers counter to recheck. Can be used for other purposes too.
+    @Override
+    public boolean triggerEvent(BlockState pState, Level pLevel, BlockPos pPos, int pId, int pParam) {
+        super.triggerEvent(pState, pLevel, pPos, pId, pParam);
+        BlockEntity blockentity = pLevel.getBlockEntity(pPos);
+        return blockentity == null ? false : blockentity.triggerEvent(pId, pParam);
+    }
+
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> entityType) {
@@ -111,11 +118,9 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
 
-        boolean locked = monobankEntity.isLocked();
-        if (locked) {
+        if (monobankEntity.isLocked()) { // Should be unlocked first
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.monobank_is_locked"), true);
-            level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,
-                    1f, level.getRandom().nextFloat() * 0.02f + 0.95f);
+            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
         else if (player instanceof ServerPlayer serverPlayer)
             NetworkHooks.openGui(serverPlayer, monobankEntity, pos);
@@ -131,8 +136,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
         if (isPublic) { // Cannot lock public bank
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_public_bank"), true);
-            level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,
-                    0.8f, level.getRandom().nextFloat() * 0.1f + 0.9f);
+            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
             return InteractionResult.CONSUME;
         }
 
@@ -150,7 +154,7 @@ public class MonobankBlock extends Block implements EntityBlock {
             if (monobankEntity.isUnlocking())
                 player.displayClientMessage(TextUtil.translate("interaction.message.unlocking"), true);
             else
-                monobankEntity.startUnlocking();
+                monobankEntity.startUnlocking(level.getRandom().nextInt(20, 61));
 
             return InteractionResult.CONSUME;
         }
@@ -160,16 +164,13 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (isLocked) { // Try to unlock with code (future)
             // TODO: unlocking screen with item code
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_unlock_not_owner"), true);
-            level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,
-                    1f, level.getRandom().nextFloat() * 0.1f + 0.9f);
+            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
         else { // Cannot lock another owner's bank:
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_not_owner"), true);
-            level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_NETHERITE, SoundSource.BLOCKS,
-                    1f, level.getRandom().nextFloat() * 0.1f + 0.9f);
+            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
 
         return InteractionResult.CONSUME;
     }
-
 }

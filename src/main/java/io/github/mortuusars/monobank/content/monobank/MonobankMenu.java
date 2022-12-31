@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank.content.monobank;
 
+import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.content.monobank.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.registry.ModBlocks;
@@ -57,7 +58,15 @@ public class MonobankMenu extends AbstractContainerMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
-        this.blockEntity.stopOpen(player);
+
+        /*
+            For some reason, when opening other UI over ours (such as JEI),
+            this is called client-side (server-side it's still open), when it probably shouldn't.
+            This causes door to close while still in the menu, and not update its openness properly.
+            So we are calling stopping open only server-side - which is then synchronized to client in OpenersCounter via block update.
+         */
+        if (!player.level.isClientSide)
+            this.blockEntity.stopOpen(player);
     }
 
     public MonobankBlockEntity getBlockEntity() {
@@ -133,6 +142,7 @@ public class MonobankMenu extends AbstractContainerMenu {
         return ItemStack.EMPTY;
     }
 
+    // Called server-side.
     @Override
     public boolean stillValid(Player player) {
         return stillValid(canInteractWithCallable, player, ModBlocks.MONOBANK.get());
