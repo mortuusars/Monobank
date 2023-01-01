@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -27,9 +28,11 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
     public static final ResourceLocation DOOR_MODEL_LOCATION = Monobank.resource("block/monobank_door");
 
     protected BlockContentsRenderer blocksRenderer;
+    protected ItemContentsRenderer itemsRenderer;
 
     public MonobankRenderer(BlockEntityRendererProvider.Context ignoredContext) {
         blocksRenderer = new BlockContentsRenderer();
+        itemsRenderer = new ItemContentsRenderer();
     }
 
     @SuppressWarnings("NullableProblems")
@@ -80,18 +83,18 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
         }
     }
 
-    public void renderContents(ItemStack stack, BlockEntity entity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public void renderContents(ItemStack stack, MonobankBlockEntity monobankEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         boolean renderedAsBlock = Minecraft.getInstance()
                 .getItemRenderer()
-                        .getModel(stack, entity.getLevel(), null, 0)
+                        .getModel(stack, monobankEntity.getLevel(), null, 0)
                         .isGui3d();
 
-        float fullness = Mth.clamp(stack.getCount() / (float)Monobank.getSlotCapacity(), 0.0f, 1.0f);
+        float fullness = monobankEntity.getFullness();
 
         if (renderedAsBlock)
-            blocksRenderer.render(stack, fullness, entity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
+            blocksRenderer.render(stack, fullness, monobankEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
         else {
-            //TODO: render items
+            itemsRenderer.render(stack, fullness, monobankEntity, partialTick, poseStack, bufferSource, packedLight, packedOverlay);
         }
     }
 }

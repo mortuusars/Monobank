@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import com.mojang.logging.LogUtils;
+import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
 import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChangeListener;
 import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Inventory;
@@ -81,6 +83,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
     private int unlockingCountdown = 0;
     private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
 
+    private float fullness = -1;
+
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
         this.inventory = new MonobankItemStackHandler(this, 1);
@@ -113,6 +117,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
             ownerUuid = tag.getUUID(OWNER_KEY);
         if (tag.contains(CUSTOM_NAME_KEY, 8))
             this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_KEY));
+
+        updateFullness();
     }
 
 
@@ -187,6 +193,13 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         }
     }
 
+    public float getFullness() {
+        return fullness;
+    }
+
+    public void updateFullness() {
+        fullness = Mth.clamp(getStoredItemStack().getCount() / (float)Monobank.getSlotCapacity(), 0.0f, 1.0f);
+    }
 
     public ItemStack getStoredItemStack() {
         return inventory.getStackInSlot(0);
@@ -214,6 +227,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
     @Override
     public void inventoryChanged(int changedSlot) {
         this.setChanged();
+        updateFullness();
     }
 
     public boolean triggerEvent(int id, int param) {
