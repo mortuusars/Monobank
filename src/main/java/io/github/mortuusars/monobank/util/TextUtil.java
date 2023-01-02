@@ -31,10 +31,10 @@ public class TextUtil {
      * Formats big numbers (>999) to a number with a suffix. eg: 1.2K, 2.6M.
      * Shamelessly stolen from StackOverflow.
      */
-    public static String formatNumber(long value) {
+    public static String shortenNumber(long value) {
         //Long.MIN_VALUE == -Long.MIN_VALUE, so we need an adjustment here
-        if (value == Long.MIN_VALUE) return formatNumber(Long.MIN_VALUE + 1);
-        if (value < 0) return "-" + formatNumber(-value);
+        if (value == Long.MIN_VALUE) return shortenNumber(Long.MIN_VALUE + 1);
+        if (value < 0) return "-" + shortenNumber(-value);
         if (value < 1000) return Long.toString(value); //deal with easy case
 
         Map.Entry<Long, String> e = suffixes.floorEntry(value);

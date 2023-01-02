@@ -1,10 +1,9 @@
 package io.github.mortuusars.monobank.content.monobank;
 
-import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
-import io.github.mortuusars.monobank.content.monobank.inventory.IInventoryChangeListener;
-import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
+import io.github.mortuusars.monobank.core.inventory.IInventoryChangeListener;
+import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
@@ -96,8 +95,6 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         super.saveAdditional(tag);
         tag.put(INVENTORY_KEY, inventory.serializeNBT());
         tag.putBoolean(LOCKED_KEY, locked);
-
-        LogUtils.getLogger().info("Owner: " + ownerUuid);
 
         getOwnerUuid().ifPresent(uuid ->
                 tag.putUUID(OWNER_KEY, uuid));
@@ -193,6 +190,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         }
     }
 
+
+    // Inventory
+
     public float getFullness() {
         return fullness;
     }
@@ -205,17 +205,22 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         return inventory.getStackInSlot(0);
     }
 
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-        return new MonobankMenu(containerID, playerInventory, this);
-    }
+//    public ItemStack extractItem(int amount) {
+//        return inventory.extractItem(0, amount, false);
+//    }
+
 
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return !this.remove && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? this.inventoryHandler.cast()
+        return !this.remove && !isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? this.inventoryHandler.cast()
                 : super.getCapability(cap, side);
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+        return new MonobankMenu(containerID, playerInventory, this);
     }
 
     @Override
@@ -298,7 +303,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         return getName();
     }
     public @NotNull Component getName() {
-        return this.customName != null ? this.customName : TextUtil.translate("monobank");
+        return this.customName != null ? this.customName : TextUtil.translate("gui.monobank");
     }
     public void setCustomName(Component customName) {
         this.customName = customName;

@@ -1,4 +1,4 @@
-package io.github.mortuusars.monobank.content.monobank.inventory;
+package io.github.mortuusars.monobank.core.inventory;
 
 public interface IInventoryChangeListener {
     void inventoryChanged(int changedSlot);

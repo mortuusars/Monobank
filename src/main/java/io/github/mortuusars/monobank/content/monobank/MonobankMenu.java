@@ -1,25 +1,33 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.monobank.inventory.BigItemHandlerSlot;
-import io.github.mortuusars.monobank.content.monobank.inventory.MonobankItemStackHandler;
+import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
+import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class MonobankMenu extends AbstractContainerMenu {
-
     public static final int MONOBANK_SLOT_INDEX = 0;
+    public static final int MONOBANK_SLOT_X = 75;
+    public static final int MONOBANK_SLOT_Y = 30;
+    public static final int MONOBANK_SLOT_SIZE = 26;
+
+    public static final int TRANSFER_SINGLE_BUTTON_ID = -101;
+    public static final int TRANSFER_ALL_BUTTON_ID = -102;
 
     public final MonobankBlockEntity blockEntity;
     private final ContainerLevelAccess canInteractWithCallable;
@@ -35,19 +43,20 @@ public class MonobankMenu extends AbstractContainerMenu {
 
         // Monobank slot
         blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(itemHandler -> {
-            this.addSlot(new BigItemHandlerSlot(((MonobankItemStackHandler) itemHandler), 0, 80, 25));
+            this.addSlot(new BigItemHandlerSlot(((MonobankItemStackHandler) itemHandler),
+                    0, MONOBANK_SLOT_X, MONOBANK_SLOT_Y, MONOBANK_SLOT_SIZE, MONOBANK_SLOT_SIZE));
         });
 
         // Player hotbar slots
+        for(int k = 0; k < 9; ++k) {
+            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
+        }
+
+        // Player inventory slots
         for(int i = 0; i < 3; ++i) {
             for(int j = 0; j < 9; ++j) {
                 this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
             }
-        }
-
-        // Player inventory slots
-        for(int k = 0; k < 9; ++k) {
-            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
     }
 
@@ -58,7 +67,6 @@ public class MonobankMenu extends AbstractContainerMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
-
         /*
             For some reason, when opening other UI over ours (such as JEI),
             this is called client-side (server-side it's still open), when it probably shouldn't.
@@ -73,30 +81,45 @@ public class MonobankMenu extends AbstractContainerMenu {
         return blockEntity;
     }
 
-    // This is called both clientside and serverside
+    /**
+     * Handles QuickMove with modifiers from bank slot.
+     * Uses (hopefully) unused button ids to differentiate between actions.
+     */
     @Override
-    public boolean clickMenuButton(Player player, int buttonActionID) {
-//        ScreenKeyModifier screenKeyModifier = ScreenKeyModifier.fromID(buttonActionID);
-//        WithdrawAction withdrawAction = WithdrawAction.fromKeyModifier(screenKeyModifier);
-//
-//        ItemStack withdrawnItemStack;
-//
-//        if (withdrawAction == WithdrawAction.STACK) {
-//            withdrawnItemStack = blockEntity.withdrawStack();
-//            player.addItem(withdrawnItemStack);
-//        }
-//        else if (withdrawAction == WithdrawAction.ALL) {
-//            do {
-//                withdrawnItemStack = blockEntity.withdrawStack();
-//            }
-//            while (player.addItem(withdrawnItemStack) && !withdrawnItemStack.isEmpty());
-//        }
-//        else {
-//            withdrawnItemStack = blockEntity.withdraw(1);
-//            player.addItem(withdrawnItemStack);
-//        }
+    public void clicked(int slotId, int button, ClickType clickType, Player player) {
 
-        return true;
+        if (clickType != ClickType.QUICK_MOVE) {
+            super.clicked(slotId, button, clickType, player);
+            return;
+        }
+
+        @Nullable IItemHandler itemHandler = blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).orElse(null);
+        if (itemHandler == null)
+            return;
+
+        if (button == TRANSFER_SINGLE_BUTTON_ID) {
+            ItemStack extractedItem = itemHandler.extractItem(0, 1, false);
+            if (!player.addItem(extractedItem))
+                itemHandler.insertItem(0, extractedItem, false); // Insert remainder back into bank
+        }
+        else if (button == TRANSFER_ALL_BUTTON_ID) {
+            while (true) {
+                ItemStack extractedStack = itemHandler.extractItem(0, blockEntity.getStoredItemStack().getMaxStackSize(), false);
+
+                if (extractedStack.isEmpty())
+                    break;
+
+                player.addItem(extractedStack);
+
+                if (!extractedStack.isEmpty()) {
+                    itemHandler.insertItem(0, extractedStack, false); // Insert remainder back into bank
+                    break;
+                }
+            }
+        }
+        else {
+            super.clicked(slotId, button, clickType, player);
+        }
     }
 
     /**
@@ -111,9 +134,8 @@ public class MonobankMenu extends AbstractContainerMenu {
 
         ItemStack clickedSlotItemStack = clickedSlot.getItem();
 
-        // From Monobank
-        if (pIndex == MONOBANK_SLOT_INDEX) {
 
+        if (pIndex == MONOBANK_SLOT_INDEX) { // From Monobank
             // Remove proper portion of a stack (stack size or amount available - whatever is smaller)
             // getMaxStackSize is called on the ItemStack - and it will return vanilla stack size instead of the bank size.
             ItemStack removedStack = clickedSlot.remove(clickedSlotItemStack.getMaxStackSize());
@@ -126,10 +148,8 @@ public class MonobankMenu extends AbstractContainerMenu {
             if (!removedStack.isEmpty())
                 clickedSlot.safeInsert(removedStack);
         }
-        else {
-            // To Monobank:
+        else { // To Monobank:
             Slot monobankSlot = this.slots.get(MONOBANK_SLOT_INDEX);
-
             if (!monobankSlot.hasItem() || ItemHandlerHelper.canItemStacksStack(monobankSlot.getItem(), clickedSlotItemStack)) {
                 ItemStack remainder = monobankSlot.safeInsert(clickedSlotItemStack);
 
@@ -145,7 +165,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     // Called server-side.
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
+        return !blockEntity.isLocked() && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
     }
 
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {

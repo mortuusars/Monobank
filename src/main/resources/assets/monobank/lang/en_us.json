@@ -1,3 +1,6 @@
 {
-  "monobank.gui.count": "Count: %s"
+  "monobank.gui.monobank": "Monobank",
+  "monobank.gui.monobank.count": "Count: %s",
+  "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL: Take single item",
+  "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT: Take all items"
 }

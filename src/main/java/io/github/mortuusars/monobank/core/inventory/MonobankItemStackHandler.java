@@ -1,6 +1,5 @@
-package io.github.mortuusars.monobank.content.monobank.inventory;
+package io.github.mortuusars.monobank.core.inventory;
 
-import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -11,8 +10,6 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
