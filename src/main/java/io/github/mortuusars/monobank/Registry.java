@@ -1,9 +1,11 @@
 package io.github.mortuusars.monobank;
 
+import io.github.mortuusars.monobank.content.advancement.MonobankItemsCountTrigger;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
 import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -65,6 +67,14 @@ public class Registry {
 
         private static RegistryObject<SoundEvent> registerSound(String name) {
             return SOUNDS.register(name, () -> new SoundEvent(Monobank.resource(name)));
+        }
+    }
+
+    public static class Advancements {
+        public static MonobankItemsCountTrigger MONOBANK_ITEMS_COUNT = new MonobankItemsCountTrigger();
+
+        public static void register() {
+            CriteriaTriggers.register(MONOBANK_ITEMS_COUNT);
         }
     }
 

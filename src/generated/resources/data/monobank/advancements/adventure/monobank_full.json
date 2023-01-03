@@ -1,0 +1,33 @@
+{
+  "parent": "monobank:adventure/monobank",
+  "display": {
+    "icon": {
+      "item": "monobank:monobank"
+    },
+    "title": {
+      "translate": "monobank.advancement.monobank_full.title"
+    },
+    "description": {
+      "translate": "monobank.advancement.monobank_full.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "monobank_full": {
+      "trigger": "monobank:monobank_items_count",
+      "conditions": {
+        "count": {
+          "min": 2147483647
+        }
+      }
+    }
+  },
+  "requirements": [
+    [
+      "monobank_full"
+    ]
+  ]
+}

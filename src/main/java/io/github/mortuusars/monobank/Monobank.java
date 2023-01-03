@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank;
 
 import io.github.mortuusars.monobank.event.ClientSetup;
+import io.github.mortuusars.monobank.event.CommonSetup;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -20,6 +21,8 @@ public class Monobank
         modEventBus.addListener(ClientSetup::registerRenderers);
         modEventBus.addListener(ClientSetup::registerModels);
 
+        modEventBus.addListener(CommonSetup::onCommonSetup);
+
         Registry.register(modEventBus);
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -34,7 +37,7 @@ public class Monobank
 
     public static int getSlotCapacity() {
         // TODO: config max size
-        return Integer.MAX_VALUE;
-//        return 64;
+//        return Integer.MAX_VALUE;
+        return 500;
     }
 }

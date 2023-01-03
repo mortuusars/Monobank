@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -236,6 +237,16 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
     @Override
     public void inventoryChanged(int changedSlot) {
         this.setChanged();
+
+        if (!level.isClientSide) {
+            getOwnerUuid().ifPresent(uuid -> {
+                @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(uuid);
+                if (player != null) {
+                    Registry.Advancements.MONOBANK_ITEMS_COUNT.trigger(player, getStoredItemStack().getCount());
+                }
+            });
+        }
+
         updateFullness();
     }
 

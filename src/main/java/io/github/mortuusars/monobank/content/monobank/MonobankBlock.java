@@ -119,8 +119,10 @@ public class MonobankBlock extends Block implements EntityBlock {
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.monobank_is_locked"), true);
             MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
-        else if (player instanceof ServerPlayer serverPlayer)
+        else if (player instanceof ServerPlayer serverPlayer) {
             NetworkHooks.openGui(serverPlayer, monobankEntity, pos);
+
+        }
 
         return InteractionResult.CONSUME;
     }
