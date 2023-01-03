@@ -2,6 +2,7 @@ package io.github.mortuusars.monobank.content.monobank;
 
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
+import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
 import io.github.mortuusars.monobank.core.inventory.IInventoryChangeListener;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
@@ -220,7 +221,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-        return new MonobankMenu(containerID, playerInventory, this);
+//        if (isLocked())
+//            return new MonobankUnlockingMenu(containerID, playerInventory, this);
+//        else
+            return new MonobankMenu(containerID, playerInventory, this);
     }
 
     @Override

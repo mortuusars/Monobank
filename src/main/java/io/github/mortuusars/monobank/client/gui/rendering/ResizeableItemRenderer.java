@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 public class ResizeableItemRenderer {
 
 
-    public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, @Nullable BakedModel bakedModel) {
+    public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, int combinedLight, @Nullable BakedModel bakedModel) {
         if (stack.isEmpty())
             return;
 
@@ -54,7 +54,7 @@ public class ResizeableItemRenderer {
             Lighting.setupForFlatItems();
         }
 
-        itemRenderer.render(stack, ItemTransforms.TransformType.GUI, false, newPoseStack, multibuffersource$buffersource, 15728880, OverlayTexture.NO_OVERLAY, bakedModel);
+        itemRenderer.render(stack, ItemTransforms.TransformType.GUI, false, newPoseStack, multibuffersource$buffersource, combinedLight, OverlayTexture.NO_OVERLAY, bakedModel);
         multibuffersource$buffersource.endBatch();
         RenderSystem.enableDepthTest();
         if (flag) {
@@ -66,7 +66,11 @@ public class ResizeableItemRenderer {
     }
 
     public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height) {
-        renderGuiItem(stack, x, y, width, height, null);
+        renderGuiItem(stack, x, y, width, height, 0xF000F0, null);
+    }
+
+    public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, int combinedLight) {
+        renderGuiItem(stack, x, y, width, height, combinedLight, null);
     }
 
     public static void renderGuiItemDecorations(Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, String countString, boolean fixDurabilityBarOverlapping) {

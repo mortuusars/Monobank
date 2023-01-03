@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
+import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -48,6 +49,9 @@ public class Registry {
 
         public static final RegistryObject<MenuType<MonobankMenu>> MONOBANK = MENU_TYPES
                 .register("monobank", () -> IForgeMenuType.create(MonobankMenu::fromBuffer));
+
+        public static final RegistryObject<MenuType<MonobankUnlockingMenu>> MONOBANK_UNLOCKING = MENU_TYPES
+                .register("monobank_unlocking", () -> IForgeMenuType.create(MonobankUnlockingMenu::fromBuffer));
     }
 
     public static class Sounds {

@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.client.gui.rendering.ResizeableItemRenderer;
 import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerScreen;
 import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.util.TextUtil;
@@ -60,6 +61,21 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, partialTick);
+
+//        ResizeableItemRenderer.renderGuiItem(getMenu().slots.get(0).getItem(), getGuiLeft() + 40, getGuiTop() + 34, 24, 24, 0xF000F0);
+//
+//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+//        RenderSystem.setShaderTexture(0, TEXTURE);
+//
+//        poseStack.pushPose();
+//        poseStack.translate(0, 0, 150);
+//
+//        fill(poseStack, this.leftPos + 40, this.topPos + 30, this.leftPos + 60, this.topPos + 50, 0x55C8C8C8);
+//
+////        this.blit(poseStack, this.leftPos + 50, this.topPos + 40, 75, 30, 20, 20);
+//        poseStack.popPose();
+
         this.renderTooltip(poseStack, mouseX, mouseY);
     }
 

@@ -69,9 +69,9 @@ public class MonobankMenu extends AbstractContainerMenu {
         super.removed(player);
         /*
             For some reason, when opening other UI over ours (such as JEI),
-            this is called client-side (server-side it's still open), when it probably shouldn't.
+            this is called only client-side (server-side it's still open), when it probably shouldn't.
             This causes door to close while still in the menu, and not update its openness properly.
-            So we are calling stopping open only server-side - which is then synchronized to client in OpenersCounter via block update.
+            So we are closing only server-side - which is then synchronized to client in OpenersCounter via block update.
          */
         if (!player.level.isClientSide)
             this.blockEntity.stopOpen(player);

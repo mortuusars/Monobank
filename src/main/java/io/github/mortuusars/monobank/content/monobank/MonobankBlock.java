@@ -140,6 +140,13 @@ public class MonobankBlock extends Block implements EntityBlock {
         boolean isLocked = monobankEntity.isLocked();
         boolean isOwner = monobankEntity.isOwnedBy(player);
 
+//        if (isLocked) {
+//            if (player instanceof ServerPlayer serverPlayer)
+//                NetworkHooks.openGui(serverPlayer, monobankEntity, pos);
+//
+//            return InteractionResult.SUCCESS;
+//        }
+
         if (isOwner) { // Lock/Unlock to the heart's content
             boolean shouldBeLocked = !isLocked;
 
