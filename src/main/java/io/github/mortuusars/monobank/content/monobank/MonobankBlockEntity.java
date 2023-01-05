@@ -253,7 +253,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
                 Owner owner = Owner.none();
                 owner.deserializeNBT(blockEntityTag.getCompound("Owner"));
                 if (owner.getType() != Owner.Type.NONE)
-                    return;
+                    return; // Do not set new owner if bank already has one.
             }
         }
 

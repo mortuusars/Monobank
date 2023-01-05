@@ -14,6 +14,10 @@ public class ItemModels extends ItemModelProvider {
     @Override
     protected void registerModels() {
         String name = Registry.Blocks.MONOBANK.get().getRegistryName().getPath();
-        withExistingParent(name, modLoc("block/" + name));
+
+        getBuilder(name)
+                .parent(getExistingFile(modLoc(name)));
+
+//        withExistingParent(name, modLoc("block/" + name));
     }
 }
