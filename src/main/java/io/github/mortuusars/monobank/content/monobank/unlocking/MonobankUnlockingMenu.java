@@ -4,6 +4,7 @@ import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.UnlockingSlot;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,22 +20,22 @@ import java.util.Objects;
 public class MonobankUnlockingMenu extends AbstractContainerMenu {
 
     public final MonobankBlockEntity monobankEntity;
-    public final Combination unlockingData;
+    public final Combination combination;
     private final ContainerLevelAccess canInteractWithCallable;
     protected final Level level;
 
     public MonobankUnlockingMenu(final int containerID, final Inventory playerInventory,
-                                 final MonobankBlockEntity monobankEntity, final Combination unlockingData) {
+                                 final MonobankBlockEntity monobankEntity, final Combination combination) {
         super(Registry.MenuTypes.MONOBANK_UNLOCKING.get(), containerID);
         this.monobankEntity = monobankEntity;
-        this.unlockingData = unlockingData;
+        this.combination = combination;
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(monobankEntity.getLevel(), monobankEntity.getBlockPos());
 
         IItemHandler unlockingInventoryHandler = monobankEntity.getUnlockingInventoryHandler();
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 0, 32, 35, unlockingData.getFirst()));
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 1, 53, 35, unlockingData.getSecond()));
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 2, 74, 35, unlockingData.getThird()));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 0, 32, 35, new ItemStack(combination.getItemInSlot(0))));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 1, 53, 35, new ItemStack(combination.getItemInSlot(1))));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 2, 74, 35, new ItemStack(combination.getItemInSlot(2))));
 
         // Player hotbar slots
         for(int column = 0; column < 9; ++column) {
@@ -47,6 +48,10 @@ public class MonobankUnlockingMenu extends AbstractContainerMenu {
                 this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
             }
         }
+
+        // Empty combination should be handled earlier - this is to be safe.
+        if (monobankEntity.getLock().getCombination().isEmpty())
+            monobankEntity.startUnlocking();
     }
 
     public static MonobankUnlockingMenu fromBuffer(int containerID, Inventory playerInventory, FriendlyByteBuf buffer) {
@@ -76,7 +81,7 @@ public class MonobankUnlockingMenu extends AbstractContainerMenu {
                 clickedSlot.safeInsert(removedStack);
         }
         else {
-            int matchingKeyway = unlockingData.findMatchingSlot(clickedSlotStack);
+            int matchingKeyway = combination.findMatchingSlot(clickedSlotStack.getItem());
             if (matchingKeyway >= 0) {
                 Slot slot = slots.get(matchingKeyway);
                 if (!slot.hasItem() && slot.mayPlace(clickedSlotStack))
@@ -89,7 +94,7 @@ public class MonobankUnlockingMenu extends AbstractContainerMenu {
     // Called server-side.
     @Override
     public boolean stillValid(Player player) {
-        return monobankEntity.getLock().isLocked() && !monobankEntity.getLock().isUnlocking()
+        return monobankEntity.getLock().isLocked() && !monobankEntity.isUnlocking()
                 && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
     }
 

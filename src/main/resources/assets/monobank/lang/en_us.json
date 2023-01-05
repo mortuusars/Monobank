@@ -1,7 +1,12 @@
 {
   "block.monobank.monobank": "Monobank",
 
+  "monobank.tooltip.locked": "Locked",
+  "monobank.tooltip.loot_table": "Loot Table: %s",
+  "monobank.tooltip.combination_table": "Combination Table: %s",
+
   "monobank.gui.monobank": "Monobank",
+  "monobank.gui.monobank.unlocking": "Unlocking %s",
   "monobank.gui.monobank.count": "Count: %s",
   "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL: Take single item",
   "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT: Take all items",
@@ -17,5 +22,7 @@
 
   "monobank.subtitles.monobank.lock" : "Monobank locks",
   "monobank.subtitles.monobank.unlock" : "Monobank unlocks",
-  "monobank.subtitles.monobank.click" : "Monobank lock clicking"
+  "monobank.subtitles.monobank.click" : "Monobank lock clicking",
+  "monobank.subtitles.monobank.open" : "Monobank opens",
+  "monobank.subtitles.monobank.close" : "Monobank closes"
 }

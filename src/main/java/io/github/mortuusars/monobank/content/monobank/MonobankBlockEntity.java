@@ -6,10 +6,12 @@ import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
 import io.github.mortuusars.monobank.content.monobank.component.Lock;
 import io.github.mortuusars.monobank.content.monobank.component.Owner;
+import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.util.TextUtil;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +32,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -50,14 +53,16 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"NullableProblems", "unused"})
 public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvider, Nameable, LidBlockEntity {
-    private static final String INVENTORY_NBT_KEY = "Inventory";
-    private static final String LOCK_NBT_KEY = "Lock";
-    private static final String OWNER_NBT_KEY = "Owner";
-    private static final String CUSTOM_NAME_NBT_KEY = "CustomName";
+    private static final String INVENTORY_TAG = "Inventory";
+    private static final String LOCK_TAG = "Lock";
+    private static final String OWNER_TAG = "Owner";
+    private static final String CUSTOM_NAME_TAG = "CustomName";
 
     private static final int UPDATE_DOOR_EVENT_ID = 1;
 
@@ -104,7 +109,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     private final MenuProvider UNLOCKING_MENU_PROVIDER = new MenuProvider() {
         @Override
         public Component getDisplayName() {
-            return TextUtil.translate("gui.unlocking", MonobankBlockEntity.this.getName());
+            return TextUtil.translate("gui.monobank.unlocking", MonobankBlockEntity.this.getName());
         }
 
         @Nullable
@@ -129,27 +134,96 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         this.inventoryHandler = LazyOptional.of(() -> inventory);
         doorOpennessController = new DoorOpennessController(0.5f,
                 0.35f, 0.6f, 0.65f, 0.36f);
-        lock = new Lock(this, this::onLockedChanged);
+        lock = new Lock(this.getBlockPos(), this::onLockedChanged, this::onLockInventoryChanged, this::getLevel);
         owner = Owner.none();
+    }
+
+    public static void appendHoverText(ItemStack stack, BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
+        CompoundTag tag = stack.getOrCreateTag();
+        if (tag.contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
+            CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
+            if (blockEntityTag.contains(LOCK_TAG, CompoundTag.TAG_COMPOUND)) {
+                CompoundTag lockTag = blockEntityTag.getCompound(LOCK_TAG);
+                boolean locked = lockTag.getBoolean("Locked");
+                if (locked)
+                    tooltip.add(TextUtil.translate("tooltip.locked").withStyle(ChatFormatting.GRAY));
+
+                if (blockEntityTag.contains(LOOT_TABLE_TAG, CompoundTag.TAG_STRING)) {
+                    String lootTable = blockEntityTag.getString(LOOT_TABLE_TAG);
+                    tooltip.add(TextUtil.translate("tooltip.loot_table", lootTable)
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                }
+
+                if (lockTag.contains("CombinationTable", CompoundTag.TAG_STRING)) {
+                    tooltip.add(TextUtil.translate("tooltip.combination_table", lockTag.getString("CombinationTable"))
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+        }
     }
 
 
     // Lock
 
+    private boolean isUnlocking = false;
+    private int unlockingCountdown = 0;
+    private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
+
     public Lock getLock() {
         return lock;
     }
 
+    public boolean isUnlocking() {
+        return isUnlocking;
+    }
+
+    /**
+     * Starts the countdown after which Monobank will unlock.
+     */
+    public void startUnlocking() {
+        startUnlocking(getLevel().getRandom().nextInt(20, 61));
+    }
+
+    /**
+     * Starts the countdown for specified amount of ticks after which Monobank will unlock.
+     */
+    public void startUnlocking(int ticks) {
+        if (!isUnlocking()) {
+            isUnlocking = true;
+            unlockingCountdown = ticks;
+            unlockingCountdownMax = ticks;
+        }
+    }
+
     private void onLockedChanged() {
         boolean isLocked = lock.isLocked();
-        LogUtils.getLogger().warn(isLocked + " ");
         doorOpennessController.setLocked(isLocked);
+        unlockingCountdown = -1;
+        isUnlocking = false;
 
         if (level != null && !level.isClientSide) { // Level is null when world loading, idk why.
             SoundEvent sound = isLocked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
             playSoundAtDoor(level, worldPosition, getBlockState(), sound, 1f);
             // We need to update clients with new state (otherwise door open/closing will not render):
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Sync client.
+        }
+    }
+
+    private void onLockInventoryChanged(Integer slot) {
+        Combination combination = getLock().getCombination();
+
+        // Click when player places matching item in unlocking slot.
+        if (combination.matches(slot, getLock().getInventory().getStackInSlot(slot).getItem()))
+            playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
+
+        List<ItemStack> keys = new ArrayList<>();
+        for (int i = 0; i < getLock().getInventory().getSlots(); i++) {
+            keys.add(getLock().getInventory().getStackInSlot(i));
+        }
+
+        if (combination.matches(keys.stream().map(itemStack -> itemStack.getItem()).collect(Collectors.toList()))) {
+            this.startUnlocking();
+            dropItemsAtDoor(keys);
         }
     }
 
@@ -160,24 +234,24 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         if (!trySaveLootTable(tag))
-            tag.put(INVENTORY_NBT_KEY, inventory.serializeNBT());
-        tag.put(LOCK_NBT_KEY, lock.serializeNBT());
+            tag.put(INVENTORY_TAG, inventory.serializeNBT());
+        tag.put(LOCK_TAG, lock.serializeNBT());
         if (owner.getType() != Owner.Type.NONE)
-            tag.put(OWNER_NBT_KEY, owner.serializeNBT());
+            tag.put(OWNER_TAG, owner.serializeNBT());
         if (this.customName != null)
-            tag.putString(CUSTOM_NAME_NBT_KEY, Component.Serializer.toJson(this.customName));
+            tag.putString(CUSTOM_NAME_TAG, Component.Serializer.toJson(this.customName));
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
         if (!tryLoadLootTable(tag))
-            inventory.deserializeNBT(tag.getCompound(INVENTORY_NBT_KEY));
-        lock.deserializeNBT(tag.getCompound(LOCK_NBT_KEY));
-        if (tag.contains(OWNER_NBT_KEY, CompoundTag.TAG_COMPOUND))
-            owner.deserializeNBT(tag.getCompound(OWNER_NBT_KEY));
-        if (tag.contains(CUSTOM_NAME_NBT_KEY, CompoundTag.TAG_STRING))
-            this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_NBT_KEY));
+            inventory.deserializeNBT(tag.getCompound(INVENTORY_TAG));
+        lock.deserializeNBT(tag.getCompound(LOCK_TAG));
+        if (tag.contains(OWNER_TAG, CompoundTag.TAG_COMPOUND))
+            owner.deserializeNBT(tag.getCompound(OWNER_TAG));
+        if (tag.contains(CUSTOM_NAME_TAG, CompoundTag.TAG_STRING))
+            this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_TAG));
         updateFullness();
         doorOpennessController.setLocked(lock.isLocked());
     }
@@ -218,11 +292,11 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
             }
 
             this.lootTable = null;
-            LootContext.Builder lootContextBuilder = (new LootContext.Builder((ServerLevel)this.level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition)).withOptionalRandomSeed(this.lootTableSeed);
-            if (player != null) {
+            LootContext.Builder lootContextBuilder = (new LootContext.Builder((ServerLevel)this.level))
+                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
+                    .withOptionalRandomSeed(this.lootTableSeed);
+            if (player != null)
                 lootContextBuilder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
-            }
-
 
             List<ItemStack> randomItems = loottable.getRandomItems(lootContextBuilder.create(LootContextParamSets.CHEST));
             if (randomItems.size() > 0) {
@@ -262,31 +336,27 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     }
 
     // GUI
-
     public void openUnlockingGui(ServerPlayer player) {
         if (lock.isLocked()) {
-
-            if (lock.getCombination().isEmpty()) {
-                lock.setCombination(Items.AIR, Items.AIR, Items.IRON_NUGGET);
+            if (getLock().getCombination().isEmpty())
+                startUnlocking(); // Open straight up when no combination is set:
+            else {
+                NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
+                    buffer.writeBlockPos(worldPosition);
+                    lock.getCombination().toBuffer(buffer);
+                });
             }
-
-            NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
-                buffer.writeBlockPos(worldPosition);
-                lock.getCombination().toBuffer(buffer);
-            });
         }
     }
-
     public void open(ServerPlayer player) {
         NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, worldPosition);
     }
 
 
-
     // Inventory
 
     public IItemHandler getUnlockingInventoryHandler() {
-        return lock.getInventoryHandler();
+        return lock.getInventory();
     }
 
     public float getFullness() {
@@ -354,7 +424,22 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         if (blockEntity instanceof MonobankBlockEntity monobankEntity) {
             if (!monobankEntity.getLock().isLocked())
                 monobankEntity.unpackLootTable(null);
-            monobankEntity.lock.tick();
+
+            if (monobankEntity.unlockingCountdown > 0) {
+                // Calculating frequency of clicks (closer to unlocking -> more time between clicks):
+                int max = (int)Math.ceil(Math.log(monobankEntity.unlockingCountdownMax)) + 1;
+                int current = (int)Math.ceil(Math.log(monobankEntity.unlockingCountdown));
+                int freq = max - current;
+                if (monobankEntity.unlockingCountdown % freq == 0)
+                    monobankEntity.playSoundAtDoor(monobankEntity.getLevel(), monobankEntity.getBlockPos(),
+                            monobankEntity.getBlockState(), Registry.Sounds.MONOBANK_CLICK.get(), 0.5f);
+
+                monobankEntity.unlockingCountdown--;
+            }
+            else if (monobankEntity.isUnlocking() && monobankEntity.unlockingCountdown <= 0)
+                monobankEntity.getLock().setLocked(false);
+
+//            monobankEntity.lock.tick();
         }
     }
 

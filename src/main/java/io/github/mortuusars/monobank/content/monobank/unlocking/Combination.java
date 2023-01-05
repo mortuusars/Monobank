@@ -1,53 +1,51 @@
 package io.github.mortuusars.monobank.content.monobank.unlocking;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
+import com.google.common.base.Preconditions;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Defines item combination which is needed to unlock the Monobank.
+ */
 public class Combination {
-    private static String FIRST_TAG_ID = "First";
-    private static String SECOND_TAG_ID = "Second";
-    private static String THIRD_TAG_ID = "Third";
+    public static final int SIZE = 3;
+    private final List<Item> combination;
 
-    private final ArrayList<ItemStack> combination;
-
-    public Combination(ArrayList<ItemStack> combination) {
-        this.combination = combination;
-    }
-    public Combination(ItemStack first, ItemStack second, ItemStack third) {
-        this(new ArrayList(List.of(first, second, third)));
-    }
-    public Combination(Item first, Item second, Item third) {
-        this(new ItemStack(first), new ItemStack(second), new ItemStack(third));
+    public Combination(List<Item> combination) {
+        Preconditions.checkArgument(combination.size() == SIZE,
+                "Combination should have " + SIZE + " items. Provided " + combination.size() + ".");
+        this.combination = new ArrayList<>(combination);
     }
 
     public static Combination empty() {
-        return new Combination(ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY);
+        return new Combination(List.of(Items.AIR, Items.AIR, Items.AIR));
     }
 
-    public ItemStack getFirst() { return combination.get(0); }
-    public ItemStack getSecond() { return combination.get(1); }
-    public ItemStack getThird() { return combination.get(2); }
-
     public boolean isEmpty() {
-        return getFirst().isEmpty() && getSecond().isEmpty() && getThird().isEmpty();
+        return combination.stream().allMatch(item -> item == Items.AIR);
+    }
+
+    public Item getItemInSlot(int slot) {
+        Preconditions.checkState(slot >= 0 && slot < Combination.SIZE, "Slot is out of bounds.");
+        return combination.get(slot);
     }
 
     /**
      * Checks if the provided sequence are matching the combination in correct order.
      */
-    public boolean matches(List<ItemStack> sequence) {
-        if (sequence.size() < 3)
+    public boolean matches(List<Item> sequence) {
+        if (sequence.size() < SIZE)
             return false;
 
         for (int i = 0; i < combination.size(); i++) {
@@ -61,17 +59,17 @@ public class Combination {
     /**
      * Checks if the key matches specified combination slot.
      */
-    public boolean matches(int slot, ItemStack key) {
+    public boolean matches(int slot, Item key) {
         if (slot < 0 || slot >= combination.size())
             return false;
 
-        return combination.get(slot).getItem().getRegistryName().equals(key.getItem().getRegistryName());
+        return combination.get(slot).getRegistryName().equals(key.getRegistryName());
     }
 
     /**
      * Finds combination slot matching the key or -1 if none found.
      */
-    public int findMatchingSlot(ItemStack key) {
+    public int findMatchingSlot(Item key) {
         for (int i = 0; i < combination.size(); i++) {
             if (matches(i, key))
                 return i;
@@ -79,43 +77,54 @@ public class Combination {
         return -1;
     }
 
-    public CompoundTag serializeNBT() {
-        CompoundTag compoundTag = new CompoundTag();
-        compoundTag.putString(FIRST_TAG_ID, getFirst().getItem().getRegistryName().toString());
-        compoundTag.putString(SECOND_TAG_ID, getSecond().getItem().getRegistryName().toString());
-        compoundTag.putString(THIRD_TAG_ID, getThird().getItem().getRegistryName().toString());
-        return compoundTag;
+    public ListTag serializeNBT() {
+        ListTag list = new ListTag();
+        for (int i = 0; i < combination.size(); i++) {
+            StringTag stringTag = StringTag.valueOf(combination.get(i).getRegistryName().toString());
+            list.add(stringTag);
+        }
+        return list;
     }
 
-    public void deserializeNBT(CompoundTag tag) {
-        if (tag.contains(FIRST_TAG_ID)) {
-            @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString(FIRST_TAG_ID)));
-            combination.set(0, item != null ? new ItemStack(item) : ItemStack.EMPTY);
+    public void deserializeNBT(ListTag listTag) {
+        int listTagSize = listTag.size();
+        for (int i = 0; i < listTagSize; i++) {
+            String itemRegistryName = listTag.getString(i);
+            @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemRegistryName));
+            combination.set(i, item != null ? item : Items.AIR);
         }
-        if (tag.contains(SECOND_TAG_ID)) {
-            @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString(SECOND_TAG_ID)));
-            combination.set(1, item != null ? new ItemStack(item) : ItemStack.EMPTY);
-        }
-        if (tag.contains(THIRD_TAG_ID)) {
-            @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(tag.getString(THIRD_TAG_ID)));
-            combination.set(2, item != null ? new ItemStack(item) : ItemStack.EMPTY);
+
+        if (listTagSize < SIZE) {
+            // Add blanks to the end:
+            for (int i = listTagSize; i < SIZE - listTagSize; i++) {
+                combination.set(i, Items.AIR);
+            }
         }
     }
 
     public void toBuffer(FriendlyByteBuf buffer) {
-        buffer.writeItem(getFirst());
-        buffer.writeItem(getSecond());
-        buffer.writeItem(getThird());
+        buffer.writeInt(combination.size());
+        for (int i = 0; i < combination.size(); i++)
+            buffer.writeUtf(combination.get(i).getRegistryName().toString());
     }
 
     public static Combination fromBuffer(FriendlyByteBuf buffer) {
-        return new Combination(buffer.readItem(), buffer.readItem(), buffer.readItem());
+        int size = buffer.readInt();
+        List<Item> combination = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            combination.add(fromRegistryName(buffer.readUtf()));
+        }
+        return new Combination(combination);
     }
 
     @Override
     public String toString() {
-        return "{First:'" + getFirst().getItem().getRegistryName() +
-                "',Second:'" + getSecond().getItem().getRegistryName() +
-                "',Third:'" + getThird().getItem().getRegistryName() + "'}";
+        return "Combination:[" + String.join(",", combination.stream().map(item ->
+                item.toString()).collect(Collectors.toList())) + "]";
+    }
+
+    private static Item fromRegistryName(String itemRegistryName) {
+        @Nullable Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemRegistryName));
+        return item != null ? item : Items.AIR;
     }
 }

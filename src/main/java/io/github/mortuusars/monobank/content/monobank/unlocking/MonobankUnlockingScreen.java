@@ -49,7 +49,7 @@ public class MonobankUnlockingScreen extends PatchedAbstractContainerScreen<Mono
             int color = 0x9F8B8B8B; // gray
             if (unlockingSlot.hasItem()) {
                 int index = menu.slots.indexOf(unlockingSlot);
-                if (!menu.unlockingData.matches(index, unlockingSlot.getItem()))
+                if (!menu.combination.matches(index, unlockingSlot.getItem().getItem()))
                     color = 0x9Fad422f; // red
             }
 

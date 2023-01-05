@@ -1,17 +1,15 @@
 package io.github.mortuusars.monobank.content.monobank.component;
 
-import com.mojang.logging.LogUtils;
-import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
+import com.mojang.datafixers.util.Either;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -21,119 +19,67 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Manages Monobank locking and unlocking.
  */
 public class Lock {
-    private static final String LOCKED_NBT_KEY = "Locked";
-    private static final String COMBINATION_TABLE_NBT_KEY = "CombinationTable";
-    private static final String COMBINATION_NBT_KEY = "Combination";
-    private static final String INVENTORY_NBT_KEY = "LockInventory";
-
-    public static final int SIZE = 3;
+    private static final String LOCKED_TAG = "Locked";
+    private static final String COMBINATION_TABLE_TAG = "CombinationTable";
+    private static final String COMBINATION_TAG = "Combination";
+    private static final String INVENTORY_TAG = "Inventory";
 
     // Serialized fields:
-    private @Nullable ResourceLocation combinationTable;
-    private Combination combination;
+    private Either<ResourceLocation, Combination> combination;
     private final ItemStackHandler inventory;
     private boolean locked = false;
 
-    private boolean isUnlocking = false;
-    private int unlockingCountdown = 0;
-    private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
-
-    private MonobankBlockEntity monobankEntity;
+    private BlockPos pos;
     private Runnable onLockedChanged;
+    private Consumer<Integer> onLockInventoryChanged;
+    private Supplier<Level> levelSupplier;
 
-    public Lock(MonobankBlockEntity monobankEntity, Runnable onLockedChanged) {
-        this.monobankEntity = monobankEntity;
-        this.onLockedChanged = onLockedChanged;
-        this.combination = Combination.empty();
+    /**
+     * @param pos Position of a block entity.
+     * @param onLockChanged Code to run when lock is locked or unlocked.
+     * @param onLockInventoryChanged Code to run when lock inventory changes. Changed slot will be provided.
+     */
+    public Lock(BlockPos pos, Runnable onLockChanged, Consumer<Integer> onLockInventoryChanged, Supplier<Level> levelSupplier) {
+        this.pos = pos;
+        this.onLockedChanged = onLockChanged;
+        this.onLockInventoryChanged = onLockInventoryChanged;
+        this.levelSupplier = levelSupplier;
+        this.combination = Either.right(Combination.empty());
         this.inventory = createLockItemHandler();
     }
 
-    public IItemHandler getInventoryHandler() {
+    public IItemHandler getInventory() {
         return inventory;
     }
 
     public void setCombination(Item first, Item second, Item third) {
-        this.combination = new Combination(first, second, third);
+        this.combination = Either.right(new Combination(List.of(first, second, third)));
     }
 
     public Combination getCombination() {
-        return combination;
+        if (combination.left().isPresent() && tryUnpackCombinationTable())
+            levelSupplier.get().getBlockEntity(pos).setChanged(); // Save block entity
+        return combination.right().orElse(Combination.empty());
     }
 
     public boolean isLocked() {
         return locked;
     }
 
-    public boolean isUnlocking() {
-        return isUnlocking;
-    }
-
-    /**
-     * Starts the countdown after which Monobank will unlock.
-     */
-    public void startUnlocking() {
-        startUnlocking(monobankEntity.getLevel().getRandom().nextInt(20, 61));
-    }
-
-    /**
-     * Starts the countdown for specified amount of ticks after which Monobank will unlock.
-     */
-    public void startUnlocking(int ticks) {
-        if (!isUnlocking()) {
-            isUnlocking = true;
-            unlockingCountdown = ticks;
-            unlockingCountdownMax = ticks;
-        }
-    }
-
     public void setLocked(boolean locked) {
         this.locked = locked;
-        isUnlocking = false;
-        unlockingCountdown = 0;
         onLockedChanged.run();
-    }
-
-    public void tick() {
-        if (unlockingCountdown > 0) {
-            // Calculating frequency of clicks (closer to unlocking -> more time between clicks):
-            int max = (int)Math.ceil(Math.log(unlockingCountdownMax)) + 1;
-            int current = (int)Math.ceil(Math.log(unlockingCountdown));
-            int freq = max - current;
-            if (unlockingCountdown % freq == 0)
-                monobankEntity.playSoundAtDoor(monobankEntity.getLevel(), monobankEntity.getBlockPos(),
-                        monobankEntity.getBlockState(), Registry.Sounds.MONOBANK_CLICK.get(), 0.5f);
-
-            unlockingCountdown--;
-        }
-        else if (isUnlocking() && unlockingCountdown <= 0)
-            setLocked(false);
-    }
-
-
-    private void onInventoryChanged(int slot) {
-        monobankEntity.inventoryChanged();
-
-        if (combination.matches(slot, inventory.getStackInSlot(slot)))
-            monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
-
-        List<ItemStack> keys = new ArrayList<>();
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            keys.add(inventory.getStackInSlot(i));
-        }
-
-        if (combination.matches(keys)) {
-            this.startUnlocking();
-            monobankEntity.dropItemsAtDoor(keys);
-        }
     }
 
 
@@ -141,15 +87,12 @@ public class Lock {
 
     public CompoundTag serializeNBT() {
         CompoundTag tag = new CompoundTag();
-        tag.putBoolean(LOCKED_NBT_KEY, locked);
-
-        if (combinationTable != null)
-            tag.putString(COMBINATION_TABLE_NBT_KEY, combinationTable.toString());
-        else if (!combination.isEmpty())
-            tag.put(COMBINATION_NBT_KEY, combination.serializeNBT());
-
+        tag.putBoolean(LOCKED_TAG, locked);
+        combination
+                .ifLeft(lootTable -> tag.putString(COMBINATION_TABLE_TAG, lootTable.toString()))
+                .ifRight(combination -> tag.put(COMBINATION_TAG, combination.serializeNBT()));
         if (hasItemsInInventory())
-            tag.put(INVENTORY_NBT_KEY, inventory.serializeNBT());
+            tag.put(INVENTORY_TAG, inventory.serializeNBT());
         return tag;
     }
 
@@ -157,43 +100,49 @@ public class Lock {
         if (tag.isEmpty())
             return;
 
-        locked = tag.getBoolean(LOCKED_NBT_KEY);
+        this.locked = tag.getBoolean(LOCKED_TAG);
 
-        if (tag.contains(COMBINATION_TABLE_NBT_KEY, CompoundTag.TAG_STRING)) {
-            combinationTable = new ResourceLocation(tag.getString(COMBINATION_TABLE_NBT_KEY));
-            unpackCombinationTable();
+        if (tag.contains(COMBINATION_TABLE_TAG, CompoundTag.TAG_STRING))
+            this.combination = Either.left(new ResourceLocation(tag.getString(COMBINATION_TABLE_TAG)));
+        else if (tag.contains(COMBINATION_TAG, CompoundTag.TAG_LIST)) {
+            Combination combination = this.combination.right().orElse(Combination.empty());
+            combination.deserializeNBT(tag.getList(COMBINATION_TAG, CompoundTag.TAG_STRING));
+            this.combination = Either.right(combination);
         }
-        else if (tag.contains(COMBINATION_NBT_KEY, CompoundTag.TAG_COMPOUND))
-            combination.deserializeNBT(tag.getCompound(COMBINATION_NBT_KEY));
 
-        if (tag.contains(INVENTORY_NBT_KEY))
-            inventory.deserializeNBT(tag.getCompound(INVENTORY_NBT_KEY));
+        if (tag.contains(INVENTORY_TAG, CompoundTag.TAG_COMPOUND))
+            this.inventory.deserializeNBT(tag.getCompound(INVENTORY_TAG));
     }
 
-    private void unpackCombinationTable() {
-        Level level = monobankEntity.getLevel();
-        if (this.combinationTable != null && level.getServer() != null) {
-            LootTable loottable = level.getServer().getLootTables().get(this.combinationTable);
-            this.combinationTable = null;
-            LootContext.Builder lootContextBuilder = (new LootContext.Builder((ServerLevel)level))
-                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(monobankEntity.getBlockPos()));
+    private boolean tryUnpackCombinationTable() {
+        Level level = levelSupplier.get();
 
-            List<ItemStack> randomItems = loottable.getRandomItems(lootContextBuilder.create(LootContextParamSets.CHEST));
+        Optional<ResourceLocation> combinationTable = combination.left();
+        if (!combinationTable.isPresent())
+            return false;
 
-            ArrayList<ItemStack> newCombination = new ArrayList<>();
+        ResourceLocation lootTable = combinationTable.get();
 
-            for (int i = 0; i < 3; i++) {
-                if (randomItems.size() < i)
-                    newCombination.add(ItemStack.EMPTY);
-                else
-                    newCombination.add(randomItems.get(i));
-            }
+        if (level.getServer() == null)
+            return false;
 
-            Collections.shuffle(newCombination);
+        LootTable loottable = level.getServer().getLootTables().get(lootTable);
+        LootContext lootContext = new LootContext.Builder((ServerLevel)level)
+                .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.pos))
+                .create(LootContextParamSets.CHEST);
 
-            this.combination = new Combination(newCombination);
-            monobankEntity.setChanged();
+        List<ItemStack> randomItems = loottable.getRandomItems(lootContext);
+        ArrayList<Item> newCombination = new ArrayList<>();
+        for (int i = 0; i < Combination.SIZE; i++) {
+            if (randomItems.size() < i)
+                newCombination.add(Items.AIR);
+            else
+                newCombination.add(randomItems.get(i).getItem());
         }
+        Collections.shuffle(newCombination);
+        this.combination = Either.right(new Combination(newCombination));
+        levelSupplier.get().getBlockEntity(pos).setChanged(); // Save block entity
+        return true;
     }
 
 
@@ -208,10 +157,10 @@ public class Lock {
     }
 
     private ItemStackHandler createLockItemHandler() {
-        return new ItemStackHandler(NonNullList.withSize(SIZE, ItemStack.EMPTY)) {
+        return new ItemStackHandler(NonNullList.withSize(Combination.SIZE, ItemStack.EMPTY)) {
             @Override
             protected void onContentsChanged(int slot) {
-                onInventoryChanged(slot);
+                onLockInventoryChanged.accept(slot);
             }
         };
     }

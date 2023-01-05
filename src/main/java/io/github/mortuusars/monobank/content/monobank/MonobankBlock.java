@@ -4,12 +4,9 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.component.Owner;
-import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
-import io.github.mortuusars.monobank.core.OwnershipType;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -18,7 +15,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -76,17 +75,17 @@ public class MonobankBlock extends Block implements EntityBlock {
     }
 
     @Override
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {        MonobankBlockEntity.appendHoverText(stack, level, tooltip, flag);
+
+    }
+
+    @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @javax.annotation.Nullable LivingEntity placer, ItemStack stack) {
         if (!(level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankBlockEntity))
             return;
 
         if (stack.hasCustomHoverName())
             monobankBlockEntity.setCustomName(stack.getHoverName());
-
-//        if (Monobank.IN_DEBUG && placer.getItemInHand(InteractionHand.OFF_HAND).is(Items.EMERALD)) {
-////            monobankBlockEntity.setOwnershipType(OwnershipType.VILLAGE);
-//            return;
-//        }
 
         monobankBlockEntity.onSetPlacedBy(placer, stack);
     }
@@ -179,10 +178,10 @@ public class MonobankBlock extends Block implements EntityBlock {
                 return InteractionResult.CONSUME;
             }
 
-            if (monobankEntity.getLock().isUnlocking())
+            if (monobankEntity.isUnlocking())
                 player.displayClientMessage(TextUtil.translate("interaction.message.unlocking"), true);
             else
-                monobankEntity.getLock().startUnlocking();
+                monobankEntity.startUnlocking();
 
             return InteractionResult.CONSUME;
         }
