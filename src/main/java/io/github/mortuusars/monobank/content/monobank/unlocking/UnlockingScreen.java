@@ -12,11 +12,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
-public class MonobankUnlockingScreen extends PatchedAbstractContainerScreen<MonobankUnlockingMenu> {
+public class UnlockingScreen extends PatchedAbstractContainerScreen<UnlockingMenu> {
 
     private static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_unlocking.png");
 
-    public MonobankUnlockingScreen(MonobankUnlockingMenu menu, Inventory playerInventory, Component title) {
+    public UnlockingScreen(UnlockingMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
     }
 
@@ -34,7 +34,7 @@ public class MonobankUnlockingScreen extends PatchedAbstractContainerScreen<Mono
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, TEXTURE);
-        this.blit(poseStack, getGuiLeft() + 25, getGuiTop() + 28, 176, 0, 72, 30);
+        this.blit(poseStack, getGuiLeft() + 73, getGuiTop() + 28, 176, 0, 72, 30);
 
         this.renderTooltip(poseStack, mouseX, mouseY);
     }

@@ -7,7 +7,7 @@ import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessCont
 import io.github.mortuusars.monobank.content.monobank.component.Lock;
 import io.github.mortuusars.monobank.content.monobank.component.Owner;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
-import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
+import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.util.TextUtil;
@@ -115,7 +115,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         @Nullable
         @Override
         public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-            return new MonobankUnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
+            return new UnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
                     MonobankBlockEntity.this.lock.getCombination());
         }
     };

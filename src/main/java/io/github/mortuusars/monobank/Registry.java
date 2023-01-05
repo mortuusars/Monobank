@@ -1,10 +1,12 @@
 package io.github.mortuusars.monobank;
 
 import io.github.mortuusars.monobank.content.advancement.MonobankItemsCountTrigger;
+import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
-import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
+import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
+import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.inventory.MenuType;
@@ -36,6 +38,11 @@ public class Registry {
                         .stacksTo(1)
                         .fireResistant()
                         .tab(CreativeModeTab.TAB_DECORATIONS)));
+
+        public static final RegistryObject<Item> REPLACEMENT_LOCK = ITEMS.register("replacement_lock",
+                () -> new ReplacementLockItem(new Item.Properties()
+                        .stacksTo(16)
+                        .tab(CreativeModeTab.TAB_REDSTONE)));
     }
 
     public static class BlockEntityTypes {
@@ -52,8 +59,11 @@ public class Registry {
         public static final RegistryObject<MenuType<MonobankMenu>> MONOBANK = MENU_TYPES
                 .register("monobank", () -> IForgeMenuType.create(MonobankMenu::fromBuffer));
 
-        public static final RegistryObject<MenuType<MonobankUnlockingMenu>> MONOBANK_UNLOCKING = MENU_TYPES
-                .register("monobank_unlocking", () -> IForgeMenuType.create(MonobankUnlockingMenu::fromBuffer));
+        public static final RegistryObject<MenuType<UnlockingMenu>> MONOBANK_UNLOCKING = MENU_TYPES
+                .register("unlocking", () -> IForgeMenuType.create(UnlockingMenu::fromBuffer));
+
+        public static final RegistryObject<MenuType<LockReplacementMenu>> MONOBANK_LOCK_REPLACEMENT = MENU_TYPES
+                .register("lock_replacement", () -> IForgeMenuType.create(LockReplacementMenu::fromBuffer));
     }
 
     public static class Sounds {

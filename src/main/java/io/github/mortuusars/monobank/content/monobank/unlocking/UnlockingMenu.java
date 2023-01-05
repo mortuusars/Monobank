@@ -4,7 +4,6 @@ import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.UnlockingSlot;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -17,15 +16,15 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.Objects;
 
-public class MonobankUnlockingMenu extends AbstractContainerMenu {
+public class UnlockingMenu extends AbstractContainerMenu {
 
     public final MonobankBlockEntity monobankEntity;
     public final Combination combination;
     private final ContainerLevelAccess canInteractWithCallable;
     protected final Level level;
 
-    public MonobankUnlockingMenu(final int containerID, final Inventory playerInventory,
-                                 final MonobankBlockEntity monobankEntity, final Combination combination) {
+    public UnlockingMenu(final int containerID, final Inventory playerInventory,
+                         final MonobankBlockEntity monobankEntity, final Combination combination) {
         super(Registry.MenuTypes.MONOBANK_UNLOCKING.get(), containerID);
         this.monobankEntity = monobankEntity;
         this.combination = combination;
@@ -33,9 +32,9 @@ public class MonobankUnlockingMenu extends AbstractContainerMenu {
         this.canInteractWithCallable = ContainerLevelAccess.create(monobankEntity.getLevel(), monobankEntity.getBlockPos());
 
         IItemHandler unlockingInventoryHandler = monobankEntity.getUnlockingInventoryHandler();
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 0, 32, 35, new ItemStack(combination.getItemInSlot(0))));
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 1, 53, 35, new ItemStack(combination.getItemInSlot(1))));
-        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 2, 74, 35, new ItemStack(combination.getItemInSlot(2))));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 0, 80, 35, new ItemStack(combination.getItemInSlot(0))));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 1, 101, 35, new ItemStack(combination.getItemInSlot(1))));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 2, 122, 35, new ItemStack(combination.getItemInSlot(2))));
 
         // Player hotbar slots
         for(int column = 0; column < 9; ++column) {
@@ -54,8 +53,8 @@ public class MonobankUnlockingMenu extends AbstractContainerMenu {
             monobankEntity.startUnlocking();
     }
 
-    public static MonobankUnlockingMenu fromBuffer(int containerID, Inventory playerInventory, FriendlyByteBuf buffer) {
-        return new MonobankUnlockingMenu(containerID, playerInventory,
+    public static UnlockingMenu fromBuffer(int containerID, Inventory playerInventory, FriendlyByteBuf buffer) {
+        return new UnlockingMenu(containerID, playerInventory,
                 getBlockEntity(playerInventory, buffer), Combination.fromBuffer(buffer));
     }
 
