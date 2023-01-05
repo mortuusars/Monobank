@@ -10,11 +10,14 @@ import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockin
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.util.TextUtil;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -27,12 +30,18 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -108,6 +117,12 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
 
     private float fullness = -1;
 
+    public static final String LOOT_TABLE_TAG = "LootTable";
+    public static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
+    @Nullable
+    protected ResourceLocation lootTable;
+    protected long lootTableSeed;
+
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
         this.inventory = new MonobankItemStackHandler(slot -> inventoryChanged(), 1);
@@ -144,7 +159,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        tag.put(INVENTORY_NBT_KEY, inventory.serializeNBT());
+        if (!trySaveLootTable(tag))
+            tag.put(INVENTORY_NBT_KEY, inventory.serializeNBT());
         tag.put(LOCK_NBT_KEY, lock.serializeNBT());
         if (owner.getType() != Owner.Type.NONE)
             tag.put(OWNER_NBT_KEY, owner.serializeNBT());
@@ -155,7 +171,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        inventory.deserializeNBT(tag.getCompound(INVENTORY_NBT_KEY));
+        if (!tryLoadLootTable(tag))
+            inventory.deserializeNBT(tag.getCompound(INVENTORY_NBT_KEY));
         lock.deserializeNBT(tag.getCompound(LOCK_NBT_KEY));
         if (tag.contains(OWNER_NBT_KEY, CompoundTag.TAG_COMPOUND))
             owner.deserializeNBT(tag.getCompound(OWNER_NBT_KEY));
@@ -165,6 +182,54 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         doorOpennessController.setLocked(lock.isLocked());
     }
 
+    protected boolean tryLoadLootTable(CompoundTag tag) {
+        if (tag.contains("LootTable", 8)) {
+            this.lootTable = new ResourceLocation(tag.getString("LootTable"));
+            this.lootTableSeed = tag.getLong("LootTableSeed");
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected boolean trySaveLootTable(CompoundTag tag) {
+        if (this.lootTable == null) {
+            return false;
+        } else {
+            tag.putString("LootTable", this.lootTable.toString());
+            if (this.lootTableSeed != 0L) {
+                tag.putLong("LootTableSeed", this.lootTableSeed);
+            }
+
+            return true;
+        }
+    }
+
+    public void unpackLootTable(@Nullable Player player) {
+        if (this.lootTable != null && this.level.getServer() != null) {
+            if (!this.inventory.getStackInSlot(0).isEmpty()) {
+                LogUtils.getLogger().warn("Tried to unpack Loot Table while Monobank is not empty. Loot Table will not be unpacked.");
+                return;
+            }
+
+            LootTable loottable = this.level.getServer().getLootTables().get(this.lootTable);
+            if (player instanceof ServerPlayer) {
+                CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, this.lootTable);
+            }
+
+            this.lootTable = null;
+            LootContext.Builder lootContextBuilder = (new LootContext.Builder((ServerLevel)this.level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition)).withOptionalRandomSeed(this.lootTableSeed);
+            if (player != null) {
+                lootContextBuilder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
+            }
+
+
+            List<ItemStack> randomItems = loottable.getRandomItems(lootContextBuilder.create(LootContextParamSets.CHEST));
+            if (randomItems.size() > 0) {
+                this.inventory.setStackInSlot(0, randomItems.get(0));
+            }
+        }
+    }
 
     // Ownership:
 
@@ -182,14 +247,13 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     }
 
     public void onSetPlacedBy(LivingEntity placer, ItemStack stack) {
-        if (stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
+        if (stack.getOrCreateTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
             CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
             if (blockEntityTag.contains("Owner")){
-                CompoundTag owner = blockEntityTag.getCompound("Owner");
-                String typeString = owner.getString("Type");
-                Owner.Type type = Owner.Type.byName(typeString);
-                if (type != Owner.Type.NONE)
-                    return; // Only set owner to place if
+                Owner owner = Owner.none();
+                owner.deserializeNBT(blockEntityTag.getCompound("Owner"));
+                if (owner.getType() != Owner.Type.NONE)
+                    return;
             }
         }
 
@@ -197,40 +261,15 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
             setOwner(player);
     }
 
-//    public boolean hasOwner() {
-//        return isPlayerOwned() || getOwner().right().orElse(OwnershipType.NONE) != OwnershipType.PUBLIC;
-//    }
-//
-//    public boolean isOwnedBy(Player player) {
-//        return getOwner().left().orElse(Util.NIL_UUID).equals(player.getUUID());
-//    }
-//
-//    public boolean isPlayerOwned() {
-//        return getOwner().left().isPresent();
-//    }
-//
-//    public void setOwner(Player player) {
-//        if (!hasOwner()) {
-//            this.owner = Either.left(player.getUUID());
-//            setChanged();
-//            // This is called on both sides - so updating is probably not needed.
-//            // level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
-//        }
-//        else
-//            throw new IllegalStateException("Cannot set owner. This Monobank already has an owner.");
-//    }
-//
-//    public void setOwnershipType(OwnershipType type) {
-//        if (isPlayerOwned())
-//            LogUtils.getLogger().warn("Changing ownership of a player-owned Monobank.");
-//
-//        owner = Either.right(type);
-//    }
-
     // GUI
 
     public void openUnlockingGui(ServerPlayer player) {
         if (lock.isLocked()) {
+
+            if (lock.getCombination().isEmpty()) {
+                lock.setCombination(Items.AIR, Items.AIR, Items.IRON_NUGGET);
+            }
+
             NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
                 buffer.writeBlockPos(worldPosition);
                 lock.getCombination().toBuffer(buffer);
@@ -265,6 +304,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        unpackLootTable(null);
         return !this.remove && !lock.isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ?
                 this.inventoryHandler.cast() :
                 super.getCapability(cap, side);
@@ -312,6 +352,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
         if (blockEntity instanceof MonobankBlockEntity monobankEntity) {
+            if (!monobankEntity.getLock().isLocked())
+                monobankEntity.unpackLootTable(null);
             monobankEntity.lock.tick();
         }
     }

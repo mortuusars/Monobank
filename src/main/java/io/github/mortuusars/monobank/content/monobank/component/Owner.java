@@ -74,7 +74,7 @@ public class Owner {
 
     public void deserializeNBT(CompoundTag tag) {
         if (tag.contains(TYPE_NBT_KEY)) {
-            Type.byName(tag.getString(TYPE_NBT_KEY));
+            type = Type.byName(tag.getString(TYPE_NBT_KEY));
             if (tag.contains(UUID_NBT_KEY))
                 uuid = tag.getUUID(UUID_NBT_KEY);
         }
