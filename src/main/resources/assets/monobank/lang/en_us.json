@@ -4,8 +4,16 @@
   "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL: Take single item",
   "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT: Take all items",
 
+  "monobank.interaction.message.locking.monobank_is_locked": "Locked. Try unlocking with SHIFT+Click.",
+  "monobank.interaction.message.locking.cannot_lock_public_bank": "Public Monobank cannot be locked.",
+  "monobank.interaction.message.unlocking": "Monobank is unlocking...",
+
   "monobank.advancement.monobank.title" : "A Safe Bet",
-  "monobank.advancement.monobank.description" : "Acquire a Monobank",
+  "monobank.advancement.monobank.description" : "Get a Monobank to safely store your wealth",
   "monobank.advancement.monobank_full.title" : "Rolling In Wealth",
-  "monobank.advancement.monobank_full.description" : "Fill a Monobank to the maximum"
+  "monobank.advancement.monobank_full.description" : "Fill a Monobank to the maximum",
+
+  "monobank.subtitles.monobank.lock" : "Monobank locks",
+  "monobank.subtitles.monobank.unlock" : "Monobank unlocks",
+  "monobank.subtitles.monobank.click" : "Monobank lock clicking"
 }

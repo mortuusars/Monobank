@@ -13,23 +13,16 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 
 public class MonobankItemStackHandler implements IItemHandler, IItemHandlerModifiable, INBTSerializable<CompoundTag> {
 
     private NonNullList<ItemStack> stacks;
     private NonNullList<Integer> counts;
-    private @Nullable IInventoryChangeListener changeListener;
+    private @Nullable Consumer<Integer> onInventoryChanged;
 
-    public MonobankItemStackHandler() {
-        this(null, 1);
-    }
-
-    public MonobankItemStackHandler(IInventoryChangeListener changeListener) {
-        this(changeListener, 1);
-    }
-
-    public MonobankItemStackHandler(@Nullable IInventoryChangeListener changeListener, int size) {
-        this.changeListener = changeListener;
+    public MonobankItemStackHandler(@Nullable Consumer<Integer> onInventoryChanged, int size) {
+        this.onInventoryChanged = onInventoryChanged;
         stacks = NonNullList.withSize(size, ItemStack.EMPTY);
         counts = NonNullList.withSize(size, 0);
     }
@@ -143,7 +136,6 @@ public class MonobankItemStackHandler implements IItemHandler, IItemHandlerModif
         {
             if (!simulate)
             {
-//                this.counts.set(slot, existing.getCount() - toExtract);
                 this.stacks.set(slot, ItemHandlerHelper.copyStackWithSize(existing, existing.getCount() - toExtract));
                 onContentsChanged(slot);
             }
@@ -218,7 +210,7 @@ public class MonobankItemStackHandler implements IItemHandler, IItemHandlerModif
         counts.set(slot, count);
         stacks.get(slot).setCount(1);
 
-        if (changeListener != null)
-            changeListener.inventoryChanged(slot);
+        if (onInventoryChanged != null)
+            onInventoryChanged.accept(slot);
     }
 }

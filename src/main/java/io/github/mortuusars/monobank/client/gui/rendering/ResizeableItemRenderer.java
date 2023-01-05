@@ -26,7 +26,7 @@ import javax.annotation.Nullable;
 public class ResizeableItemRenderer {
 
 
-    public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, int combinedLight, @Nullable BakedModel bakedModel) {
+    public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, float zOffset, int combinedLight, @Nullable BakedModel bakedModel) {
         if (stack.isEmpty())
             return;
 
@@ -42,7 +42,7 @@ public class ResizeableItemRenderer {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         PoseStack modelViewStack = RenderSystem.getModelViewStack();
         modelViewStack.pushPose();
-        modelViewStack.translate(x, y, 100.0F + itemRenderer.blitOffset);
+        modelViewStack.translate(x, y, zOffset);
         modelViewStack.translate(width / 2.0f, height / 2.0f, 0.0D);
         modelViewStack.scale(1.0F, -1.0F, 1.0F);
         modelViewStack.scale(width, height, width);
@@ -66,11 +66,11 @@ public class ResizeableItemRenderer {
     }
 
     public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height) {
-        renderGuiItem(stack, x, y, width, height, 0xF000F0, null);
+        renderGuiItem(stack, x, y, width, height, 0xF000F0);
     }
 
     public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, int combinedLight) {
-        renderGuiItem(stack, x, y, width, height, combinedLight, null);
+        renderGuiItem(stack, x, y, width, height, Minecraft.getInstance().getItemRenderer().blitOffset + 100F, combinedLight, null);
     }
 
     public static void renderGuiItemDecorations(Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, String countString, boolean fixDurabilityBarOverlapping) {

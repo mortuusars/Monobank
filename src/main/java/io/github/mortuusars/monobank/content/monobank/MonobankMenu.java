@@ -165,7 +165,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     // Called server-side.
     @Override
     public boolean stillValid(Player player) {
-        return !blockEntity.isLocked() && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
+        return !blockEntity.getLock().isLocked() && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
     }
 
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {

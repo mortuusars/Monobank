@@ -36,7 +36,8 @@ public class SyncedBlockEntity extends BlockEntity
         load(pkt.getTag());
     }
 
-    protected void inventoryChanged() {
+    @Override
+    public void setChanged() {
         super.setChanged();
         if (level != null)
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);

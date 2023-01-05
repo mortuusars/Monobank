@@ -1,15 +1,23 @@
 package io.github.mortuusars.monobank.content.monobank;
 
+import com.mojang.authlib.GameProfile;
+import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.content.monobank.component.Owner;
+import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
+import io.github.mortuusars.monobank.core.OwnershipType;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,9 +34,11 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings({"NullableProblems", "deprecation", "unused"})
 public class MonobankBlock extends Block implements EntityBlock {
@@ -73,9 +83,12 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (stack.hasCustomHoverName())
             monobankBlockEntity.setCustomName(stack.getHoverName());
 
-        // Owner from ItemStack is set from BlockEntityTag, in BlockEntity#load
-        if (!monobankBlockEntity.hasOwner() && placer instanceof Player player)
-            monobankBlockEntity.setOwner(player);
+//        if (Monobank.IN_DEBUG && placer.getItemInHand(InteractionHand.OFF_HAND).is(Items.EMERALD)) {
+////            monobankBlockEntity.setOwnershipType(OwnershipType.VILLAGE);
+//            return;
+//        }
+
+        monobankBlockEntity.onSetPlacedBy(placer, stack);
     }
 
     // Used to trigger door openers counter to recheck. Can be used for other purposes too.
@@ -98,6 +111,26 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankBlockEntity))
             return InteractionResult.FAIL;
 
+        // Testing
+        if (Monobank.IN_DEBUG) {
+            if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.MILK_BUCKET)) {
+                monobankBlockEntity.getLock().setCombination(Items.IRON_NUGGET, Items.APPLE, Items.GOLD_NUGGET);
+                monobankBlockEntity.setOwner(new Player(level, pos, 0, new GameProfile(UUID.randomUUID(), "John")) {
+                    @Override
+                    public boolean isSpectator() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isCreative() {
+                        return false;
+                    }
+                });
+
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+        }
+
         /*  ___________________________________________________
            | State:     |     Owner     |        Others        |
            |------------|---------------|----------------------|
@@ -115,13 +148,12 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
 
-        if (monobankEntity.isLocked()) { // Should be unlocked first
+        if (monobankEntity.getLock().isLocked()) { // Should be unlocked first
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.monobank_is_locked"), true);
-            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
+            monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
         }
         else if (player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openGui(serverPlayer, monobankEntity, pos);
-
+            monobankEntity.open(serverPlayer);
         }
 
         return InteractionResult.CONSUME;
@@ -131,49 +163,40 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
 
-        boolean isPublic = !monobankEntity.hasOwner();
-
-        if (isPublic) { // Cannot lock public bank
+        if (monobankEntity.getOwner().getType() == Owner.Type.PUBLIC) { // Cannot lock public bank
             player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_public_bank"), true);
             MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
             return InteractionResult.CONSUME;
         }
 
-        boolean isLocked = monobankEntity.isLocked();
-        boolean isOwner = monobankEntity.isOwnedBy(player);
+        boolean isLocked = monobankEntity.getLock().isLocked();
 
-//        if (isLocked) {
-//            if (player instanceof ServerPlayer serverPlayer)
-//                NetworkHooks.openGui(serverPlayer, monobankEntity, pos);
-//
-//            return InteractionResult.SUCCESS;
-//        }
-
-        if (isOwner) { // Lock/Unlock to the heart's content
+        if (monobankEntity.getOwner().isOwnedBy(player)) { // Lock/Unlock to the heart's content
             boolean shouldBeLocked = !isLocked;
 
             if (shouldBeLocked) {
-                monobankEntity.lock();
+                monobankEntity.getLock().setLocked(true);
                 return InteractionResult.CONSUME;
             }
 
-            if (monobankEntity.isUnlocking())
+            if (monobankEntity.getLock().isUnlocking())
                 player.displayClientMessage(TextUtil.translate("interaction.message.unlocking"), true);
             else
-                monobankEntity.startUnlocking(level.getRandom().nextInt(20, 61));
+                monobankEntity.getLock().startUnlocking();
 
             return InteractionResult.CONSUME;
         }
 
         // Not owner:
 
-        if (isLocked) { // Try to unlock with code (future)
-            // TODO: unlocking screen with item code
-            player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_unlock_not_owner"), true);
+        if (isLocked) { // Try to unlock with code
+            if (player instanceof ServerPlayer serverPlayer)
+                monobankEntity.openUnlockingGui(serverPlayer);
+
             MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
-        else { // Cannot lock another owner's bank:
-            player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_not_owner"), true);
+        else { // Lock
+            monobankEntity.getLock().setLocked(true);
             MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
         }
 

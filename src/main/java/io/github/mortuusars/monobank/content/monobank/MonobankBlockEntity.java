@@ -1,14 +1,15 @@
 package io.github.mortuusars.monobank.content.monobank;
 
+import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
-import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
-import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
-import io.github.mortuusars.monobank.core.inventory.IInventoryChangeListener;
-import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
-import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
+import io.github.mortuusars.monobank.content.monobank.component.Lock;
+import io.github.mortuusars.monobank.content.monobank.component.Owner;
+import io.github.mortuusars.monobank.content.monobank.unlocking.MonobankUnlockingMenu;
+import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
+import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.util.TextUtil;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -18,8 +19,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -34,21 +37,20 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 
 @SuppressWarnings({"NullableProblems", "unused"})
-public class MonobankBlockEntity extends SyncedBlockEntity implements IInventoryChangeListener, MenuProvider, Nameable, LidBlockEntity {
+public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvider, Nameable, LidBlockEntity {
+    private static final String INVENTORY_NBT_KEY = "Inventory";
+    private static final String LOCK_NBT_KEY = "Lock";
+    private static final String OWNER_NBT_KEY = "Owner";
+    private static final String CUSTOM_NAME_NBT_KEY = "CustomName";
 
-    private static final String INVENTORY_KEY = "Inventory";
-    private static final String LOCKED_KEY = "Locked";
-    private static final String OWNER_KEY = "Owner";
-    private static final String CUSTOM_NAME_KEY = "CustomName";
-
-    private static final int UPDATE_DOOR_OPEN_EVENT_ID = 1;
+    private static final int UPDATE_DOOR_EVENT_ID = 1;
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
@@ -61,7 +63,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
 
         protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int eventId, int eventParam) {
             // Send update to client:
-            level.blockEvent(pos, state.getBlock(), UPDATE_DOOR_OPEN_EVENT_ID, eventParam);
+            level.blockEvent(pos, state.getBlock(), UPDATE_DOOR_EVENT_ID, eventParam);
         }
 
         protected boolean isOwnContainer(Player player) {
@@ -69,131 +71,184 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
                     && monobankMenu.getBlockEntity() == MonobankBlockEntity.this;
         }
     };
-
-    private final DoorOpennessController doorOpennessController = new DoorOpennessController(0.5f,
-            0.35f, 0.6f, 0.65f, 0.36f);
-
-    private Component customName;
+    private final DoorOpennessController doorOpennessController;
 
     private final MonobankItemStackHandler inventory;
     private final LazyOptional<IItemHandler> inventoryHandler;
+    private final Lock lock;
+    private Owner owner;
+    private Component customName;
 
-    private @Nullable UUID ownerUuid;
-    private boolean locked = false;
-    private boolean isUnlocking = false;
-    private int unlockingCountdown = 0;
-    private int unlockingCountdownMax = 0; // Used to calculate frequency of clicks when unlocking.
+    private final MenuProvider OPEN_MENU_PROVIDER = new MenuProvider() {
+        @Override
+        public Component getDisplayName() {
+            return MonobankBlockEntity.this.getName();
+        }
+
+        @Nullable
+        @Override
+        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+            return new MonobankMenu(containerID, playerInventory, MonobankBlockEntity.this);
+        }
+    };
+
+    private final MenuProvider UNLOCKING_MENU_PROVIDER = new MenuProvider() {
+        @Override
+        public Component getDisplayName() {
+            return TextUtil.translate("gui.unlocking", MonobankBlockEntity.this.getName());
+        }
+
+        @Nullable
+        @Override
+        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+            return new MonobankUnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
+                    MonobankBlockEntity.this.lock.getCombination());
+        }
+    };
 
     private float fullness = -1;
 
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
-        this.inventory = new MonobankItemStackHandler(this, 1);
+        this.inventory = new MonobankItemStackHandler(slot -> inventoryChanged(), 1);
         this.inventoryHandler = LazyOptional.of(() -> inventory);
+        doorOpennessController = new DoorOpennessController(0.5f,
+                0.35f, 0.6f, 0.65f, 0.36f);
+        lock = new Lock(this, this::onLockedChanged);
+        owner = Owner.none();
     }
+
+
+    // Lock
+
+    public Lock getLock() {
+        return lock;
+    }
+
+    private void onLockedChanged() {
+        boolean isLocked = lock.isLocked();
+        LogUtils.getLogger().warn(isLocked + " ");
+        doorOpennessController.setLocked(isLocked);
+
+        if (level != null && !level.isClientSide) { // Level is null when world loading, idk why.
+            SoundEvent sound = isLocked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
+            playSoundAtDoor(level, worldPosition, getBlockState(), sound, 1f);
+            // We need to update clients with new state (otherwise door open/closing will not render):
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Sync client.
+        }
+    }
+
+
+    // Save/Load
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        tag.put(INVENTORY_KEY, inventory.serializeNBT());
-        tag.putBoolean(LOCKED_KEY, locked);
-
-        getOwnerUuid().ifPresent(uuid ->
-                tag.putUUID(OWNER_KEY, uuid));
+        tag.put(INVENTORY_NBT_KEY, inventory.serializeNBT());
+        tag.put(LOCK_NBT_KEY, lock.serializeNBT());
+        if (owner.getType() != Owner.Type.NONE)
+            tag.put(OWNER_NBT_KEY, owner.serializeNBT());
         if (this.customName != null)
-            tag.putString(CUSTOM_NAME_KEY, Component.Serializer.toJson(this.customName));
+            tag.putString(CUSTOM_NAME_NBT_KEY, Component.Serializer.toJson(this.customName));
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        inventory.deserializeNBT(tag.getCompound(INVENTORY_KEY));
-
-        // cannot set the field directly here - we need to update DoorController to be in sync with client
-        setLocked(tag.getBoolean(LOCKED_KEY));
-
-        if (tag.contains(OWNER_KEY))
-            ownerUuid = tag.getUUID(OWNER_KEY);
-        if (tag.contains(CUSTOM_NAME_KEY, 8))
-            this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_KEY));
-
+        inventory.deserializeNBT(tag.getCompound(INVENTORY_NBT_KEY));
+        lock.deserializeNBT(tag.getCompound(LOCK_NBT_KEY));
+        if (tag.contains(OWNER_NBT_KEY, CompoundTag.TAG_COMPOUND))
+            owner.deserializeNBT(tag.getCompound(OWNER_NBT_KEY));
+        if (tag.contains(CUSTOM_NAME_NBT_KEY, CompoundTag.TAG_STRING))
+            this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_NBT_KEY));
         updateFullness();
+        doorOpennessController.setLocked(lock.isLocked());
     }
 
 
     // Ownership:
 
-    public Optional<UUID> getOwnerUuid() {
-        return Optional.ofNullable(ownerUuid);
+    public Owner getOwner() {
+        return owner;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean hasOwner() {
-        return ownerUuid != null && !ownerUuid.equals(Util.NIL_UUID);
-    }
-
-    public boolean isOwnedBy(Player player) {
-        return getOwnerUuid().orElse(Util.NIL_UUID).equals(player.getUUID());
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+        setChanged();
     }
 
     public void setOwner(Player player) {
-        if (!hasOwner())
-            this.ownerUuid = player.getUUID();
-        else
-            throw new IllegalStateException("Cannot set owner. This Monobank already has an owner.");
+        setOwner(new Owner(player));
     }
 
-    // Locking
+    public void onSetPlacedBy(LivingEntity placer, ItemStack stack) {
+        if (stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
+            CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
+            if (blockEntityTag.contains("Owner")){
+                CompoundTag owner = blockEntityTag.getCompound("Owner");
+                String typeString = owner.getString("Type");
+                Owner.Type type = Owner.Type.byName(typeString);
+                if (type != Owner.Type.NONE)
+                    return; // Only set owner to place if
+            }
+        }
 
-    public boolean isLocked() {
-        return locked;
+        if (placer instanceof Player player)
+            setOwner(player);
     }
 
-    public boolean isUnlocking() {
-        return isLocked() && isUnlocking/* && unlockingCountdown > 0*/;
-    }
+//    public boolean hasOwner() {
+//        return isPlayerOwned() || getOwner().right().orElse(OwnershipType.NONE) != OwnershipType.PUBLIC;
+//    }
+//
+//    public boolean isOwnedBy(Player player) {
+//        return getOwner().left().orElse(Util.NIL_UUID).equals(player.getUUID());
+//    }
+//
+//    public boolean isPlayerOwned() {
+//        return getOwner().left().isPresent();
+//    }
+//
+//    public void setOwner(Player player) {
+//        if (!hasOwner()) {
+//            this.owner = Either.left(player.getUUID());
+//            setChanged();
+//            // This is called on both sides - so updating is probably not needed.
+//            // level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL);
+//        }
+//        else
+//            throw new IllegalStateException("Cannot set owner. This Monobank already has an owner.");
+//    }
+//
+//    public void setOwnershipType(OwnershipType type) {
+//        if (isPlayerOwned())
+//            LogUtils.getLogger().warn("Changing ownership of a player-owned Monobank.");
+//
+//        owner = Either.right(type);
+//    }
 
-    /**
-     * Starts the countdown after which Monobank will unlock.
-     */
-    public void startUnlocking() {
-        startUnlocking(30);
-    }
+    // GUI
 
-    /**
-     * Starts the countdown for specified amount of ticks after which Monobank will unlock.
-     */
-    public void startUnlocking(int ticks) {
-        if (!isUnlocking()) {
-            isUnlocking = true;
-            unlockingCountdown = ticks;
-            unlockingCountdownMax = ticks;
+    public void openUnlockingGui(ServerPlayer player) {
+        if (lock.isLocked()) {
+            NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
+                buffer.writeBlockPos(worldPosition);
+                lock.getCombination().toBuffer(buffer);
+            });
         }
     }
 
-    public void lock() {
-        setLocked(true);
+    public void open(ServerPlayer player) {
+        NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, worldPosition);
     }
 
-    public void unlock() {
-        setLocked(false);
-    }
-
-    private void setLocked(boolean locked) {
-        this.locked = locked;
-        doorOpennessController.setLocked(locked);
-        isUnlocking = false;
-        unlockingCountdown = 0;
-        if (level != null && !level.isClientSide) { // Level is null when world loading, idk why.
-            SoundEvent sound = locked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
-            playSoundAtDoor(level, worldPosition, getBlockState(), sound, 1f);
-            // We need to update clients with new state (otherwise door open/closing will not render):
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_ALL); // Sync client.
-        }
-    }
 
 
     // Inventory
+
+    public IItemHandler getUnlockingInventoryHandler() {
+        return lock.getInventoryHandler();
+    }
 
     public float getFullness() {
         return fullness;
@@ -207,25 +262,18 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         return inventory.getStackInSlot(0);
     }
 
-//    public ItemStack extractItem(int amount) {
-//        return inventory.extractItem(0, amount, false);
-//    }
-
-
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return !this.remove && !isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ? this.inventoryHandler.cast()
-                : super.getCapability(cap, side);
+        return !this.remove && !lock.isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ?
+                this.inventoryHandler.cast() :
+                super.getCapability(cap, side);
     }
 
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-//        if (isLocked())
-//            return new MonobankUnlockingMenu(containerID, playerInventory, this);
-//        else
-            return new MonobankMenu(containerID, playerInventory, this);
+        return new MonobankMenu(containerID, playerInventory, this);
     }
 
     @Override
@@ -234,24 +282,19 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
         inventoryHandler.invalidate();
     }
 
-    @Override
-    public void inventoryChanged(int changedSlot) {
+    public void inventoryChanged() {
         this.setChanged();
-
-        if (!level.isClientSide) {
-            getOwnerUuid().ifPresent(uuid -> {
-                @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(uuid);
-                if (player != null) {
-                    Registry.Advancements.MONOBANK_ITEMS_COUNT.trigger(player, getStoredItemStack().getCount());
-                }
-            });
-        }
-
         updateFullness();
+        // Advancement
+        if (!level.isClientSide && getOwner().isPlayerOwned()) {
+            @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(getOwner().getUuid());
+            if (player != null)
+                Registry.Advancements.MONOBANK_ITEMS_COUNT.trigger(player, getStoredItemStack().getCount());
+        }
     }
 
     public boolean triggerEvent(int id, int param) {
-        if (id == UPDATE_DOOR_OPEN_EVENT_ID) {
+        if (id == UPDATE_DOOR_EVENT_ID) {
             this.doorOpennessController.shouldBeOpen(param > 0);
             return true;
         } else {
@@ -269,20 +312,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
         if (blockEntity instanceof MonobankBlockEntity monobankEntity) {
-            if (monobankEntity.unlockingCountdown > 0) {
-                // Calculating frequency of clicks (closer to unlocking -> more time between clicks):
-                int countdown = monobankEntity.unlockingCountdown;
-                int countdownMax = monobankEntity.unlockingCountdownMax;
-                int max = (int)Math.ceil(Math.log(countdownMax)) + 1;
-                int current = (int)Math.ceil(Math.log(countdown));
-                int freq = max - current;
-                if (countdown % freq == 0)
-                    playSoundAtDoor(level, blockPos, blockState, Registry.Sounds.MONOBANK_CLICK.get(), 0.5f);
-
-                monobankEntity.unlockingCountdown--;
-            }
-            else if (monobankEntity.isUnlocking() && monobankEntity.unlockingCountdown <= 0)
-                monobankEntity.unlock();
+            monobankEntity.lock.tick();
         }
     }
 
@@ -326,6 +356,24 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements IInventory
 
 
     // Helpers
+
+    public void dropItemsAtDoor(List<ItemStack> items) {
+        Vec3i facingNormal = getBlockState().getValue(MonobankBlock.FACING).getNormal();
+        double x = worldPosition.getX() + 0.5D + (facingNormal.getX() * 0.6D);
+        double y = worldPosition.getY() + 0.5D;
+        double z = worldPosition.getZ() + 0.5D + (facingNormal.getZ() * 0.6D);
+        for (ItemStack stack : items) {
+            Containers.dropItemStack(level, x, y, z, stack);
+        }
+    }
+
+    public void playSoundAtDoor(SoundEvent sound, float volume, float pitch) {
+        playSoundAtDoor(level, worldPosition, getBlockState(), sound, volume, pitch);
+    }
+
+    public void playSoundAtDoor(SoundEvent sound) {
+        playSoundAtDoor(level, worldPosition, getBlockState(), sound);
+    }
 
     public static void playSoundAtDoor(Level level, BlockPos pos, BlockState state, SoundEvent sound) {
         playSoundAtDoor(level, pos, state, sound, 1F, level.random.nextFloat() * 0.1F + 0.9F);

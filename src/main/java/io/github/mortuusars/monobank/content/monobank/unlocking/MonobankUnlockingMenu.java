@@ -2,58 +2,95 @@ package io.github.mortuusars.monobank.content.monobank.unlocking;
 
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
+import io.github.mortuusars.monobank.core.inventory.UnlockingSlot;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.items.IItemHandler;
 
 import java.util.Objects;
 
 public class MonobankUnlockingMenu extends AbstractContainerMenu {
 
-    public final MonobankBlockEntity blockEntity;
+    public final MonobankBlockEntity monobankEntity;
+    public final Combination unlockingData;
     private final ContainerLevelAccess canInteractWithCallable;
     protected final Level level;
 
-    public MonobankUnlockingMenu(final int containerID, final Inventory playerInventory, final MonobankBlockEntity blockEntity) {
-        super(Registry.MenuTypes.MONOBANK.get(), containerID);
-        this.blockEntity = blockEntity;
+    public MonobankUnlockingMenu(final int containerID, final Inventory playerInventory,
+                                 final MonobankBlockEntity monobankEntity, final Combination unlockingData) {
+        super(Registry.MenuTypes.MONOBANK_UNLOCKING.get(), containerID);
+        this.monobankEntity = monobankEntity;
+        this.unlockingData = unlockingData;
         this.level = playerInventory.player.level;
-        this.canInteractWithCallable = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
+        this.canInteractWithCallable = ContainerLevelAccess.create(monobankEntity.getLevel(), monobankEntity.getBlockPos());
 
-//        // Monobank slot
-//        blockEntity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(itemHandler -> {
-//            this.addSlot(new BigItemHandlerSlot(((MonobankItemStackHandler) itemHandler),
-//                    0, MONOBANK_SLOT_X, MONOBANK_SLOT_Y, MONOBANK_SLOT_SIZE, MONOBANK_SLOT_SIZE));
-//        });
-
-
+        IItemHandler unlockingInventoryHandler = monobankEntity.getUnlockingInventoryHandler();
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 0, 32, 35, unlockingData.getFirst()));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 1, 53, 35, unlockingData.getSecond()));
+        this.addSlot(new UnlockingSlot(unlockingInventoryHandler, 2, 74, 35, unlockingData.getThird()));
 
         // Player hotbar slots
-        for(int k = 0; k < 9; ++k) {
-            this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
+        for(int column = 0; column < 9; ++column) {
+            this.addSlot(new Slot(playerInventory, column, 8 + column * 18, 142));
         }
 
         // Player inventory slots
-        for(int i = 0; i < 3; ++i) {
-            for(int j = 0; j < 9; ++j) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for(int row = 0; row < 3; ++row) {
+            for(int column = 0; column < 9; ++column) {
+                this.addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
             }
         }
     }
 
     public static MonobankUnlockingMenu fromBuffer(int containerID, Inventory playerInventory, FriendlyByteBuf buffer) {
-        return new MonobankUnlockingMenu(containerID, playerInventory, getBlockEntity(playerInventory, buffer));
+        return new MonobankUnlockingMenu(containerID, playerInventory,
+                getBlockEntity(playerInventory, buffer), Combination.fromBuffer(buffer));
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+
+        Slot clickedSlot = this.slots.get(index);
+        if (clickedSlot == null || !clickedSlot.hasItem())
+            return ItemStack.EMPTY;
+
+        ItemStack clickedSlotStack = clickedSlot.getItem();
+
+        if (index < 3) { // From lock
+            // Count should be 1 always, but if not - remove all:
+            ItemStack removedStack = clickedSlot.remove(clickedSlotStack.getCount());
+
+            // Try to insert removed portion into player's inventory.
+            // Stack's count will be decreased by the amount inserted.
+            this.moveItemStackTo(removedStack, 3, this.slots.size(), false);
+
+            if (!removedStack.isEmpty())
+                // Insert remainder back:
+                clickedSlot.safeInsert(removedStack);
+        }
+        else {
+            int matchingKeyway = unlockingData.findMatchingSlot(clickedSlotStack);
+            if (matchingKeyway >= 0) {
+                Slot slot = slots.get(matchingKeyway);
+                if (!slot.hasItem() && slot.mayPlace(clickedSlotStack))
+                    slot.safeInsert(clickedSlotStack.split(1));
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     // Called server-side.
     @Override
     public boolean stillValid(Player player) {
-        return blockEntity.isLocked() && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
+        return monobankEntity.getLock().isLocked() && !monobankEntity.getLock().isUnlocking()
+                && stillValid(canInteractWithCallable, player, Registry.Blocks.MONOBANK.get());
     }
 
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {

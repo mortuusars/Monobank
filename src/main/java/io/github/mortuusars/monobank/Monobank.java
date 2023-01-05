@@ -13,6 +13,8 @@ public class Monobank
 {
     public static final String ID = "monobank";
 
+    public static final boolean IN_DEBUG = true;
+
     public Monobank()
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
