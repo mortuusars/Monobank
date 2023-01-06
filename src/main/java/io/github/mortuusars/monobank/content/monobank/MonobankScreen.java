@@ -8,6 +8,8 @@ import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerS
 import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -37,6 +39,11 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
     }
 
     @Override
+    protected void init() {
+        super.init();
+    }
+
+    @Override
     protected void slotClicked(Slot pSlot, int pSlotId, int pMouseButton, ClickType pType) {
 
         if (pSlotId == MonobankMenu.MONOBANK_SLOT_INDEX && pMouseButton == 0) {
@@ -61,21 +68,6 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, partialTick);
-
-//        ResizeableItemRenderer.renderGuiItem(getMenu().slots.get(0).getItem(), getGuiLeft() + 40, getGuiTop() + 34, 24, 24, 0xF000F0);
-//
-//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-//        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-//        RenderSystem.setShaderTexture(0, TEXTURE);
-//
-//        poseStack.pushPose();
-//        poseStack.translate(0, 0, 150);
-//
-//        fill(poseStack, this.leftPos + 40, this.topPos + 30, this.leftPos + 60, this.topPos + 50, 0x55C8C8C8);
-//
-////        this.blit(poseStack, this.leftPos + 50, this.topPos + 40, 75, 30, 20, 20);
-//        poseStack.popPose();
-
         this.renderTooltip(poseStack, mouseX, mouseY);
     }
 
@@ -85,6 +77,20 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, TEXTURE);
         this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+
+        if (getMenu().extraInfo.isOwner)
+            this.blit(poseStack, getGuiLeft() + 161, getGuiTop() + 3, 176, 0, 12, 12);
+
+        if (getMenu().extraInfo.hasWarning()) {
+            if (getMenu().extraInfo.breakInSucceeded) {
+                if (minecraft.level.getGameTime() % 10 > 5) // Blinking fast
+                    this.blit(poseStack, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
+            }
+            else if (getMenu().extraInfo.breakInAttempted) {
+                if (minecraft.level.getGameTime() % 26 > 12) // Blinking slowly
+                    this.blit(poseStack, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
+            }
+        }
     }
 
     @Override
@@ -92,6 +98,16 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
         if (this.menu.getCarried().isEmpty() && hoveredSlot != null &&
                 hoveredSlot instanceof BigItemHandlerSlot bankSlot && bankSlot.hasItem()) {
             renderBankSlotTooltip(bankSlot.getItem(), poseStack, x, y);
+        }
+        else if (isHovering(161, 3, 12, 12, x, y)) { // Owner
+            // TODO: render combination and info - TRANSLATION
+            renderTooltip(poseStack, new TextComponent("You are the owner"), x, y);
+        }
+        else if (getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
+            if (getMenu().extraInfo.breakInSucceeded)
+                renderTooltip(poseStack, new TextComponent("Monobank was opened by someone"), x, y);
+            else if (getMenu().extraInfo.breakInAttempted)
+                renderTooltip(poseStack, new TextComponent("Someone has unsuccessfully attempted to open this Monobank"), x, y);
         }
         else
             super.renderTooltip(poseStack, x, y);
@@ -102,71 +118,6 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
         if (slot instanceof BigItemHandlerSlot && !itemStack.isEmpty())
             return TextUtil.shortenNumber(itemStack.getCount());
         return super.getCountStringForSlot(slot, itemStack, countString);
-    }
-
-    @Override
-    protected void renderSlot(PoseStack poseStack, Slot slot) {
-
-        super.renderSlot(poseStack, slot);
-
-//        if (slot instanceof BigItemHandlerSlot bigSlot/* && bigSlot.getItem().getCount() > 99*/) {
-//            RenderSystem.enableDepthTest();
-//            ItemStack itemStack = bigSlot.getItem();
-//            int count = itemStack.getCount();
-//
-//            String countString = TextUtil.shortenNumber(count);
-//
-//            poseStack.pushPose();
-//
-//            BakedModel model = itemRenderer.getModel(itemStack, null, null, 0);
-//
-//            Minecraft.getInstance().textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
-//            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-//            RenderSystem.enableBlend();
-//            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-//            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-//            PoseStack modelViewStack = RenderSystem.getModelViewStack();
-//            modelViewStack.pushPose();
-//
-//
-//            modelViewStack.translate(bigSlot.x, bigSlot.y, itemRenderer.blitOffset + 200);
-//            modelViewStack.translate(bigSlot.getWidth() / 2, bigSlot.getHeight() / 2, 0f);
-//            modelViewStack.scale(1.0F, -1.0F, 1.0F);
-//            modelViewStack.scale(bigSlot.getWidth(), bigSlot.getHeight(), bigSlot.getWidth());
-//
-//            RenderSystem.applyModelViewMatrix();
-//            PoseStack newPoseStack = new PoseStack();
-//            MultiBufferSource.BufferSource multibuffersource$buffersource = Minecraft.getInstance().renderBuffers().bufferSource();
-//            boolean flag = !model.usesBlockLight();
-//            if (flag) {
-//                Lighting.setupForFlatItems();
-//            }
-//
-//            itemRenderer.render(itemStack, ItemTransforms.TransformType.GUI, false, newPoseStack, multibuffersource$buffersource, 15728880, OverlayTexture.NO_OVERLAY, model);
-//            multibuffersource$buffersource.endBatch();
-//            RenderSystem.enableDepthTest();
-//            if (flag) {
-//                Lighting.setupFor3DItems();
-//            }
-//
-//            modelViewStack.popPose();
-//            RenderSystem.applyModelViewMatrix();
-//
-//
-////            itemRenderer.render(itemStack, ItemTransforms.TransformType.GUI, false, poseStack, Minecraft.getInstance()
-////                            .renderBuffers().bufferSource(),
-////                    0xFFFFFF, 0xFFFFFF, );
-////            itemRenderer.renderStatic(itemStack, ItemTransforms.TransformType.GUI, 0xFFFFFF, 0xFFFFFF,
-////                    poseStack, Minecraft.getInstance().renderBuffers().bufferSource(), 0);
-//
-//            poseStack.popPose();
-//
-////            this.itemRenderer.renderAndDecorateItem(this.minecraft.player, itemStack, slot.x, slot.y, slot.x + slot.y * this.imageWidth);
-//
-////            renderGuiItemDecorationsForBigSlot(this.font, itemStack, slot.x, slot.y, countString);
-//        }
-//        else
-//            super.renderSlot(poseStack, slot);
     }
 
     protected void renderBankSlotTooltip(ItemStack itemStack, PoseStack poseStack, int x, int y) {

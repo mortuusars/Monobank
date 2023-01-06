@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerScreen;
+import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.renderer.GameRenderer;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class LockReplacementScreen extends PatchedAbstractContainerScreen<LockReplacementMenu> {
     private static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_lock_replacement.png");
+    private static final Component CONFIRM_TOOLTIP = TextUtil.translate("gui.monobank.lock_replacement.confirm_tooltip");
     public LockReplacementScreen(LockReplacementMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
     }
@@ -21,11 +23,15 @@ public class LockReplacementScreen extends PatchedAbstractContainerScreen<LockRe
     protected void init() {
         super.init();
         this.addRenderableWidget(new ImageButton(getGuiLeft() + 128, getGuiTop() + 34,
-                18, 18, 176, 0, TEXTURE, this::onConfirmButtonPress));
+                18, 18, 176, 0, 18, TEXTURE,
+                256, 256, this::onConfirmButtonPress, this::onConfirmButtonTooltip, CONFIRM_TOOLTIP));
+    }
+
+    private void onConfirmButtonTooltip(Button button, PoseStack poseStack, int mouseX, int mouseY) {
+        renderTooltip(poseStack, CONFIRM_TOOLTIP, mouseX, mouseY);
     }
 
     private void onConfirmButtonPress(Button button) {
-//        getMenu().clickMenuButton()
         this.minecraft.gameMode.handleInventoryButtonClick(getMenu().containerId, 0);
     }
 

@@ -22,22 +22,24 @@ import java.util.Objects;
 
 public class MonobankMenu extends AbstractContainerMenu {
     public static final int MONOBANK_SLOT_INDEX = 0;
-    public static final int MONOBANK_SLOT_X = 75;
-    public static final int MONOBANK_SLOT_Y = 30;
-    public static final int MONOBANK_SLOT_SIZE = 26;
+    public static final int MONOBANK_SLOT_X = 71;
+    public static final int MONOBANK_SLOT_Y = 26;
+    public static final int MONOBANK_SLOT_SIZE = 34;
 
     public static final int TRANSFER_SINGLE_BUTTON_ID = -101;
     public static final int TRANSFER_ALL_BUTTON_ID = -102;
 
     public final MonobankBlockEntity blockEntity;
     private final ContainerLevelAccess canInteractWithCallable;
+    public MonobankExtraInfo extraInfo;
     protected final Level level;
 
-    public MonobankMenu(final int containerID, final Inventory playerInventory, final MonobankBlockEntity blockEntity) {
+    public MonobankMenu(final int containerID, final Inventory playerInventory, final MonobankBlockEntity blockEntity, final MonobankExtraInfo extraInfo) {
         super(Registry.MenuTypes.MONOBANK.get(), containerID);
         this.blockEntity = blockEntity;
         this.level = playerInventory.player.level;
         this.canInteractWithCallable = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
+        this.extraInfo = extraInfo;
 
         blockEntity.startOpen(playerInventory.player);
 
@@ -61,15 +63,15 @@ public class MonobankMenu extends AbstractContainerMenu {
     }
 
     public static MonobankMenu fromBuffer(int containerID, Inventory playerInventory, FriendlyByteBuf buffer) {
-        return new MonobankMenu(containerID, playerInventory, getBlockEntity(playerInventory, buffer));
+        return new MonobankMenu(containerID, playerInventory, getBlockEntity(playerInventory, buffer), MonobankExtraInfo.fromBuffer(buffer));
     }
 
     @Override
     public void removed(Player player) {
         super.removed(player);
         /*
-            For some reason, when opening other UI over ours (such as JEI),
-            this is called only client-side (server-side it's still open), when it probably shouldn't.
+            When opening other UI over ours (such as JEI),
+            'removed' is called only client-side (server-side it's still open), when it probably shouldn't.
             This causes door to close while still in the menu, and not update its openness properly.
             So we are closing only server-side - which is then synchronized to client in OpenersCounter via block update.
          */

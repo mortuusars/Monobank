@@ -58,14 +58,44 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"NullableProblems", "unused"})
-public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvider, Nameable, LidBlockEntity {
+public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, LidBlockEntity {
     private static final String INVENTORY_TAG = "Inventory";
     private static final String LOCK_TAG = "Lock";
     private static final String OWNER_TAG = "Owner";
     private static final String CUSTOM_NAME_TAG = "CustomName";
+    private static final String LOOT_TABLE_TAG = "LootTable";
+    private static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
+    private static final String BREAK_IN_SUCCEEDED_TAG = "BreakInSucceeded";
+    private static final String BREAK_IN_ATTEMPTED_TAG = "BreakInAttempted";
 
     private static final int UPDATE_DOOR_EVENT_ID = 1;
 
+    private final MenuProvider OPEN_MENU_PROVIDER = new MenuProvider() {
+        @Override
+        public Component getDisplayName() {
+            return MonobankBlockEntity.this.getName();
+        }
+
+        @Nullable
+        @Override
+        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+            return new MonobankMenu(containerID, playerInventory, MonobankBlockEntity.this,
+                    MonobankBlockEntity.this.getExtraInfo(player));
+        }
+    };
+    private final MenuProvider UNLOCKING_MENU_PROVIDER = new MenuProvider() {
+        @Override
+        public Component getDisplayName() {
+            return TextUtil.translate("gui.monobank.unlocking", MonobankBlockEntity.this.getName());
+        }
+
+        @Nullable
+        @Override
+        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+            return new UnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
+                    MonobankBlockEntity.this.lock.getCombination());
+        }
+    };
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
             MonobankBlockEntity.playSoundAtDoor(level, pos, state, Registry.Sounds.MONOBANK_OPEN.get());
@@ -87,46 +117,18 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     };
     private final DoorOpennessController doorOpennessController;
 
+    // Serialized fields:
     private final MonobankItemStackHandler inventory;
     private final LazyOptional<IItemHandler> inventoryHandler;
-    private final Lock lock;
-    private Owner owner;
-    private Component customName;
-
-    private final MenuProvider OPEN_MENU_PROVIDER = new MenuProvider() {
-        @Override
-        public Component getDisplayName() {
-            return MonobankBlockEntity.this.getName();
-        }
-
-        @Nullable
-        @Override
-        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-            return new MonobankMenu(containerID, playerInventory, MonobankBlockEntity.this);
-        }
-    };
-
-    private final MenuProvider UNLOCKING_MENU_PROVIDER = new MenuProvider() {
-        @Override
-        public Component getDisplayName() {
-            return TextUtil.translate("gui.monobank.unlocking", MonobankBlockEntity.this.getName());
-        }
-
-        @Nullable
-        @Override
-        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-            return new UnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
-                    MonobankBlockEntity.this.lock.getCombination());
-        }
-    };
-
-    private float fullness = -1;
-
-    public static final String LOOT_TABLE_TAG = "LootTable";
-    public static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
     @Nullable
     protected ResourceLocation lootTable;
     protected long lootTableSeed;
+    private final Lock lock;
+    private Owner owner;
+    private Component customName;
+    private boolean breakInAttempted, breakInSucceeded;
+
+    private float fullness = -1;
 
     public MonobankBlockEntity(BlockPos pPos, BlockState pBlockState) {
         super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
@@ -189,6 +191,17 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
      */
     public void startUnlocking(int ticks) {
         if (!isUnlocking()) {
+
+            List<? extends Player> players = level.players();
+            for (Player player : players) {
+                if (player.containerMenu instanceof UnlockingMenu unlockingMenu && unlockingMenu.monobankEntity == this) {
+                    if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
+                        breakInSucceeded = true;
+                        setChanged();
+                    }
+                }
+            }
+
             isUnlocking = true;
             unlockingCountdown = ticks;
             unlockingCountdownMax = ticks;
@@ -210,6 +223,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
     }
 
     private void onLockInventoryChanged(Integer slot) {
+
+        if (level.isClientSide)
+            return;
+
         Combination combination = getLock().getCombination();
 
         // Click when player places matching item in unlocking slot.
@@ -240,6 +257,13 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
             tag.put(OWNER_TAG, owner.serializeNBT());
         if (this.customName != null)
             tag.putString(CUSTOM_NAME_TAG, Component.Serializer.toJson(this.customName));
+
+        if (getOwner().isPlayerOwned()) {
+            if (breakInSucceeded)
+                tag.putBoolean(BREAK_IN_SUCCEEDED_TAG, true);
+            else if (breakInAttempted)
+                tag.putBoolean(BREAK_IN_ATTEMPTED_TAG, true);
+        }
     }
 
     @Override
@@ -252,6 +276,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
             owner.deserializeNBT(tag.getCompound(OWNER_TAG));
         if (tag.contains(CUSTOM_NAME_TAG, CompoundTag.TAG_STRING))
             this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_TAG));
+        breakInSucceeded = tag.getBoolean(BREAK_IN_SUCCEEDED_TAG);
+        breakInAttempted = tag.getBoolean(BREAK_IN_ATTEMPTED_TAG);
         updateFullness();
         doorOpennessController.setLocked(lock.isLocked());
     }
@@ -341,6 +367,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
             if (getLock().getCombination().isEmpty())
                 startUnlocking(); // Open straight up when no combination is set:
             else {
+                if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
+                    breakInAttempted = true;
+                    setChanged();
+                }
                 NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
                     buffer.writeBlockPos(worldPosition);
                     lock.getCombination().toBuffer(buffer);
@@ -349,7 +379,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         }
     }
     public void open(ServerPlayer player) {
-        NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, worldPosition);
+        NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, buffer -> {
+            buffer.writeBlockPos(worldPosition);
+            getExtraInfo(player).toBuffer(buffer);
+        });
     }
 
 
@@ -371,6 +404,14 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         return inventory.getStackInSlot(0);
     }
 
+
+    /**
+     * Used to provide gui with extra info.
+     */
+    public MonobankExtraInfo getExtraInfo(Player player) {
+        return new MonobankExtraInfo(getOwner().isOwnedBy(player), breakInAttempted, breakInSucceeded);
+    }
+
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
@@ -378,12 +419,6 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements MenuProvid
         return !this.remove && !lock.isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ?
                 this.inventoryHandler.cast() :
                 super.getCapability(cap, side);
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
-        return new MonobankMenu(containerID, playerInventory, this);
     }
 
     @Override

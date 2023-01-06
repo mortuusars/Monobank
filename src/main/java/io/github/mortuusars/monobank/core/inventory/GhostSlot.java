@@ -1,4 +1,4 @@
-package io.github.mortuusars.monobank.content.monobank.lock_replacement;
+package io.github.mortuusars.monobank.core.inventory;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;

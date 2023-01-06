@@ -49,7 +49,7 @@ public class UnlockingMenu extends AbstractContainerMenu {
         }
 
         // Empty combination should be handled earlier - this is to be safe.
-        if (monobankEntity.getLock().getCombination().isEmpty())
+        if (!level.isClientSide && monobankEntity.getLock().getCombination().isEmpty())
             monobankEntity.startUnlocking();
     }
 

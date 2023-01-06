@@ -3,7 +3,8 @@ package io.github.mortuusars.monobank.content.monobank.lock_replacement;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
-import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
+import io.github.mortuusars.monobank.core.inventory.CombinationContainer;
+import io.github.mortuusars.monobank.core.inventory.GhostSlot;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
@@ -88,13 +89,10 @@ public class LockReplacementMenu extends AbstractContainerMenu {
 
         Slot combinationSlot = this.slots.get(slotId);
 
-        if (!getCarried().isEmpty()) {
+        if (!getCarried().isEmpty())
             combinationSlot.set(new ItemStack(getCarried().getItem()));
-        }
-        else {
+        else
             combinationSlot.set(ItemStack.EMPTY);
-        }
-
     }
 
     @Override
@@ -110,10 +108,19 @@ public class LockReplacementMenu extends AbstractContainerMenu {
         monobankEntity.setOwner(player);
         player.displayClientMessage(TextUtil.translate("interaction.message.lock_replaced"), true);
         monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get()); // TODO: Sound
+
+        // Consume item:
+        ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (itemInHand.is(Registry.Items.REPLACEMENT_LOCK.get()))
+            itemInHand.shrink(1);
+        else {
+            itemInHand = player.getItemInHand(InteractionHand.OFF_HAND);
+            if (itemInHand.is(Registry.Items.REPLACEMENT_LOCK.get()))
+                itemInHand.shrink(1);
+        }
+
         player.closeContainer();
         return true;
-
-//        return super.clickMenuButton(player, buttonID);
     }
 
     // Called server-side.

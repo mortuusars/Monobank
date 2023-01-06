@@ -61,8 +61,12 @@ public class UnlockingScreen extends PatchedAbstractContainerScreen<UnlockingMen
     }
 
     @Override
-    protected void renderTooltip(PoseStack pPoseStack, int pX, int pY) {
-        super.renderTooltip(pPoseStack, pX, pY);
+    protected void renderTooltip(PoseStack poseStack, int x, int y) {
+        if (hoveredSlot instanceof UnlockingSlot unlockingSlot && !unlockingSlot.hasItem()) {
+            renderTooltip(poseStack, unlockingSlot.getKeywayTooltip(), x, y);
+        }
+        else
+            super.renderTooltip(poseStack, x, y);
     }
 
     @Override
