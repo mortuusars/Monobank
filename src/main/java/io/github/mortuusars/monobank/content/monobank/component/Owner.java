@@ -83,7 +83,6 @@ public class Owner {
 
     public enum Type implements StringRepresentable {
         NONE("none"),
-        PUBLIC("public"),
         PLAYER("player"),
         NPC("npc");
 

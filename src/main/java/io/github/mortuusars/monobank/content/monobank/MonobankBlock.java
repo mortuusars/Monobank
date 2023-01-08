@@ -3,15 +3,17 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.monobank.component.Owner;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -32,6 +34,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +49,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     public MonobankBlock() {
         super(Properties.of(Material.METAL, MaterialColor.COLOR_BLACK)
-                .strength(20F, 1200F)
+                .strength(8F, 1200F)
                 .sound(SoundType.NETHERITE_BLOCK));
 
         registerDefaultState(this.getStateDefinition().any()
@@ -75,8 +79,49 @@ public class MonobankBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {        MonobankBlockEntity.appendHoverText(stack, level, tooltip, flag);
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
 
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity && !monobankEntity.getLock().isLocked()) {
+            float fullness = monobankEntity.getFullness();
+            return Mth.clamp((int) Math.floor(fullness * 14.0f), 0, 14) + (fullness > 0.0f ? 1 : 0);
+        }
+        return 0;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable BlockGetter level, List<Component> tooltip, TooltipFlag flag) {
+        MonobankBlockEntity.appendHoverText(stack, level, tooltip, flag);
+    }
+
+    @Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
+            monobankEntity.unpackLootTable(player, true);
+            if (!level.isClientSide) {
+                //TODO: Wanted debuff
+                List<IronGolem> golems = level.getEntitiesOfClass(IronGolem.class, new AABB(pos).inflate(20));
+                for (IronGolem golem : golems) {
+                    golem.setPersistentAngerTarget(player.getUUID());
+                    golem.startPersistentAngerTimer();
+                }
+
+                List<Villager> villagers = level.getEntitiesOfClass(Villager.class, new AABB(pos).inflate(30));
+                for (Villager villager : villagers) {
+//                    villager.sha
+
+                }
+            }
+        }
+        super.playerWillDestroy(level, pos, state, player);
+    }
+
+    @Override
+    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+        return super.getDrops(state, builder);
     }
 
     @Override
@@ -112,8 +157,18 @@ public class MonobankBlock extends Block implements EntityBlock {
 
         // Testing
         if (Monobank.IN_DEBUG) {
+            if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.WOODEN_PICKAXE)) {
+                monobankBlockEntity.breakInAttempted = true;
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+
+            if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.IRON_PICKAXE)) {
+                monobankBlockEntity.breakInSucceeded = true;
+                return InteractionResult.sidedSuccess(level.isClientSide);
+            }
+
             if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.MILK_BUCKET)) {
-                monobankBlockEntity.getLock().setCombination(Items.IRON_NUGGET, Items.APPLE, Items.GOLD_NUGGET);
+//                monobankBlockEntity.getLock().setCombination(Items.IRON_NUGGET, Items.APPLE, Items.GOLD_NUGGET);
                 monobankBlockEntity.setOwner(new Player(level, pos, 0, new GameProfile(UUID.randomUUID(), "John")) {
                     @Override
                     public boolean isSpectator() {
@@ -134,8 +189,7 @@ public class MonobankBlock extends Block implements EntityBlock {
            | State:     |     Owner     |        Others        |
            |------------|---------------|----------------------|
            | Locked:    |     Unlock    |   Unlock With Code   |
-           | Unlocked:  |   Lock, Open  |         Open         |
-           | Public:    |      Open     |         Open         |
+           | Unlocked:  |   Lock, Open  |      Lock, Open      |
            |____________|_______________|______________________| */
 
         return player.isSecondaryUseActive() ?
@@ -161,12 +215,6 @@ public class MonobankBlock extends Block implements EntityBlock {
     private InteractionResult tryLockOrUnlock(BlockState blockState, Player player, Level level, BlockPos pos, MonobankBlockEntity monobankEntity) {
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
-
-        if (monobankEntity.getOwner().getType() == Owner.Type.PUBLIC) { // Cannot lock public bank
-            player.displayClientMessage(TextUtil.translate("interaction.message.locking.cannot_lock_public_bank"), true);
-            MonobankBlockEntity.playSoundAtDoor(level, pos, blockState, Registry.Sounds.MONOBANK_CLICK.get());
-            return InteractionResult.CONSUME;
-        }
 
         boolean isLocked = monobankEntity.getLock().isLocked();
 

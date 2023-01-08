@@ -30,10 +30,10 @@ import java.util.function.Supplier;
  * Manages Monobank locking and unlocking.
  */
 public class Lock {
-    private static final String LOCKED_TAG = "Locked";
-    private static final String COMBINATION_TABLE_TAG = "CombinationTable";
-    private static final String COMBINATION_TAG = "Combination";
-    private static final String INVENTORY_TAG = "Inventory";
+    public static final String LOCKED_TAG = "Locked";
+    public static final String COMBINATION_TABLE_TAG = "CombinationTable";
+    public static final String COMBINATION_TAG = "Combination";
+    public static final String INVENTORY_TAG = "Inventory";
 
     // Serialized fields:
     private Either<ResourceLocation, Combination> combination;
@@ -114,7 +114,7 @@ public class Lock {
             this.inventory.deserializeNBT(tag.getCompound(INVENTORY_TAG));
     }
 
-    private boolean tryUnpackCombinationTable() {
+    public boolean tryUnpackCombinationTable() {
         Level level = levelSupplier.get();
 
         Optional<ResourceLocation> combinationTable = combination.left();

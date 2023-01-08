@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.content.monobank.component.MonobankExtraInfo;
 import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import net.minecraft.network.FriendlyByteBuf;

@@ -3,13 +3,11 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.monobank.Monobank;
-import io.github.mortuusars.monobank.client.gui.rendering.ResizeableItemRenderer;
+import io.github.mortuusars.monobank.client.gui.component.CombinationTooltip;
 import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerScreen;
 import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -28,14 +26,19 @@ import java.util.List;
 import java.util.Optional;
 
 public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu> {
+    public static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank.png");
 
-    private static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank.png");
+    private final Component CTRL_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.ctrl_take_single").withStyle(ChatFormatting.DARK_GRAY);
+    private final Component CTRL_SHIFT_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.ctrl_shift_take_single").withStyle(ChatFormatting.DARK_GRAY);
+    private final Component OWNER_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.owner");
+    private final Component BREAK_IN_ATTEMPTED_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.break_in_attempted");
+    private final Component BREAK_IN_SUCCEEDED_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.break_in_succeeded");
 
-    private static final Component CTRL_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.ctrl_take_single").withStyle(ChatFormatting.DARK_GRAY);
-    private static final Component CTRL_SHIFT_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.ctrl_shift_take_single").withStyle(ChatFormatting.DARK_GRAY);
+    private final CombinationTooltip combinationTooltip;
 
     public MonobankScreen(MonobankMenu containerMenu, Inventory playerinventory, Component title) {
         super(containerMenu, playerinventory, title);
+        this.combinationTooltip = new CombinationTooltip(getMenu().getBlockEntity().getLock().getCombination());
     }
 
     @Override
@@ -99,15 +102,15 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
                 hoveredSlot instanceof BigItemHandlerSlot bankSlot && bankSlot.hasItem()) {
             renderBankSlotTooltip(bankSlot.getItem(), poseStack, x, y);
         }
-        else if (isHovering(161, 3, 12, 12, x, y)) { // Owner
-            // TODO: render combination and info - TRANSLATION
-            renderTooltip(poseStack, new TextComponent("You are the owner"), x, y);
+        else if (getMenu().extraInfo.isOwner && isHovering(161, 3, 12, 12, x, y)) { // Owner
+            renderTooltip(poseStack, List.of(OWNER_TOOLTIP), getMenu().getBlockEntity().getLock().getCombination().isEmpty()
+                    ? Optional.empty() : Optional.of(combinationTooltip), x, y);
         }
         else if (getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
             if (getMenu().extraInfo.breakInSucceeded)
-                renderTooltip(poseStack, new TextComponent("Monobank was opened by someone"), x, y);
+                renderTooltip(poseStack, BREAK_IN_SUCCEEDED_TOOLTIP, x, y);
             else if (getMenu().extraInfo.breakInAttempted)
-                renderTooltip(poseStack, new TextComponent("Someone has unsuccessfully attempted to open this Monobank"), x, y);
+                renderTooltip(poseStack, BREAK_IN_ATTEMPTED_TOOLTIP, x, y);
         }
         else
             super.renderTooltip(poseStack, x, y);
@@ -129,12 +132,10 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
             DecimalFormat numberFormatter = new DecimalFormat("###,###,###", symbols);
             String formattedCount = numberFormatter.format(stackCount);
 
-//            tooltip.add(new TextComponent("")); // Separator
             MutableComponent newTitle = tooltip.get(0).copy()
                     .append(new TextComponent(" - ").withStyle(ChatFormatting.GRAY))
                     .append(TextUtil.translate("gui.monobank.count", formattedCount).withStyle(ChatFormatting.GRAY));
             tooltip.set(0, newTitle);
-//            tooltip.add(TextUtil.translate("gui.monobank.count", formattedCount).withStyle(ChatFormatting.UNDERLINE));
         }
 
         tooltip.add(CTRL_TOOLTIP);

@@ -1,4 +1,4 @@
-package io.github.mortuusars.monobank.content.monobank;
+package io.github.mortuusars.monobank.content.monobank.component;
 
 import net.minecraft.network.FriendlyByteBuf;
 

@@ -5,6 +5,7 @@ import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
 import io.github.mortuusars.monobank.content.monobank.component.Lock;
+import io.github.mortuusars.monobank.content.monobank.component.MonobankExtraInfo;
 import io.github.mortuusars.monobank.content.monobank.component.Owner;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
@@ -59,14 +60,14 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings({"NullableProblems", "unused"})
 public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, LidBlockEntity {
-    private static final String INVENTORY_TAG = "Inventory";
-    private static final String LOCK_TAG = "Lock";
-    private static final String OWNER_TAG = "Owner";
-    private static final String CUSTOM_NAME_TAG = "CustomName";
-    private static final String LOOT_TABLE_TAG = "LootTable";
-    private static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
-    private static final String BREAK_IN_SUCCEEDED_TAG = "BreakInSucceeded";
-    private static final String BREAK_IN_ATTEMPTED_TAG = "BreakInAttempted";
+    public static final String INVENTORY_TAG = "Inventory";
+    public static final String LOCK_TAG = "Lock";
+    public static final String OWNER_TAG = "Owner";
+    public static final String CUSTOM_NAME_TAG = "CustomName";
+    public static final String LOOT_TABLE_TAG = "LootTable";
+    public static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
+    public static final String BREAK_IN_SUCCEEDED_TAG = "BreakInSucceeded";
+    public static final String BREAK_IN_ATTEMPTED_TAG = "BreakInAttempted";
 
     private static final int UPDATE_DOOR_EVENT_ID = 1;
 
@@ -126,7 +127,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     private final Lock lock;
     private Owner owner;
     private Component customName;
-    private boolean breakInAttempted, breakInSucceeded;
+    public boolean breakInAttempted, breakInSucceeded;
 
     private float fullness = -1;
 
@@ -218,8 +219,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             SoundEvent sound = isLocked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
             playSoundAtDoor(level, worldPosition, getBlockState(), sound, 1f);
             // We need to update clients with new state (otherwise door open/closing will not render):
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Sync client.
+//            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Sync client.
         }
+
+        setChanged();
     }
 
     private void onLockInventoryChanged(Integer slot) {
@@ -305,7 +308,10 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         }
     }
 
-    public void unpackLootTable(@Nullable Player player) {
+    public void unpackLootTable(@Nullable Player player, boolean includeCombination) {
+        if (includeCombination)
+            getLock().tryUnpackCombinationTable();
+
         if (this.lootTable != null && this.level.getServer() != null) {
             if (!this.inventory.getStackInSlot(0).isEmpty()) {
                 LogUtils.getLogger().warn("Tried to unpack Loot Table while Monobank is not empty. Loot Table will not be unpacked.");
@@ -347,18 +353,15 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     public void onSetPlacedBy(LivingEntity placer, ItemStack stack) {
-        if (stack.getOrCreateTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
+        if (placer instanceof Player player && stack.hasTag() && stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
             CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
-            if (blockEntityTag.contains("Owner")){
+            if (blockEntityTag.contains(OWNER_TAG)){
                 Owner owner = Owner.none();
-                owner.deserializeNBT(blockEntityTag.getCompound("Owner"));
-                if (owner.getType() != Owner.Type.NONE)
-                    return; // Do not set new owner if bank already has one.
+                owner.deserializeNBT(blockEntityTag.getCompound(OWNER_TAG));
+                if (owner.getType() == Owner.Type.NONE)
+                    setOwner(player);
             }
         }
-
-        if (placer instanceof Player player)
-            setOwner(player);
     }
 
     // GUI
@@ -415,7 +418,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     @NotNull
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        unpackLootTable(null);
+        unpackLootTable(null, true);
         return !this.remove && !lock.isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ?
                 this.inventoryHandler.cast() :
                 super.getCapability(cap, side);
@@ -428,8 +431,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     public void inventoryChanged() {
-        this.setChanged();
         updateFullness();
+        this.setChanged();
         // Advancement
         if (!level.isClientSide && getOwner().isPlayerOwned()) {
             @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(getOwner().getUuid());
@@ -458,7 +461,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public static <T extends BlockEntity> void serverTick(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
         if (blockEntity instanceof MonobankBlockEntity monobankEntity) {
             if (!monobankEntity.getLock().isLocked())
-                monobankEntity.unpackLootTable(null);
+                monobankEntity.unpackLootTable(null, false);
 
             if (monobankEntity.unlockingCountdown > 0) {
                 // Calculating frequency of clicks (closer to unlocking -> more time between clicks):
@@ -473,8 +476,6 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             }
             else if (monobankEntity.isUnlocking() && monobankEntity.unlockingCountdown <= 0)
                 monobankEntity.getLock().setLocked(false);
-
-//            monobankEntity.lock.tick();
         }
     }
 
@@ -490,6 +491,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public void stopOpen(Player player) {
         if (level != null && !this.remove && !player.isSpectator()) {
             this.openersCounter.decrementOpeners(player, level, this.getBlockPos(), this.getBlockState());
+            // Reset warnings:
+            this.breakInAttempted = false;
+            this.breakInSucceeded = false;
         }
     }
 

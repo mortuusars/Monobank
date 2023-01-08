@@ -1,3 +1,11 @@
 {
-  "parent": "monobank:monobank"
+  "parent": "monobank:item/monobank_unlocked",
+  "overrides": [
+    {
+      "predicate": {
+        "minecraft:locked": 1.0
+      },
+      "model": "monobank:item/monobank_locked"
+    }
+  ]
 }

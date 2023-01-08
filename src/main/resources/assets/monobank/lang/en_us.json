@@ -13,6 +13,9 @@
   "monobank.gui.monobank.count": "Count: %s",
   "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL: Take single item",
   "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT: Take all items",
+  "monobank.gui.monobank.tooltip.owner": "You own this Monobank",
+  "monobank.gui.monobank.tooltip.break_in_attempted": "Someone unsuccessfully attempted to open this Monobank",
+  "monobank.gui.monobank.tooltip.break_in_succeeded": "Monobank was opened by someone",
 
   "monobank.interaction.message.locking.monobank_is_locked": "Locked. Try unlocking with SHIFT+Click.",
   "monobank.interaction.message.locking.cannot_lock_public_bank": "Public Monobank cannot be locked.",

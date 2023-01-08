@@ -20,6 +20,10 @@ public class ItemModels extends ItemModelProvider {
 
         String monobank = Registry.Blocks.MONOBANK.get().getRegistryName().getPath();
         getBuilder(monobank)
-                .parent(getExistingFile(modLoc(monobank)));
+                .parent(getExistingFile(modLoc("item/" + monobank + "_unlocked")))
+                .override()
+                    .predicate(new ResourceLocation("locked"), 1f)
+                    .model(getExistingFile(modLoc("item/" + monobank + "_locked")))
+                    .end();
     }
 }

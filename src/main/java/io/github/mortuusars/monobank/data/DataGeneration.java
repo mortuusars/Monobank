@@ -4,6 +4,7 @@ import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.data.provider.Advancements;
 import io.github.mortuusars.monobank.data.provider.BlockStates;
 import io.github.mortuusars.monobank.data.provider.ItemModels;
+import io.github.mortuusars.monobank.data.provider.LootTables;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -19,8 +20,8 @@ public class DataGeneration
         ExistingFileHelper helper = event.getExistingFileHelper();
         if (event.includeServer()) {
             generator.addProvider(new Advancements(generator, helper));
+            generator.addProvider(new LootTables(generator));
 //            BlockTags blockTags = new BlockTags(generator, FarmersDelight.MODID, helper);
-//            generator.addProvider(blockTags);
 //            generator.addProvider(new ItemTags(generator, blockTags, FarmersDelight.MODID, helper));
 //            generator.addProvider(new EntityTags(generator, FarmersDelight.MODID, helper));
 //            generator.addProvider(new Recipes(generator));

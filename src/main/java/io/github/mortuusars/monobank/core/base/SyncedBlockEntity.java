@@ -39,8 +39,10 @@ public class SyncedBlockEntity extends BlockEntity
     @Override
     public void setChanged() {
         super.setChanged();
-        if (level != null)
+        if (level != null && !level.isClientSide) {
+//            level.updateNeighbourForOutputSignal(getBlockPos(), getBlockState().getBlock());
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 }
 

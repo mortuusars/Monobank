@@ -1,0 +1,56 @@
+{
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_name",
+              "source": "block_entity"
+            },
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                {
+                  "source": "Inventory",
+                  "target": "BlockEntityTag.Inventory",
+                  "op": "replace"
+                },
+                {
+                  "source": "Lock",
+                  "target": "BlockEntityTag.Lock",
+                  "op": "replace"
+                },
+                {
+                  "source": "Owner",
+                  "target": "BlockEntityTag.Owner",
+                  "op": "replace"
+                },
+                {
+                  "source": "LootTable",
+                  "target": "BlockEntityTag.LootTable",
+                  "op": "replace"
+                },
+                {
+                  "source": "LootTableSeed",
+                  "target": "BlockEntityTag.LootTableSeed",
+                  "op": "replace"
+                }
+              ]
+            }
+          ],
+          "name": "monobank:monobank"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}
