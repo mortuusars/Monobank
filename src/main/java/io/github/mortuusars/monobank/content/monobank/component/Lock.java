@@ -67,6 +67,15 @@ public class Lock {
         this.combination = Either.right(new Combination(List.of(first, second, third)));
     }
 
+    public void setCombinationTable(ResourceLocation combinationLootTable) {
+        combination = Either.left(combinationLootTable);
+    }
+
+    public boolean hasCombinationOrCombinationTable() {
+        boolean b = !combination.right().orElse(Combination.empty()).isEmpty();
+        return combination.left().isPresent() || b;
+    }
+
     public Combination getCombination() {
         if (combination.left().isPresent() && tryUnpackCombinationTable())
             levelSupplier.get().getBlockEntity(pos).setChanged(); // Save block entity

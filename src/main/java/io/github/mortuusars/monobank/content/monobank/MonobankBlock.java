@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.content.effect.ThiefEffect;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,8 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -35,11 +34,11 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,21 +99,26 @@ public class MonobankBlock extends Block implements EntityBlock {
     @Override
     public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
-            monobankEntity.unpackLootTable(player, true);
             if (!level.isClientSide) {
-                //TODO: Wanted debuff
-                List<IronGolem> golems = level.getEntitiesOfClass(IronGolem.class, new AABB(pos).inflate(20));
-                for (IronGolem golem : golems) {
-                    golem.setPersistentAngerTarget(player.getUUID());
-                    golem.startPersistentAngerTimer();
+
+                // TODO: invisibility, night,
+                if (!monobankEntity.getOwner().isOwnedBy(player)) {
+                    player.addEffect(ThiefEffect.createInstance(Duration.ofSeconds(30)));
                 }
 
-                List<Villager> villagers = level.getEntitiesOfClass(Villager.class, new AABB(pos).inflate(30));
-                for (Villager villager : villagers) {
-//                    villager.sha
-
-                }
+//                //TODO: Wanted debuff
+//                List<IronGolem> golems = level.getEntitiesOfClass(IronGolem.class, new AABB(pos).inflate(20));
+//                for (IronGolem golem : golems) {
+//                    golem.setPersistentAngerTarget(player.getUUID());
+//                    golem.startPersistentAngerTimer();
+//                }
+//
+//                List<Villager> villagers = level.getEntitiesOfClass(Villager.class, new AABB(pos).inflate(30));
+//                for (Villager villager : villagers) {
+//                    villager.setAggressive(true);
+//                }
             }
+            monobankEntity.unpackLootTable(player, true);
         }
         super.playerWillDestroy(level, pos, state, player);
     }
@@ -202,7 +206,7 @@ public class MonobankBlock extends Block implements EntityBlock {
             return InteractionResult.SUCCESS;
 
         if (monobankEntity.getLock().isLocked()) { // Should be unlocked first
-            player.displayClientMessage(TextUtil.translate("interaction.message.locking.monobank_is_locked"), true);
+            player.displayClientMessage(TextUtil.translate("message.monobank.locking.monobank_is_locked"), true);
             monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
         }
         else if (player instanceof ServerPlayer serverPlayer) {
@@ -227,7 +231,7 @@ public class MonobankBlock extends Block implements EntityBlock {
             }
 
             if (monobankEntity.isUnlocking())
-                player.displayClientMessage(TextUtil.translate("interaction.message.unlocking"), true);
+                player.displayClientMessage(TextUtil.translate("message.monobank.unlocking"), true);
             else
                 monobankEntity.startUnlocking();
 

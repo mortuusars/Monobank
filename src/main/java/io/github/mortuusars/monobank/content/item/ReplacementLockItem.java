@@ -42,12 +42,12 @@ public class ReplacementLockItem extends Item {
             return InteractionResult.FAIL;
 
         if (monobankEntity.getOwner().isPlayerOwned() && !monobankEntity.getOwner().isOwnedBy(player)) { //TODO: config
-            player.displayClientMessage(TextUtil.translate("interaction.message.cannot_change_lock_not_owner"), true);
+            player.displayClientMessage(TextUtil.translate("message.replacement_lock.cannot_change_lock_not_owner"), true);
             return InteractionResult.FAIL;
         }
 
         if (monobankEntity.getLock().isLocked()) {
-            player.displayClientMessage(TextUtil.translate("interaction.message.cannot_change_lock_is_locked"), true);
+            player.displayClientMessage(TextUtil.translate("message.cannot_change_lock_is_locked"), true);
             return InteractionResult.FAIL;
         }
 

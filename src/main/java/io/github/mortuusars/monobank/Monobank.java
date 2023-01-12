@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank;
 
+import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.event.ClientSetup;
 import io.github.mortuusars.monobank.event.CommonSetup;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +13,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class Monobank
 {
     public static final String ID = "monobank";
-
     public static final boolean IN_DEBUG = true;
 
     public Monobank()
@@ -26,6 +26,10 @@ public class Monobank
         modEventBus.addListener(CommonSetup::onCommonSetup);
 
         Registry.register(modEventBus);
+
+        MinecraftForge.EVENT_BUS.addListener(Thief::onEntityInteractEvent);
+        MinecraftForge.EVENT_BUS.addListener(Thief::onBlockRightClick);
+        MinecraftForge.EVENT_BUS.addListener(Thief::onBlockBroken);
 
         MinecraftForge.EVENT_BUS.register(this);
     }

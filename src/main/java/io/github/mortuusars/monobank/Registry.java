@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank;
 
 import io.github.mortuusars.monobank.content.advancement.MonobankItemsCountTrigger;
+import io.github.mortuusars.monobank.content.effect.ThiefEffect;
 import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
@@ -9,6 +10,8 @@ import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockRepla
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -66,6 +69,12 @@ public class Registry {
                 .register("lock_replacement", () -> IForgeMenuType.create(LockReplacementMenu::fromBuffer));
     }
 
+    public static class Effects {
+        private static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Monobank.ID);
+        public static final RegistryObject<MobEffect> THIEF = EFFECTS.register("thief",
+                () -> new ThiefEffect(MobEffectCategory.HARMFUL, 0x222222));
+    }
+
     public static class Sounds {
         private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Monobank.ID);
 
@@ -93,6 +102,7 @@ public class Registry {
         Items.ITEMS.register(modEventBus);
         BlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
         MenuTypes.MENU_TYPES.register(modEventBus);
+        Effects.EFFECTS.register(modEventBus);
         Sounds.SOUNDS.register(modEventBus);
     }
 }

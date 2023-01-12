@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class LockReplacementScreen extends PatchedAbstractContainerScreen<LockReplacementMenu> {
     private static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_lock_replacement.png");
-    private static final Component CONFIRM_TOOLTIP = TextUtil.translate("gui.monobank.lock_replacement.confirm_tooltip");
+    private static final Component CONFIRM_TOOLTIP = TextUtil.translate("gui.monobank.lock_replacement.confirm.tooltip");
     public LockReplacementScreen(LockReplacementMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
     }

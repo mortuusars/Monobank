@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -34,11 +35,13 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
     private final Component BREAK_IN_ATTEMPTED_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.break_in_attempted");
     private final Component BREAK_IN_SUCCEEDED_TOOLTIP = TextUtil.translate("gui.monobank.tooltip.break_in_succeeded");
 
-    private final CombinationTooltip combinationTooltip;
+    private final MonobankBlockEntity blockEntity;
+    private Optional<TooltipComponent> combinationTooltip;
 
     public MonobankScreen(MonobankMenu containerMenu, Inventory playerinventory, Component title) {
         super(containerMenu, playerinventory, title);
-        this.combinationTooltip = new CombinationTooltip(getMenu().getBlockEntity().getLock().getCombination());
+        combinationTooltip = Optional.empty();
+        blockEntity = containerMenu.getBlockEntity();
     }
 
     @Override
@@ -103,8 +106,9 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
             renderBankSlotTooltip(bankSlot.getItem(), poseStack, x, y);
         }
         else if (getMenu().extraInfo.isOwner && isHovering(161, 3, 12, 12, x, y)) { // Owner
-            renderTooltip(poseStack, List.of(OWNER_TOOLTIP), getMenu().getBlockEntity().getLock().getCombination().isEmpty()
-                    ? Optional.empty() : Optional.of(combinationTooltip), x, y);
+            if (combinationTooltip.isEmpty() && !blockEntity.getLock().getCombination().isEmpty())
+                combinationTooltip = Optional.of(new CombinationTooltip(blockEntity.getLock().getCombination()));
+            renderTooltip(poseStack, List.of(OWNER_TOOLTIP), combinationTooltip, x, y);
         }
         else if (getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
             if (getMenu().extraInfo.breakInSucceeded)

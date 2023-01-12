@@ -33,6 +33,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -353,15 +354,33 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     public void onSetPlacedBy(LivingEntity placer, ItemStack stack) {
-        if (placer instanceof Player player && stack.hasTag() && stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
-            CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
-            if (blockEntityTag.contains(OWNER_TAG)){
-                Owner owner = Owner.none();
-                owner.deserializeNBT(blockEntityTag.getCompound(OWNER_TAG));
-                if (owner.getType() == Owner.Type.NONE)
-                    setOwner(player);
-            }
+        if (!placer.level.isClientSide && placer instanceof Player player) {
+
+            if (this.owner.getType() == Owner.Type.NONE)
+                setOwner(player);
+
+            if (!getLock().hasCombinationOrCombinationTable())
+                getLock().setCombinationTable(Monobank.resource("combination/default"));
+//            getLock().setCombination(Items.TRIPWIRE_HOOK, Items.TRIPWIRE_HOOK, Items.TRIPWIRE_HOOK);
+
+            setChanged();
         }
+
+//        boolean tagHasOwner = false;
+//        if (placer instanceof Player player && stack.hasTag() && stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
+//            CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
+//            if (blockEntityTag.contains(OWNER_TAG)){
+//                Owner owner = Owner.none();
+//                owner.deserializeNBT(blockEntityTag.getCompound(OWNER_TAG));
+//                if (owner.getType() != Owner.Type.NONE)
+//                    tagHasOwner = true;
+//            }
+//        }
+//
+//        if (!tagHasOwner && placer instanceof Player player)
+//            setOwner(player);
+
+        boolean a = false;
     }
 
     // GUI
