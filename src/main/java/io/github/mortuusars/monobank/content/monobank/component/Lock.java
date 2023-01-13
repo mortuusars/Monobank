@@ -143,7 +143,7 @@ public class Lock {
         List<ItemStack> randomItems = loottable.getRandomItems(lootContext);
         ArrayList<Item> newCombination = new ArrayList<>();
         for (int i = 0; i < Combination.SIZE; i++) {
-            if (randomItems.size() < i)
+            if (randomItems.size() <= i)
                 newCombination.add(Items.AIR);
             else
                 newCombination.add(randomItems.get(i).getItem());

@@ -2,6 +2,8 @@
   "block.monobank.monobank": "Monobank",
   "item.monobank.replacement_lock": "Replacement Lock",
 
+  "monobank.filled_map.ruined_portal": "Portal Ruins Map",
+
   "monobank.tooltip.locked": "Locked",
   "monobank.tooltip.loot_table": "Loot Table: %s",
   "monobank.tooltip.combination_table": "Combination Table: %s",
@@ -17,6 +19,7 @@
   "monobank.gui.monobank.tooltip.break_in_attempted": "Someone unsuccessfully attempted to open this Monobank",
   "monobank.gui.monobank.tooltip.break_in_succeeded": "Monobank was opened by someone",
 
+  "monobank.message.lock_replaced": "Lock has been replaced",
   "monobank.message.monobank.locking.monobank_is_locked": "Locked. Try unlocking with SHIFT+Click.",
   "monobank.message.monobank.unlocking": "Monobank is unlocking...",
   "monobank.message.replacement_lock.cannot_change_lock_not_owner": "Cannot change lock in this Monobank.",

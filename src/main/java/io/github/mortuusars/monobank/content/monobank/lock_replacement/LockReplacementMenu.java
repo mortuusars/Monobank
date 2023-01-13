@@ -106,7 +106,7 @@ public class LockReplacementMenu extends AbstractContainerMenu {
 
         monobankEntity.getLock().setCombination(combination.get(0).getItem(), combination.get(1).getItem(), combination.get(2).getItem());
         monobankEntity.setOwner(player);
-        player.displayClientMessage(TextUtil.translate("interaction.message.lock_replaced"), true);
+        player.displayClientMessage(TextUtil.translate("message.lock_replaced"), true);
         monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get()); // TODO: Sound
 
         // Consume item:
