@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank;
 
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.event.ClientSetup;
 import io.github.mortuusars.monobank.event.CommonSetup;
@@ -17,6 +18,8 @@ public class Monobank
 
     public Monobank()
     {
+        Configuration.register();
+
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         modEventBus.addListener(ClientSetup::init);
@@ -42,8 +45,6 @@ public class Monobank
     }
 
     public static int getSlotCapacity() {
-        // TODO: config max size
-//        return Integer.MAX_VALUE;
-        return 64;
+        return Configuration.MONOBANK_CAPACITY.get();
     }
 }
