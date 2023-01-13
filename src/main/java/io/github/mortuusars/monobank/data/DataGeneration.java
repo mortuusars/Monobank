@@ -1,10 +1,7 @@
 package io.github.mortuusars.monobank.data;
 
 import io.github.mortuusars.monobank.Monobank;
-import io.github.mortuusars.monobank.data.provider.Advancements;
-import io.github.mortuusars.monobank.data.provider.BlockStates;
-import io.github.mortuusars.monobank.data.provider.ItemModels;
-import io.github.mortuusars.monobank.data.provider.LootTables;
+import io.github.mortuusars.monobank.data.provider.*;
 import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,11 +18,7 @@ public class DataGeneration
         if (event.includeServer()) {
             generator.addProvider(new Advancements(generator, helper));
             generator.addProvider(new LootTables(generator));
-//            BlockTags blockTags = new BlockTags(generator, FarmersDelight.MODID, helper);
-//            generator.addProvider(new ItemTags(generator, blockTags, FarmersDelight.MODID, helper));
-//            generator.addProvider(new EntityTags(generator, FarmersDelight.MODID, helper));
-//            generator.addProvider(new Recipes(generator));
-//            generator.addProvider(new Advancements(generator));
+            generator.addProvider(new Recipes(generator));
         }
         if (event.includeClient()) {
             BlockStates blockStates = new BlockStates(generator, helper);

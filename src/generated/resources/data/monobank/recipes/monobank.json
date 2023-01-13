@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BIB",
+    "L I",
+    "BIB"
+  ],
+  "key": {
+    "B": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "L": {
+      "item": "monobank:replacement_lock"
+    }
+  },
+  "result": {
+    "item": "monobank:monobank"
+  }
+}
