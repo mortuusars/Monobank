@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.content.effect;
 
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.core.stealth.Stealth;
 import io.github.mortuusars.monobank.util.TextUtil;
@@ -37,23 +38,18 @@ public class Thief {
     }
 
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getEntity().level.isClientSide)
-            return;
-
-        if (!(event.getEntity() instanceof LivingEntity livingEntity))
+        if (!(event.getEntity() instanceof LivingEntity livingEntity) || livingEntity.level.isClientSide
+        || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
         BlockEntity blockEntityAtPos = livingEntity.level.getBlockEntity(event.getHitVec().getBlockPos());
-        if (blockEntityAtPos instanceof MonobankBlockEntity)
-            return;
-
         if (blockEntityAtPos instanceof RandomizableContainerBlockEntity container && container.lootTable != null
                 && wasSeenCommittingCrime(event.getPlayer()))
             declareThief(livingEntity, Offence.MODERATE);
     }
 
     public static void onBlockBroken(BlockEvent.BreakEvent event) {
-        if (event.getPlayer().level.isClientSide)
+        if (event.getPlayer().level.isClientSide || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
         BlockEntity blockEntityAtPos = event.getPlayer().level.getBlockEntity(event.getPos());
@@ -63,6 +59,9 @@ public class Thief {
     }
 
     public static boolean wasSeenCommittingCrime(LivingEntity thief) {
+        if (!Configuration.THIEF_ENABLED.get())
+            return false;
+
         if (thief instanceof Player player && (player.isCreative() || player.isSpectator()))
             return false;
 
@@ -101,6 +100,9 @@ public class Thief {
     }
 
     public static void declareThief(LivingEntity livingEntity, Offence offence) {
+        if (!Configuration.THIEF_ENABLED.get())
+            return;
+
         livingEntity.removeEffect(MobEffects.HERO_OF_THE_VILLAGE); // You either die a hero...
 
         int durationSeconds = (int)(ThiefEffect.getBaseDurationSeconds() * offence.getModifier());

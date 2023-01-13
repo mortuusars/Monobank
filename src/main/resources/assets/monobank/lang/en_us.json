@@ -23,8 +23,8 @@
   "monobank.message.lock_replaced": "Lock has been replaced",
   "monobank.message.monobank.locking.monobank_is_locked": "Locked. Try unlocking with SHIFT+Click.",
   "monobank.message.monobank.unlocking": "Monobank is unlocking...",
-  "monobank.message.replacement_lock.cannot_change_lock_not_owner": "Cannot change lock in this Monobank.",
-  "monobank.message.replacement_lock.cannot_change_lock_is_locked": "Cannot change lock: Monobank must be unlocked first.",
+  "monobank.message.replacement_lock.cannot_replace_not_owner": "Cannot replace lock in this Monobank.",
+  "monobank.message.replacement_lock.cannot_replace_when_locked": "Cannot replace lock: Monobank must be unlocked first.",
   "monobank.message.thief.you_were_seen": "You were seen committing a crime.",
 
   "monobank.advancement.monobank.title" : "A Safe Bet",

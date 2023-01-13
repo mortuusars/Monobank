@@ -1,5 +1,7 @@
 package io.github.mortuusars.monobank.content.item;
 
+import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
 import io.github.mortuusars.monobank.util.TextUtil;
@@ -41,32 +43,35 @@ public class ReplacementLockItem extends Item {
         if (!(blockEntityAtPos instanceof MonobankBlockEntity monobankEntity))
             return InteractionResult.FAIL;
 
-        if (monobankEntity.getOwner().isPlayerOwned() && !monobankEntity.getOwner().isOwnedBy(player)) { //TODO: config
-            player.displayClientMessage(TextUtil.translate("message.replacement_lock.cannot_change_lock_not_owner"), true);
+        if (level.isClientSide)
+            return InteractionResult.sidedSuccess(true);
+
+        if (!Configuration.CAN_REPLACE_OTHER_PLAYERS_LOCKS.get() && monobankEntity.getOwner().isPlayerOwned()
+                && !monobankEntity.getOwner().isOwnedBy(player)) {
+            player.displayClientMessage(TextUtil.translate("message.replacement_lock.cannot_replace_not_owner"), true);
+            monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
             return InteractionResult.FAIL;
         }
 
         if (monobankEntity.getLock().isLocked()) {
-            player.displayClientMessage(TextUtil.translate("message.cannot_change_lock_is_locked"), true);
+            player.displayClientMessage(TextUtil.translate("message.replacement_lock.cannot_replace_when_locked"), true);
+            monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
             return InteractionResult.FAIL;
         }
 
-        if (!level.isClientSide) {
-            NetworkHooks.openGui(((ServerPlayer) player), new MenuProvider() {
-                @Override
-                public Component getDisplayName() {
-                    return TextUtil.translate("gui.monobank.lock_replacement", monobankEntity.getName());
-                }
+        NetworkHooks.openGui(((ServerPlayer) player), new MenuProvider() {
+            @Override
+            public Component getDisplayName() {
+                return TextUtil.translate("gui.monobank.lock_replacement", monobankEntity.getName());
+            }
 
-                @Nullable
-                @Override
-                public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-                    return new LockReplacementMenu(containerId, playerInventory, monobankEntity);
-                }
-            }, clickedPos);
+            @Nullable
+            @Override
+            public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+                return new LockReplacementMenu(containerId, playerInventory, monobankEntity);
+            }
+        }, clickedPos);
 
-        }
-
-        return InteractionResult.sidedSuccess(level.isClientSide);
+        return InteractionResult.sidedSuccess(false);
     }
 }

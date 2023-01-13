@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.content.effect;
 
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.core.stealth.Stealth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffect;
@@ -34,8 +35,7 @@ public class ThiefEffect extends MobEffect {
     }
 
     public static int getBaseDurationSeconds() {
-        //TODO: config duration
-        return 360;
+        return Configuration.THIEF_EFFECT_BASE_DURATION.get();
     }
 
     @Override
@@ -73,11 +73,6 @@ public class ThiefEffect extends MobEffect {
             else if (distanceToThief >= 26f && golem.getTarget() == livingEntity && golem.getLastHurtByMob() != livingEntity)
                 golem.stopBeingAngry();
         }
-
-
-
-        // No spawning for now:
-
 
         // Spawn additional golems:
 

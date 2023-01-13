@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.content.monobank.component.*;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
@@ -224,8 +225,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     public boolean checkAndPunishForCrime(Player player, Thief.Offence offence) {
-        //TODO: config if unlocking player-owned banks is considered a crime
-        if (getOwner().getType() == Owner.Type.NPC && Thief.wasSeenCommittingCrime(player)) {
+        boolean crimeAgainstPlayer = Configuration.THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME.get() && getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player);
+        boolean crimeAgainstNPC = getOwner().getType() == Owner.Type.NPC;
+        if ((crimeAgainstPlayer || crimeAgainstNPC) && Thief.wasSeenCommittingCrime(player)) {
             Thief.declareThief(player, Thief.Offence.LIGHT);
             return true;
         }
@@ -247,10 +249,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             tag.putString(CUSTOM_NAME_TAG, Component.Serializer.toJson(this.customName));
 
         if (getOwner().isPlayerOwned()) {
-            if (breakInSucceeded)
-                tag.putBoolean(BREAK_IN_SUCCEEDED_TAG, true);
-            else if (breakInAttempted)
-                tag.putBoolean(BREAK_IN_ATTEMPTED_TAG, true);
+            tag.putBoolean(BREAK_IN_SUCCEEDED_TAG, breakInSucceeded);
+            tag.putBoolean(BREAK_IN_ATTEMPTED_TAG, breakInAttempted);
         }
     }
 
