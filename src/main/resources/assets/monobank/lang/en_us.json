@@ -1,6 +1,7 @@
 {
   "block.monobank.monobank": "Monobank",
   "item.monobank.replacement_lock": "Replacement Lock",
+  "effect.monobank.thief": "Thief",
 
   "monobank.filled_map.ruined_portal": "Portal Ruins Map",
 
@@ -24,7 +25,7 @@
   "monobank.message.monobank.unlocking": "Monobank is unlocking...",
   "monobank.message.replacement_lock.cannot_change_lock_not_owner": "Cannot change lock in this Monobank.",
   "monobank.message.replacement_lock.cannot_change_lock_is_locked": "Cannot change lock: Monobank must be unlocked first.",
-  "monobank.message.thief.you_were_seen": "Cannot change lock: Monobank must be unlocked first.",
+  "monobank.message.thief.you_were_seen": "You were seen committing a crime.",
 
   "monobank.advancement.monobank.title" : "A Safe Bet",
   "monobank.advancement.monobank.description" : "Get a Monobank to safely store your wealth",

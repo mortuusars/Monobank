@@ -3,10 +3,8 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.monobank.component.DoorOpennessController;
-import io.github.mortuusars.monobank.content.monobank.component.Lock;
-import io.github.mortuusars.monobank.content.monobank.component.MonobankExtraInfo;
-import io.github.mortuusars.monobank.content.monobank.component.Owner;
+import io.github.mortuusars.monobank.content.effect.Thief;
+import io.github.mortuusars.monobank.content.monobank.component.*;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
@@ -33,11 +31,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
@@ -98,26 +94,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
                     MonobankBlockEntity.this.lock.getCombination());
         }
     };
-    private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
-        protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            MonobankBlockEntity.playSoundAtDoor(level, pos, state, Registry.Sounds.MONOBANK_OPEN.get());
-        }
-
-        protected void onClose(Level level, BlockPos pos, BlockState state) {
-            MonobankBlockEntity.playSoundAtDoor(level, pos, state, Registry.Sounds.MONOBANK_CLOSE.get());
-        }
-
-        protected void openerCountChanged(Level level, BlockPos pos, BlockState state, int eventId, int eventParam) {
-            // Send update to client:
-            level.blockEvent(pos, state.getBlock(), UPDATE_DOOR_EVENT_ID, eventParam);
-        }
-
-        protected boolean isOwnContainer(Player player) {
-            return player.containerMenu instanceof MonobankMenu monobankMenu
-                    && monobankMenu.getBlockEntity() == MonobankBlockEntity.this;
-        }
-    };
-    private final DoorOpennessController doorOpennessController;
+    private final ContainerOpenersCounter openersCounter = new MonobankOpenersCounter(this);
+    private final DoorOpennessController doorOpennessController = new DoorOpennessController(0.5f,
+        0.35f, 0.6f, 0.65f, 0.36f);
 
     // Serialized fields:
     private final MonobankItemStackHandler inventory;
@@ -136,8 +115,6 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         super(Registry.BlockEntityTypes.MONOBANK.get(), pPos, pBlockState);
         this.inventory = new MonobankItemStackHandler(slot -> inventoryChanged(), 1);
         this.inventoryHandler = LazyOptional.of(() -> inventory);
-        doorOpennessController = new DoorOpennessController(0.5f,
-                0.35f, 0.6f, 0.65f, 0.36f);
         lock = new Lock(this.getBlockPos(), this::onLockedChanged, this::onLockInventoryChanged, this::getLevel);
         owner = Owner.none();
     }
@@ -197,6 +174,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             List<? extends Player> players = level.players();
             for (Player player : players) {
                 if (player.containerMenu instanceof UnlockingMenu unlockingMenu && unlockingMenu.monobankEntity == this) {
+                    checkAndPunishForCrime(player, Thief.Offence.HEAVY);
                     if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
                         breakInSucceeded = true;
                         setChanged();
@@ -219,15 +197,12 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         if (level != null && !level.isClientSide) { // Level is null when world loading, idk why.
             SoundEvent sound = isLocked ? Registry.Sounds.MONOBANK_LOCK.get() : Registry.Sounds.MONOBANK_UNLOCK.get();
             playSoundAtDoor(level, worldPosition, getBlockState(), sound, 1f);
-            // We need to update clients with new state (otherwise door open/closing will not render):
-//            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Sync client.
         }
 
         setChanged();
     }
 
     private void onLockInventoryChanged(Integer slot) {
-
         if (level.isClientSide)
             return;
 
@@ -246,6 +221,15 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             this.startUnlocking();
             dropItemsAtDoor(keys);
         }
+    }
+
+    public boolean checkAndPunishForCrime(Player player, Thief.Offence offence) {
+        //TODO: config if unlocking player-owned banks is considered a crime
+        if (getOwner().getType() == Owner.Type.NPC && Thief.wasSeenCommittingCrime(player)) {
+            Thief.declareThief(player, Thief.Offence.LIGHT);
+            return true;
+        }
+        return false;
     }
 
 
@@ -313,7 +297,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         if (includeCombination)
             getLock().tryUnpackCombinationTable();
 
-        if (this.lootTable != null && this.level.getServer() != null) {
+        if (this.lootTable != null && this.level != null && this.level.getServer() != null) {
             if (!this.inventory.getStackInSlot(0).isEmpty()) {
                 LogUtils.getLogger().warn("Tried to unpack Loot Table while Monobank is not empty. Loot Table will not be unpacked.");
                 return;
@@ -361,31 +345,18 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
 
             if (!getLock().hasCombinationOrCombinationTable())
                 getLock().setCombinationTable(Monobank.resource("combination/default"));
-//            getLock().setCombination(Items.TRIPWIRE_HOOK, Items.TRIPWIRE_HOOK, Items.TRIPWIRE_HOOK);
 
             setChanged();
         }
-
-//        boolean tagHasOwner = false;
-//        if (placer instanceof Player player && stack.hasTag() && stack.getTag().contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
-//            CompoundTag blockEntityTag = stack.getTag().getCompound("BlockEntityTag");
-//            if (blockEntityTag.contains(OWNER_TAG)){
-//                Owner owner = Owner.none();
-//                owner.deserializeNBT(blockEntityTag.getCompound(OWNER_TAG));
-//                if (owner.getType() != Owner.Type.NONE)
-//                    tagHasOwner = true;
-//            }
-//        }
-//
-//        if (!tagHasOwner && placer instanceof Player player)
-//            setOwner(player);
-
-        boolean a = false;
     }
+
 
     // GUI
     public void openUnlockingGui(ServerPlayer player) {
         if (lock.isLocked()) {
+
+            checkAndPunishForCrime(player, Thief.Offence.LIGHT);
+
             if (getLock().getCombination().isEmpty())
                 startUnlocking(); // Open straight up when no combination is set:
             else {
@@ -401,6 +372,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         }
     }
     public void open(ServerPlayer player) {
+        checkAndPunishForCrime(player, Thief.Offence.MODERATE);
         NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, buffer -> {
             buffer.writeBlockPos(worldPosition);
             getExtraInfo(player).toBuffer(buffer);

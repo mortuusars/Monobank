@@ -3,7 +3,7 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.effect.ThiefEffect;
+import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,12 +33,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
-import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,34 +96,11 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     @Override
     public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
-            if (!level.isClientSide) {
-
-                // TODO: invisibility, night,
-                if (!monobankEntity.getOwner().isOwnedBy(player)) {
-                    player.addEffect(ThiefEffect.createInstance(Duration.ofSeconds(30)));
-                }
-
-//                //TODO: Wanted debuff
-//                List<IronGolem> golems = level.getEntitiesOfClass(IronGolem.class, new AABB(pos).inflate(20));
-//                for (IronGolem golem : golems) {
-//                    golem.setPersistentAngerTarget(player.getUUID());
-//                    golem.startPersistentAngerTimer();
-//                }
-//
-//                List<Villager> villagers = level.getEntitiesOfClass(Villager.class, new AABB(pos).inflate(30));
-//                for (Villager villager : villagers) {
-//                    villager.setAggressive(true);
-//                }
-            }
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
             monobankEntity.unpackLootTable(player, true);
+            monobankEntity.checkAndPunishForCrime(player, Thief.Offence.HEAVY);
         }
         super.playerWillDestroy(level, pos, state, player);
-    }
-
-    @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-        return super.getDrops(state, builder);
     }
 
     @Override
@@ -172,7 +147,6 @@ public class MonobankBlock extends Block implements EntityBlock {
             }
 
             if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.MILK_BUCKET)) {
-//                monobankBlockEntity.getLock().setCombination(Items.IRON_NUGGET, Items.APPLE, Items.GOLD_NUGGET);
                 monobankBlockEntity.setOwner(new Player(level, pos, 0, new GameProfile(UUID.randomUUID(), "John")) {
                     @Override
                     public boolean isSpectator() {

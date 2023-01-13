@@ -2,6 +2,7 @@ package io.github.mortuusars.monobank.content.effect;
 
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.core.stealth.Stealth;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -52,6 +53,9 @@ public class ThiefEffect extends MobEffect {
         Level level = livingEntity.level;
         if (level.isClientSide || level.getGameTime() % 10 != 0 ||
                 (livingEntity instanceof Player player && (player.isCreative() || player.isSpectator())))
+            return;
+
+        if (level.getDifficulty() == Difficulty.PEACEFUL)
             return;
 
         int baseRadius = 16;

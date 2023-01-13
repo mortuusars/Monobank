@@ -30,6 +30,7 @@ public class Thief {
 
         @Nullable MobEffectInstance thiefEffect = livingEntity.getEffect(Registry.Effects.THIEF.get());
         if (thiefEffect != null) {
+            // Villagers will not trade with thieves.
             villager.setUnhappy();
             event.setCanceled(true);
         }
@@ -61,33 +62,13 @@ public class Thief {
             declareThief(event.getPlayer(), Offence.HEAVY);
     }
 
-    public static void declareThief(LivingEntity livingEntity, Offence offence) {
-        livingEntity.removeEffect(MobEffects.HERO_OF_THE_VILLAGE); // You either die a hero...
-
-        int durationSeconds = (int)(ThiefEffect.getBaseDurationSeconds() * offence.getModifier());
-        int amplifier = offence.getAmplifier();
-
-        MobEffectInstance existingThiefEffect = livingEntity.getEffect(Registry.Effects.THIEF.get());
-        if (existingThiefEffect != null) {
-            amplifier = Math.max(amplifier, existingThiefEffect.getAmplifier());
-            int existingDuration = existingThiefEffect.getDuration();
-            durationSeconds = Math.min(ThiefEffect.getBaseDurationSeconds() * 10,
-                    durationSeconds + livingEntity.level.random.nextInt(existingDuration / 2, existingDuration));
-        }
-
-        livingEntity.removeEffect(Registry.Effects.THIEF.get());
-        MobEffectInstance thiefEffectInstance = ThiefEffect.createInstance(Duration.ofSeconds(durationSeconds), amplifier);
-        livingEntity.addEffect(thiefEffectInstance);
-
-        if (livingEntity instanceof Player player) {
-            player.displayClientMessage(TextUtil.translate("message.thief.you_were_seen"), true);
-        }
-    }
-
     public static boolean wasSeenCommittingCrime(LivingEntity thief) {
+        if (thief instanceof Player player && (player.isCreative() || player.isSpectator()))
+            return false;
+
         Level level = thief.level;
 
-        int radius = Math.max((int)(20 * Stealth.getValueOf(thief)), 3);
+        int radius = Math.max((int)(32 * Stealth.getValueOf(thief)), 3);
         AABB crimeScene = new AABB(thief.blockPosition()).inflate(radius, radius * 0.33f, radius);
 
         List<IronGolem> ironGolemsInArea = level.getEntitiesOfClass(IronGolem.class, crimeScene);
@@ -117,6 +98,29 @@ public class Thief {
         }
 
         return false;
+    }
+
+    public static void declareThief(LivingEntity livingEntity, Offence offence) {
+        livingEntity.removeEffect(MobEffects.HERO_OF_THE_VILLAGE); // You either die a hero...
+
+        int durationSeconds = (int)(ThiefEffect.getBaseDurationSeconds() * offence.getModifier());
+        int amplifier = offence.getAmplifier();
+
+        MobEffectInstance existingThiefEffect = livingEntity.getEffect(Registry.Effects.THIEF.get());
+        if (existingThiefEffect != null) {
+            amplifier = Math.max(amplifier, existingThiefEffect.getAmplifier());
+            int existingDuration = existingThiefEffect.getDuration() / 20;
+            durationSeconds = Math.min(ThiefEffect.getBaseDurationSeconds() * 4,
+                    durationSeconds + existingDuration);
+        }
+
+        livingEntity.removeEffect(Registry.Effects.THIEF.get());
+        MobEffectInstance thiefEffectInstance = ThiefEffect.createInstance(Duration.ofSeconds(durationSeconds), amplifier);
+        livingEntity.addEffect(thiefEffectInstance);
+
+        if (livingEntity instanceof Player player) {
+            player.displayClientMessage(TextUtil.translate("message.thief.you_were_seen"), true);
+        }
     }
 
     public enum Offence {
