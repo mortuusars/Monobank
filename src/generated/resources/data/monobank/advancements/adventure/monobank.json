@@ -2,7 +2,8 @@
   "parent": "minecraft:adventure/root",
   "display": {
     "icon": {
-      "item": "monobank:monobank"
+      "item": "monobank:monobank",
+      "nbt": "{BlockEntityTag:{Lock:{Combination:[\"minecraft:air\",\"minecraft:air\",\"minecraft:air\"],Locked:1b}}}"
     },
     "title": {
       "translate": "monobank.advancement.monobank.title"
@@ -16,7 +17,7 @@
     "hidden": false
   },
   "criteria": {
-    "get_monobank": {
+    "monobank_get": {
       "trigger": "minecraft:inventory_changed",
       "conditions": {
         "items": [
@@ -31,7 +32,7 @@
   },
   "requirements": [
     [
-      "get_monobank"
+      "monobank_get"
     ]
   ]
 }

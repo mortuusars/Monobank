@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank.content.monobank.lock_replacement;
 
+import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
@@ -14,6 +15,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -98,29 +100,30 @@ public class LockReplacementMenu extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int buttonID) {
 
-        List<ItemStack> combination = new ArrayList<>(Combination.SIZE);
+        List<Item> combination = new ArrayList<>(Combination.SIZE);
 
         for (int i = 0; i < Combination.SIZE; i++) {
-            combination.add(this.slots.get(i).getItem());
+            combination.add(this.slots.get(i).getItem().getItem());
         }
 
-        monobankEntity.getLock().setCombination(combination.get(0).getItem(), combination.get(1).getItem(), combination.get(2).getItem());
-        monobankEntity.setOwner(player);
-        player.displayClientMessage(TextUtil.translate("message.lock_replaced"), true);
-        monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get()); // TODO: Lock Replacement Sound
+        if (monobankEntity.replaceLock(player, new Combination(combination))) {
+            player.displayClientMessage(TextUtil.translate("message.lock_replaced"), true);
 
-        // Consume item:
-        ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-        if (itemInHand.is(Registry.Items.REPLACEMENT_LOCK.get()))
-            itemInHand.shrink(1);
-        else {
-            itemInHand = player.getItemInHand(InteractionHand.OFF_HAND);
+            // Consume item:
+            ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
             if (itemInHand.is(Registry.Items.REPLACEMENT_LOCK.get()))
                 itemInHand.shrink(1);
+            else {
+                itemInHand = player.getItemInHand(InteractionHand.OFF_HAND);
+                if (itemInHand.is(Registry.Items.REPLACEMENT_LOCK.get()))
+                    itemInHand.shrink(1);
+            }
+
+            player.closeContainer();
+            return true;
         }
 
-        player.closeContainer();
-        return true;
+        return false;
     }
 
     // Called server-side.

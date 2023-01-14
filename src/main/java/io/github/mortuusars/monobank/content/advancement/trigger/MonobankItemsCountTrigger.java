@@ -1,4 +1,4 @@
-package io.github.mortuusars.monobank.content.advancement;
+package io.github.mortuusars.monobank.content.advancement.trigger;
 
 import com.google.gson.JsonObject;
 import io.github.mortuusars.monobank.Monobank;

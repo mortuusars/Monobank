@@ -67,6 +67,10 @@ public class Lock {
         this.combination = Either.right(new Combination(List.of(first, second, third)));
     }
 
+    public void setCombination(Combination combination) {
+        this.combination = Either.right(combination);
+    }
+
     public void setCombinationTable(ResourceLocation combinationLootTable) {
         combination = Either.left(combinationLootTable);
     }

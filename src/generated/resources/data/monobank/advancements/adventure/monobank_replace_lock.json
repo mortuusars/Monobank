@@ -1,0 +1,29 @@
+{
+  "parent": "monobank:adventure/monobank_unlock",
+  "display": {
+    "icon": {
+      "item": "monobank:replacement_lock"
+    },
+    "title": {
+      "translate": "monobank.advancement.replace_lock.title"
+    },
+    "description": {
+      "translate": "monobank.advancement.replace_lock.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "monobank_replace_lock": {
+      "trigger": "monobank:monobank_lock_replaced",
+      "conditions": {}
+    }
+  },
+  "requirements": [
+    [
+      "monobank_replace_lock"
+    ]
+  ]
+}

@@ -155,6 +155,23 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         return lock;
     }
 
+    public boolean replaceLock(Player player, Combination combination) {
+        if (!Configuration.CAN_REPLACE_OTHER_PLAYERS_LOCKS.get() && getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
+            LogUtils.getLogger().error("Tried to replace lock in other player owned Monobank. " +
+                    "(without enabling in config). Lock will not be replaced.");
+            return false;
+        }
+
+        getLock().setCombination(combination);
+        setOwner(player);
+        playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get()); // TODO: Lock Replacement Sound
+
+        if (player instanceof ServerPlayer serverPlayer)
+            Registry.Advancements.MONOBANK_LOCK_REPLACED.trigger(serverPlayer);
+
+        return true;
+    }
+
     public boolean isUnlocking() {
         return isUnlocking;
     }
@@ -180,6 +197,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
                         breakInSucceeded = true;
                         setChanged();
                     }
+
+                    if (player instanceof ServerPlayer serverPlayer)
+                        Registry.Advancements.MONOBANK_UNLOCKED.trigger(serverPlayer);
                 }
             }
 

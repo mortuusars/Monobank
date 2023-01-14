@@ -1,8 +1,9 @@
 {
-  "parent": "monobank:adventure/monobank",
+  "parent": "monobank:adventure/monobank_replace_lock",
   "display": {
     "icon": {
-      "item": "monobank:monobank"
+      "item": "monobank:monobank",
+      "nbt": "{BlockEntityTag:{Lock:{Combination:[\"minecraft:air\",\"minecraft:air\",\"minecraft:air\"],Locked:1b}}}"
     },
     "title": {
       "translate": "monobank.advancement.monobank_full.title"

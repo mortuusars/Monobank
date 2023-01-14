@@ -1,6 +1,8 @@
 package io.github.mortuusars.monobank;
 
-import io.github.mortuusars.monobank.content.advancement.MonobankItemsCountTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankItemsCountTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankLockReplacedTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankUnlockedTrigger;
 import io.github.mortuusars.monobank.content.effect.ThiefEffect;
 import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
@@ -91,9 +93,13 @@ public class Registry {
 
     public static class Advancements {
         public static MonobankItemsCountTrigger MONOBANK_ITEMS_COUNT = new MonobankItemsCountTrigger();
+        public static MonobankUnlockedTrigger MONOBANK_UNLOCKED = new MonobankUnlockedTrigger();
+        public static MonobankLockReplacedTrigger MONOBANK_LOCK_REPLACED = new MonobankLockReplacedTrigger();
 
         public static void register() {
             CriteriaTriggers.register(MONOBANK_ITEMS_COUNT);
+            CriteriaTriggers.register(MONOBANK_UNLOCKED);
+            CriteriaTriggers.register(MONOBANK_LOCK_REPLACED);
         }
     }
 

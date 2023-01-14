@@ -29,6 +29,10 @@
 
   "monobank.advancement.monobank.title" : "A Safe Bet",
   "monobank.advancement.monobank.description" : "Get a Monobank to safely store your wealth",
+  "monobank.advancement.unlock.title" : "If One Has the Right Key",
+  "monobank.advancement.unlock.description" : "Unlock the Monobank by entering the right combination",
+  "monobank.advancement.replace_lock.title" : "Lock On",
+  "monobank.advancement.replace_lock.description" : "Replace the lock in a Monobank",
   "monobank.advancement.monobank_full.title" : "Rolling In Wealth",
   "monobank.advancement.monobank_full.description" : "Fill a Monobank to the maximum",
 
