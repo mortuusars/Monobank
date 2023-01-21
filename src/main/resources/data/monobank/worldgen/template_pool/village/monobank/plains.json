@@ -1,0 +1,33 @@
+{
+  "name": "monobank:village/monobank/plains",
+  "fallback": "monobank:village/monobank/plains",
+  "elements": [
+    {
+      "weight": 10,
+      "element": {
+        "location": "monobank:village/monobank/plains_locked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 4,
+      "element": {
+        "location": "monobank:village/monobank/plains_unlocked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "location": "monobank:village/monobank/empty",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}

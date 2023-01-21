@@ -69,7 +69,7 @@ public class LootTables extends LootTableProvider {
                 .add(LootItem.lootTableItem(Items.BOOK))
                 .add(LootItem.lootTableItem(Items.BUCKET));
 
-        writeTable(cache, Monobank.resource("combination/village"),
+        writeTable(cache, Monobank.resource("combination/village/plains"),
                 LootTable.lootTable()
                         .withPool(villageCombinationPool)
                         .withPool(villageCombinationPool)
@@ -97,14 +97,14 @@ public class LootTables extends LootTableProvider {
 
         // Contents:
 
-        writeTable(cache, Monobank.resource("monobank/village"),
+        writeTable(cache, Monobank.resource("monobank/village/plains"),
                 LootTable.lootTable()
                         .withPool(LootPool.lootPool()
-                                .add(LootItem.lootTableItem(Items.EMERALD).apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 17))))
-                                .add(LootItem.lootTableItem(Items.EMERALD_BLOCK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4))))
-                                .add(LootItem.lootTableItem(Items.GOLD_NUGGET).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 15))))
-                                .add(LootItem.lootTableItem(Items.GOLD_INGOT).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 9))))
-                                .add(LootItem.lootTableItem(Items.GOLD_BLOCK).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3))))
+                                .add(LootItem.lootTableItem(Items.EMERALD).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 17))))
+                                .add(LootItem.lootTableItem(Items.EMERALD_BLOCK).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4))))
+                                .add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 15))))
+                                .add(LootItem.lootTableItem(Items.GOLD_INGOT).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 9))))
+                                .add(LootItem.lootTableItem(Items.GOLD_BLOCK).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3))))
                                 .add(LootItem.lootTableItem(Items.MAP)
                                         .apply(ExplorationMapFunction.makeExplorationMap()
                                                 .setDestination(ConfiguredStructureTags.RUINED_PORTAL)
