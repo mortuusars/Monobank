@@ -44,6 +44,7 @@ public class MonobankBlock extends Block implements EntityBlock {
     public MonobankBlock() {
         super(Properties.of(Material.METAL, MaterialColor.COLOR_BLACK)
                 .strength(8F, 1200F)
+                .noOcclusion()
                 .sound(SoundType.NETHERITE_BLOCK));
 
         registerDefaultState(this.getStateDefinition().any()

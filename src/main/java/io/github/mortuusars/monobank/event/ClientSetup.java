@@ -10,6 +10,8 @@ import io.github.mortuusars.monobank.content.monobank.renderer.MonobankRenderer;
 import io.github.mortuusars.monobank.content.monobank.MonobankScreen;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

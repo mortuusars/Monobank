@@ -1,6 +1,5 @@
 {
 	"credit": "Made with Blockbench",
-	"parent": "minecraft:block/block",
 	"textures": {
 		"particle": "monobank:block/monobank_front",
 		"front": "monobank:block/monobank_front",
