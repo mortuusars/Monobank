@@ -1,14 +1,21 @@
 package io.github.mortuusars.monobank.config;
 
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Configuration {
     private static final ForgeConfigSpec COMMON_CONFIG_SPEC;
 
     // Monobank:
     public static final ForgeConfigSpec.IntValue MONOBANK_CAPACITY;
+
+    // Lock:
     public static final ForgeConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
     // Thief:
@@ -27,6 +34,10 @@ public class Configuration {
         MONOBANK_CAPACITY = builder
                 .comment("Maximum amount of items that can be stored in Monobank.")
                 .defineInRange("Capacity", 8192, 1, Integer.MAX_VALUE);
+
+        builder.pop();
+
+        builder.push("Lock");
 
         CAN_REPLACE_OTHER_PLAYERS_LOCKS = builder
                 .comment("If enabled - players will be able to change locks in other player's banks.")

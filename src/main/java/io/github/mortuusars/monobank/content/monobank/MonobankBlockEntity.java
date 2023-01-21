@@ -448,7 +448,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         if (!level.isClientSide && getOwner().isPlayerOwned()) {
             @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(getOwner().getUuid());
             if (player != null)
-                Registry.Advancements.MONOBANK_ITEMS_COUNT.trigger(player, getStoredItemStack().getCount());
+                Registry.Advancements.MONOBANK_INVENTORY_CHANGED.trigger(player, getStoredItemStack());
         }
     }
 

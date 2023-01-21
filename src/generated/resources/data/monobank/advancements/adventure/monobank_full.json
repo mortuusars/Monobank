@@ -18,10 +18,12 @@
   },
   "criteria": {
     "monobank_full": {
-      "trigger": "monobank:monobank_items_count",
+      "trigger": "monobank:inventory_changed",
       "conditions": {
-        "count": {
-          "min": 2147483647
+        "item": {
+          "count": {
+            "min": 2147483647
+          }
         }
       }
     }

@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.GsonBuilder;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.content.advancement.trigger.MonobankItemsCountTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankLockReplacedTrigger;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankUnlockedTrigger;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
@@ -129,7 +129,7 @@ public class Advancements extends AdvancementProvider
                             TextUtil.translate("advancement.monobank_full.description"),
                             null,
                             FrameType.CHALLENGE, true, true, false)
-                    .addCriterion("monobank_full", MonobankItemsCountTrigger.TriggerInstance.full())
+                    .addCriterion("monobank_full", MonobankInventoryChangedTrigger.TriggerInstance.full())
                     .save(advancementConsumer, Monobank.resource("adventure/monobank_full").toString());
         }
     }
