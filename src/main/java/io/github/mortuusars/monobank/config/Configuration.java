@@ -1,13 +1,8 @@
 package io.github.mortuusars.monobank.config;
 
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Configuration {
     private static final ForgeConfigSpec COMMON_CONFIG_SPEC;
@@ -24,6 +19,10 @@ public class Configuration {
     public static final ForgeConfigSpec.BooleanValue THIEF_INCLUDE_OTHER_CONTAINERS;
     public static final ForgeConfigSpec.BooleanValue THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME;
 
+    // Structures:
+    public static final ForgeConfigSpec.BooleanValue GENERATE_VILLAGE_STRUCTURES;
+    public static final ForgeConfigSpec.IntValue VAULT_WEIGHT;
+
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
@@ -36,6 +35,8 @@ public class Configuration {
                 .defineInRange("Capacity", 8192, 1, Integer.MAX_VALUE);
 
         builder.pop();
+
+        // --------
 
         builder.push("Lock");
 
@@ -69,6 +70,20 @@ public class Configuration {
         builder.pop();
 
         // -------
+
+        builder.push("StructureGeneration");
+
+        GENERATE_VILLAGE_STRUCTURES = builder
+                .comment("Vault buildings will generate in villages.")
+                .define("GenerateVaults", true);
+
+        VAULT_WEIGHT = builder
+                .comment("Vault building generation weight. Larger number = more chances to generate.")
+                .defineInRange("VaultWeight", 10, 1, Integer.MAX_VALUE);
+
+        builder.pop();
+
+        // --------
 
         COMMON_CONFIG_SPEC = builder.build();
     }
