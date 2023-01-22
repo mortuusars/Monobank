@@ -1,11 +1,11 @@
 {
-  "name": "monobank:village/monobank/taiga",
-  "fallback": "monobank:village/monobank/taiga",
+  "name": "monobank:village/monobank/desert",
+  "fallback": "monobank:village/monobank/desert",
   "elements": [
     {
       "weight": 12,
       "element": {
-        "location": "monobank:village/monobank/taiga_locked",
+        "location": "monobank:village/monobank/desert_locked",
         "processors": "minecraft:empty",
         "projection": "rigid",
         "element_type": "minecraft:single_pool_element"
@@ -14,7 +14,7 @@
     {
       "weight": 3,
       "element": {
-        "location": "monobank:village/monobank/taiga_unlocked",
+        "location": "monobank:village/monobank/desert_unlocked",
         "processors": "minecraft:empty",
         "projection": "rigid",
         "element_type": "minecraft:single_pool_element"

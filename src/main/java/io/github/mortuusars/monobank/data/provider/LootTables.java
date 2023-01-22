@@ -83,6 +83,13 @@ public class LootTables extends LootTableProvider {
                         .withPool(villageCombinationPool)
                         .build());
 
+        writeTable(cache, Monobank.resource("combination/village/desert"),
+                LootTable.lootTable()
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .build());
+
         LootPool.Builder defaultCombinationPool = LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK))
@@ -127,6 +134,7 @@ public class LootTables extends LootTableProvider {
 
         writeTable(cache, Monobank.resource("monobank/village/plains"), monobankVillageLoot);
         writeTable(cache, Monobank.resource("monobank/village/taiga"), monobankVillageLoot);
+        writeTable(cache, Monobank.resource("monobank/village/desert"), monobankVillageLoot);
     }
 
     private void writeTable(HashCache cache, ResourceLocation location, LootTable lootTable) {

@@ -79,7 +79,7 @@ public class Configuration {
 
         VAULT_WEIGHT = builder
                 .comment("Vault building generation weight. Larger number = more chances to generate.")
-                .defineInRange("VaultWeight", 10, 1, Integer.MAX_VALUE);
+                .defineInRange("VaultWeight", 15, 1, Integer.MAX_VALUE);
 
         builder.pop();
 
