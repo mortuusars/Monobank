@@ -76,6 +76,13 @@ public class LootTables extends LootTableProvider {
                         .withPool(villageCombinationPool)
                         .build());
 
+        writeTable(cache, Monobank.resource("combination/village/taiga"),
+                LootTable.lootTable()
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .build());
+
         LootPool.Builder defaultCombinationPool = LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK))
@@ -97,22 +104,29 @@ public class LootTables extends LootTableProvider {
 
         // Contents:
 
-        writeTable(cache, Monobank.resource("monobank/village/plains"),
-                LootTable.lootTable()
-                        .withPool(LootPool.lootPool()
-                                .add(LootItem.lootTableItem(Items.EMERALD).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 17))))
-                                .add(LootItem.lootTableItem(Items.EMERALD_BLOCK).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4))))
-                                .add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 15))))
-                                .add(LootItem.lootTableItem(Items.GOLD_INGOT).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 9))))
-                                .add(LootItem.lootTableItem(Items.GOLD_BLOCK).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3))))
-                                .add(LootItem.lootTableItem(Items.MAP)
-                                        .apply(ExplorationMapFunction.makeExplorationMap()
-                                                .setDestination(ConfiguredStructureTags.RUINED_PORTAL)
-                                                .setMapDecoration(MapDecoration.Type.RED_X)
-                                                .setZoom((byte)1)
-                                                .setSkipKnownStructures(false))
-                                        .apply(SetNameFunction.setName(TextUtil.translate("filled_map.ruined_portal"))))
-                        ).build());
+        LootTable monobankVillageLoot = LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .add(LootItem.lootTableItem(Items.EMERALD).setWeight(4)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 17))))
+                        .add(LootItem.lootTableItem(Items.EMERALD_BLOCK).setWeight(4)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 4))))
+                        .add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(4)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 15))))
+                        .add(LootItem.lootTableItem(Items.GOLD_INGOT).setWeight(4)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 9))))
+                        .add(LootItem.lootTableItem(Items.GOLD_BLOCK).setWeight(4)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3))))
+                        .add(LootItem.lootTableItem(Items.MAP)
+                                .apply(ExplorationMapFunction.makeExplorationMap()
+                                        .setDestination(ConfiguredStructureTags.RUINED_PORTAL)
+                                        .setMapDecoration(MapDecoration.Type.RED_X)
+                                        .setZoom((byte) 1)
+                                        .setSkipKnownStructures(false))
+                                .apply(SetNameFunction.setName(TextUtil.translate("filled_map.ruined_portal")))))
+                .build();
+
+        writeTable(cache, Monobank.resource("monobank/village/plains"), monobankVillageLoot);
+        writeTable(cache, Monobank.resource("monobank/village/taiga"), monobankVillageLoot);
     }
 
     private void writeTable(HashCache cache, ResourceLocation location, LootTable lootTable) {

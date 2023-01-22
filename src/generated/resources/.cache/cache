@@ -10,6 +10,8 @@ b63c12400f978f48aa769af22f6c6aa2b8b80e1d data/monobank/advancements/recipes/reds
 6cd07b36f7c8844d4f1d62061bdc9a5a692fcb6c data/monobank/loot_tables/blocks/monobank.json
 60a777c54763bc5f7f82300ace4e5e8308ea0548 data/monobank/loot_tables/combination/default.json
 b39324ae5d3994c860c1c29b04e40a4e8c940b51 data/monobank/loot_tables/combination/village/plains.json
+b39324ae5d3994c860c1c29b04e40a4e8c940b51 data/monobank/loot_tables/combination/village/taiga.json
 57a1172280651d506eec7919381730b3784bf851 data/monobank/loot_tables/monobank/village/plains.json
+57a1172280651d506eec7919381730b3784bf851 data/monobank/loot_tables/monobank/village/taiga.json
 db5f1efbfcd0c731e307d0de25e7518f0c6e7580 data/monobank/recipes/monobank.json
 a47b076952bfd4d185dffa97a922e4e339f62a21 data/monobank/recipes/replacement_lock.json

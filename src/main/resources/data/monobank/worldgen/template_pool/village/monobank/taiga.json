@@ -1,0 +1,33 @@
+{
+  "name": "monobank:village/monobank/taiga",
+  "fallback": "monobank:village/monobank/taiga",
+  "elements": [
+    {
+      "weight": 10,
+      "element": {
+        "location": "monobank:village/monobank/taiga_locked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 4,
+      "element": {
+        "location": "monobank:village/monobank/taiga_unlocked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "location": "monobank:village/monobank/empty",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}

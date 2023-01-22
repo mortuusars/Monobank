@@ -39,15 +39,25 @@ public class VillageStructures {
         Holder<StructureProcessorList> mossify10ProcessorList = processorListsRegistry.getHolderOrThrow(MOSSIFY_10_PROCESSOR_LIST_KEY);
         Holder<StructureProcessorList> streetPlainsProcessorList = processorListsRegistry.getHolderOrThrow(STREET_PLAINS_PROCESSOR_LIST_KEY);
 
-        // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
         Integer vaultWeight = Configuration.VAULT_WEIGHT.get();
+
+        // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
         VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
                 new ResourceLocation("minecraft:village/plains/streets"),
-                Monobank.ID + ":village/streets/straight_fix_01", StructureTemplatePool.Projection.TERRAIN_MATCHING, vaultWeight);
+                Monobank.ID + ":village/streets/plains_straight_fix_01", StructureTemplatePool.Projection.TERRAIN_MATCHING, vaultWeight);
 
         VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
                 new ResourceLocation("minecraft:village/plains/houses"),
                 Monobank.ID + ":village/houses/plains_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
+
+        // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
+        VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
+                new ResourceLocation("minecraft:village/taiga/streets"),
+                Monobank.ID + ":village/streets/taiga_straight_fix_01", StructureTemplatePool.Projection.TERRAIN_MATCHING, vaultWeight);
+
+        VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
+                new ResourceLocation("minecraft:village/taiga/houses"),
+                Monobank.ID + ":village/houses/taiga_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
     }
 
     private static void addStructureToPoolLegacy(Registry<StructureTemplatePool> templatePoolRegistry,
