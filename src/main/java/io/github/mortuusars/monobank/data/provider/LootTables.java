@@ -56,6 +56,25 @@ public class LootTables extends LootTableProvider {
 
         // Combination:
 
+        LootPool.Builder defaultCombinationPool = LootPool.lootPool()
+                .setRolls(ConstantValue.exactly(1))
+                .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK))
+                .add(LootItem.lootTableItem(Items.IRON_NUGGET))
+                .add(LootItem.lootTableItem(Items.CHAIN))
+                .add(LootItem.lootTableItem(Items.IRON_INGOT))
+                .add(LootItem.lootTableItem(Items.LEVER))
+                .add(LootItem.lootTableItem(Items.STONE_PRESSURE_PLATE))
+                .add(LootItem.lootTableItem(Items.COMPASS))
+                .add(LootItem.lootTableItem(Items.BOOK))
+                .add(LootItem.lootTableItem(Items.BUCKET));
+
+        writeTable(cache, Monobank.resource("combination/default"),
+                LootTable.lootTable()
+                        .withPool(defaultCombinationPool)
+                        .withPool(defaultCombinationPool)
+                        .withPool(defaultCombinationPool)
+                        .build());
+
         LootPool.Builder villageCombinationPool = LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK))
@@ -90,23 +109,18 @@ public class LootTables extends LootTableProvider {
                         .withPool(villageCombinationPool)
                         .build());
 
-        LootPool.Builder defaultCombinationPool = LootPool.lootPool()
-                .setRolls(ConstantValue.exactly(1))
-                .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK))
-                .add(LootItem.lootTableItem(Items.IRON_NUGGET))
-                .add(LootItem.lootTableItem(Items.CHAIN))
-                .add(LootItem.lootTableItem(Items.IRON_INGOT))
-                .add(LootItem.lootTableItem(Items.LEVER))
-                .add(LootItem.lootTableItem(Items.STONE_PRESSURE_PLATE))
-                .add(LootItem.lootTableItem(Items.COMPASS))
-                .add(LootItem.lootTableItem(Items.BOOK))
-                .add(LootItem.lootTableItem(Items.BUCKET));
-
-        writeTable(cache, Monobank.resource("combination/default"),
+        writeTable(cache, Monobank.resource("combination/village/snowy"),
                 LootTable.lootTable()
-                        .withPool(defaultCombinationPool)
-                        .withPool(defaultCombinationPool)
-                        .withPool(defaultCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .build());
+
+        writeTable(cache, Monobank.resource("combination/village/savanna"),
+                LootTable.lootTable()
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
+                        .withPool(villageCombinationPool)
                         .build());
 
         // Contents:
@@ -135,6 +149,8 @@ public class LootTables extends LootTableProvider {
         writeTable(cache, Monobank.resource("monobank/village/plains"), monobankVillageLoot);
         writeTable(cache, Monobank.resource("monobank/village/taiga"), monobankVillageLoot);
         writeTable(cache, Monobank.resource("monobank/village/desert"), monobankVillageLoot);
+        writeTable(cache, Monobank.resource("monobank/village/snowy"), monobankVillageLoot);
+        writeTable(cache, Monobank.resource("monobank/village/savanna"), monobankVillageLoot);
     }
 
     private void writeTable(HashCache cache, ResourceLocation location, LootTable lootTable) {

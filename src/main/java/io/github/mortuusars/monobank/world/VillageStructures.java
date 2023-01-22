@@ -40,7 +40,7 @@ public class VillageStructures {
         Holder<StructureProcessorList> streetPlainsProcessorList = processorListsRegistry.getHolderOrThrow(STREET_PLAINS_PROCESSOR_LIST_KEY);
 
         Integer vaultWeight = Configuration.VAULT_WEIGHT.get();
-//        vaultWeight = 200;
+        vaultWeight = 200;
 
         // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
         VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
@@ -68,6 +68,15 @@ public class VillageStructures {
         VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
                 new ResourceLocation("minecraft:village/desert/houses"),
                 Monobank.ID + ":village/houses/desert_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
+
+        // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
+        VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
+                new ResourceLocation("minecraft:village/snowy/streets"),
+                Monobank.ID + ":village/streets/snowy_straight_fix_01", StructureTemplatePool.Projection.TERRAIN_MATCHING, vaultWeight);
+
+        VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
+                new ResourceLocation("minecraft:village/snowy/houses"),
+                Monobank.ID + ":village/houses/snowy_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
     }
 
     private static void addStructureToPoolLegacy(Registry<StructureTemplatePool> templatePoolRegistry,
