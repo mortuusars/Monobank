@@ -75,7 +75,7 @@ public class BlockContentsRenderer {
                 poseStack.pushPose();
                 poseStack.translate(itemXOffset, yOffset, zOffset);
                 poseStack.mulPose(Vector3f.YP.rotationDegrees(yRotations.get(elementIndex)));
-                itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, 0xCC0000,
+                itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
                         packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
                 poseStack.popPose();
 

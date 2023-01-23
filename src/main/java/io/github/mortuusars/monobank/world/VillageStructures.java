@@ -40,7 +40,6 @@ public class VillageStructures {
         Holder<StructureProcessorList> streetPlainsProcessorList = processorListsRegistry.getHolderOrThrow(STREET_PLAINS_PROCESSOR_LIST_KEY);
 
         Integer vaultWeight = Configuration.VAULT_WEIGHT.get();
-        vaultWeight = 200;
 
         // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
         VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
