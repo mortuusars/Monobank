@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
@@ -64,6 +65,17 @@ public class MonobankBlock extends Block implements EntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        if (!Configuration.CAN_RELOCATE_OTHER_PLAYERS_BANK.get()
+            && level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity
+            && monobankEntity.getOwner().isPlayerOwned()
+            && !monobankEntity.getOwner().isOwnedBy(player))
+                return 0f; // Indestructible
+
+        return super.getDestroyProgress(state, player, level, pos);
     }
 
     @Nullable

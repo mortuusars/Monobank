@@ -10,7 +10,8 @@ public class Configuration {
     // Monobank:
     public static final ForgeConfigSpec.IntValue MONOBANK_CAPACITY;
 
-    // Lock:
+    // Ownership:
+    public static final ForgeConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_BANK;
     public static final ForgeConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
     // Thief:
@@ -38,7 +39,11 @@ public class Configuration {
 
         // --------
 
-        builder.push("Lock");
+        builder.push("Ownership");
+
+        CAN_RELOCATE_OTHER_PLAYERS_BANK = builder
+                .comment("If enabled - players will be able to break other player's banks.", "If disabled - monobank will be indestructible if other player owns it.")
+                .define("CanRelocateOtherPlayersBanks", false);
 
         CAN_REPLACE_OTHER_PLAYERS_LOCKS = builder
                 .comment("If enabled - players will be able to change locks in other player's banks.")
