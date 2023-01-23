@@ -33,6 +33,7 @@ public class BlockContentsRenderer {
 
         poseStack.pushPose();
         poseStack.translate(0.5f, scale / 2 + (pixel * 2), 0.5f); // Position in the center and on the bank floor.
+//        poseStack.mulPose(Vector3f.YP.rotationDegrees(90));
         poseStack.scale(scale, scale, scale);
 
         List<Integer> rows = new ArrayList<>();
@@ -74,7 +75,7 @@ public class BlockContentsRenderer {
                 float itemXOffset = item == 0 ? -xOffset : xOffset;
                 poseStack.pushPose();
                 poseStack.translate(itemXOffset, yOffset, zOffset);
-                poseStack.mulPose(Vector3f.YP.rotationDegrees(yRotations.get(elementIndex)));
+                poseStack.mulPose(Vector3f.YP.rotationDegrees(180 + yRotations.get(elementIndex)));
                 itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
                         packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
                 poseStack.popPose();

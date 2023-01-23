@@ -46,6 +46,7 @@ public class ItemContentsRenderer {
             Vector3f offset = layout.get(i);
             poseStack.pushPose();
             poseStack.translate(offset.x(), offset.y(), offset.z());
+            poseStack.mulPose(Vector3f.YP.rotationDegrees(180));
             itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
                     packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
             poseStack.popPose();
