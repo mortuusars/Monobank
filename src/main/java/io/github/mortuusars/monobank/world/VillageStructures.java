@@ -77,6 +77,15 @@ public class VillageStructures {
         VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
                 new ResourceLocation("minecraft:village/snowy/houses"),
                 Monobank.ID + ":village/houses/snowy_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
+
+        // Injecting custom street that has smaller bounding box. Without it vaults will not generate.
+        VillageStructures.addStructureToPoolLegacy(templatePools, streetPlainsProcessorList,
+                new ResourceLocation("minecraft:village/savanna/streets"),
+                Monobank.ID + ":village/streets/savanna_straight_fix_01", StructureTemplatePool.Projection.TERRAIN_MATCHING, vaultWeight);
+
+        VillageStructures.addStructureToPoolSingle(templatePools, mossify10ProcessorList,
+                new ResourceLocation("minecraft:village/savanna/houses"),
+                Monobank.ID + ":village/houses/savanna_vault",  StructureTemplatePool.Projection.RIGID, vaultWeight);
     }
 
     private static void addStructureToPoolLegacy(Registry<StructureTemplatePool> templatePoolRegistry,

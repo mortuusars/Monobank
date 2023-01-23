@@ -1,0 +1,33 @@
+{
+  "name": "monobank:village/monobank/savanna",
+  "fallback": "monobank:village/monobank/savanna",
+  "elements": [
+    {
+      "weight": 12,
+      "element": {
+        "location": "monobank:village/monobank/savanna_locked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 3,
+      "element": {
+        "location": "monobank:village/monobank/savanna_unlocked",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    },
+    {
+      "weight": 1,
+      "element": {
+        "location": "monobank:village/monobank/empty",
+        "processors": "minecraft:empty",
+        "projection": "rigid",
+        "element_type": "minecraft:single_pool_element"
+      }
+    }
+  ]
+}
