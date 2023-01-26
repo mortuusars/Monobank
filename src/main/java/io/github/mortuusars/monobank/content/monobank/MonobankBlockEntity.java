@@ -428,11 +428,16 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
 
     @NotNull
     @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        unpackLootTable(null, true);
-        return !this.remove && !lock.isLocked() && cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY ?
-                this.inventoryHandler.cast() :
-                super.getCapability(cap, side);
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction side) {
+        if (this.remove || getLock().isLocked())
+            return super.getCapability(capability, side);
+
+        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            unpackLootTable(null, false);
+            return this.inventoryHandler.cast();
+        }
+
+        return super.getCapability(capability, side);
     }
 
     @Override
