@@ -1,0 +1,44 @@
+{
+  "block.monobank.monobank": "Монобанк",
+  "item.monobank.replacement_lock": "Змінний замок",
+  "effect.monobank.thief": "Крадій",
+
+  "monobank.filled_map.ruined_portal": "Мапа Руїн Порталу",
+
+  "monobank.tooltip.locked": "Замкнений",
+  "monobank.tooltip.loot_table": "Таблиця Луту: %s",
+  "monobank.tooltip.combination_table": "Таблиця Комбінації: %s",
+
+  "monobank.gui.monobank": "Монобанк",
+  "monobank.gui.monobank.unlocking": "Відмикання %s",
+  "monobank.gui.monobank.lock_replacement": "Заміна замка в: %s",
+  "monobank.gui.monobank.lock_replacement.confirm.tooltip": "Замінити",
+  "monobank.gui.monobank.count": "Кількість: %s",
+  "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL: Взяти один",
+  "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT: Взяти все",
+  "monobank.gui.monobank.tooltip.owner": "Ви власник цього Монобанку",
+  "monobank.gui.monobank.tooltip.break_in_attempted": "Невідома особа здійснила невдалу спробу відкрити цей Монобанк",
+  "monobank.gui.monobank.tooltip.break_in_succeeded": "Монобанк був зламаний та відкритий невідомою особою",
+
+  "monobank.message.lock_replaced": "Замок змінено",
+  "monobank.message.monobank.locking.monobank_is_locked": "Замкнуто. Спробуйте відімкнути замок з SHIFT+Ліва кнопка миші.",
+  "monobank.message.monobank.unlocking": "Монобанк відмикається...",
+  "monobank.message.replacement_lock.cannot_replace_not_owner": "Замок у цьому Монобанку неможливо змінити.",
+  "monobank.message.replacement_lock.cannot_replace_when_locked": "Неможливо змінити замок: для заміни Монобанк повинен бути відкритим.",
+  "monobank.message.thief.you_were_seen": "Вас помітили під час скоєння злочину.",
+
+  "monobank.advancement.monobank.title" : "Безпечний Вибір",
+  "monobank.advancement.monobank.description" : "Здобудьте Монобанк для безпечного збереження ваших багатств",
+  "monobank.advancement.unlock.title" : "Ключ до душі",
+  "monobank.advancement.unlock.description" : "Відімкніть Монобанк ввевши правильну комбінацію",
+  "monobank.advancement.replace_lock.title" : "За Сімома Замками",
+  "monobank.advancement.replace_lock.description" : "Замініть замок у Монобанку",
+  "monobank.advancement.monobank_full.title" : "Кури Не Клюють",
+  "monobank.advancement.monobank_full.description" : "Повністю заповніть Монобанк",
+
+  "monobank.subtitles.monobank.lock" : "Монобанк замикається",
+  "monobank.subtitles.monobank.unlock" : "Монобанк відмикається",
+  "monobank.subtitles.monobank.click" : "Монобанк цокає",
+  "monobank.subtitles.monobank.open" : "Монобанк відчиняється",
+  "monobank.subtitles.monobank.close" : "Монобанк зачиняється"
+}
