@@ -52,7 +52,7 @@ public class Registry {
     }
 
     public static class BlockEntityTypes {
-        private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, Monobank.ID);
+        private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Monobank.ID);
 
         @SuppressWarnings("DataFlowIssue")
         public static final RegistryObject<BlockEntityType<MonobankBlockEntity>> MONOBANK = BLOCK_ENTITY_TYPES.register("monobank",
@@ -60,7 +60,7 @@ public class Registry {
     }
 
     public static class MenuTypes {
-        private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, Monobank.ID);
+        private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(ForgeRegistries.MENU_TYPES, Monobank.ID);
 
         public static final RegistryObject<MenuType<MonobankMenu>> MONOBANK = MENU_TYPES
                 .register("monobank", () -> IForgeMenuType.create(MonobankMenu::fromBuffer));

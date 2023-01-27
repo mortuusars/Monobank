@@ -3,13 +3,10 @@ package io.github.mortuusars.monobank.core.inventory;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
-import javax.annotation.Nullable;
 import java.util.Random;
 
 public class UnlockingSlot extends SlotItemHandler {
@@ -25,12 +22,12 @@ public class UnlockingSlot extends SlotItemHandler {
     private Component createKeywayTooltip(ItemStack keyway) {
         String title = keyway.getHoverName().getString();
         if (title.length() == 0)
-            return new TextComponent("");
+            return Component.literal("");
 
         String[] split = title.split("\s");
         Random random;
 
-        MutableComponent newTitle = new TextComponent("");
+        MutableComponent newTitle = Component.literal("");
 
         for (int wordIndex = 0; wordIndex < split.length; wordIndex++) {
             String word = split[wordIndex];
@@ -40,7 +37,7 @@ public class UnlockingSlot extends SlotItemHandler {
             if (word.length() == 0)
                 continue;
             for (int charIndex = 0; charIndex < word.length(); charIndex++) {
-                MutableComponent character = new TextComponent(word.charAt(charIndex) + "");
+                MutableComponent character = Component.literal(word.charAt(charIndex) + "");
                 if (random.nextDouble() > 0.5f)
                     character = character.withStyle(ChatFormatting.OBFUSCATED).withStyle(ChatFormatting.GRAY);
                 newTitle.append(character);

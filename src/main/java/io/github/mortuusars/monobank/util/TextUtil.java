@@ -1,8 +1,8 @@
 package io.github.mortuusars.monobank.util;
 
 import io.github.mortuusars.monobank.Monobank;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 
 import java.util.Map;
 import java.util.NavigableMap;
@@ -13,7 +13,7 @@ public class TextUtil {
      * Creates TranslatableComponent from a given key prefixed with the MOD ID.
      */
     public static MutableComponent translate(String key, Object... args) {
-        return new TranslatableComponent(Monobank.ID + "." + key, args);
+        return Component.translatable(Monobank.ID + "." + key, args);
     }
 
 

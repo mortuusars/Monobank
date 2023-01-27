@@ -1,7 +1,6 @@
 package io.github.mortuusars.monobank.data.provider;
 
 import com.google.common.collect.Sets;
-import com.google.gson.GsonBuilder;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
@@ -16,9 +15,9 @@ import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.BlockPos;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
 import net.minecraft.data.advancements.AdvancementProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -48,7 +47,7 @@ public class Advancements extends AdvancementProvider
     }
 
     @Override
-    public void run(HashCache cache) {
+    public void run(CachedOutput cache) {
         Set<ResourceLocation> set = Sets.newHashSet();
         Consumer<Advancement> consumer = (advancement) -> {
             if (!set.add(advancement.getId())) {
@@ -57,7 +56,7 @@ public class Advancements extends AdvancementProvider
                 Path path1 = getPath(PATH, advancement);
 
                 try {
-                    DataProvider.save((new GsonBuilder()).setPrettyPrinting().create(), cache, advancement.deconstruct().serializeToJson(), path1);
+                    DataProvider.saveStable(cache, advancement.deconstruct().serializeToJson(), path1);
                 }
                 catch (IOException ioexception) {
                     LOGGER.error("Couldn't save advancement {}", path1, ioexception);

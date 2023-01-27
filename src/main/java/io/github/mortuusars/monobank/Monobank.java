@@ -21,7 +21,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class Monobank
 {
     public static final String ID = "monobank";
-    public static final boolean IN_DEBUG = true;
+    public static final boolean IN_DEBUG = false;
 
     public Monobank()
     {
@@ -31,6 +31,7 @@ public class Monobank
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             modEventBus.addListener(ClientSetup::init);
+            modEventBus.addListener(ClientSetup::registerTooltipComponents);
             modEventBus.addListener(ClientSetup::registerRenderers);
             modEventBus.addListener(ClientSetup::registerModels);
         });

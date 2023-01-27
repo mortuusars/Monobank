@@ -45,8 +45,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
@@ -384,7 +384,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
                     breakInAttempted = true;
                     setChanged();
                 }
-                NetworkHooks.openGui(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
+                NetworkHooks.openScreen(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
                     buffer.writeBlockPos(worldPosition);
                     lock.getCombination().toBuffer(buffer);
                 });
@@ -393,7 +393,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
     public void open(ServerPlayer player) {
         checkAndPunishForCrime(player, Thief.Offence.MODERATE);
-        NetworkHooks.openGui(player, this.OPEN_MENU_PROVIDER, buffer -> {
+        NetworkHooks.openScreen(player, this.OPEN_MENU_PROVIDER, buffer -> {
             buffer.writeBlockPos(worldPosition);
             getExtraInfo(player).toBuffer(buffer);
         });
@@ -432,7 +432,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         if (this.remove || getLock().isLocked())
             return super.getCapability(capability, side);
 
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        if (capability == ForgeCapabilities.ITEM_HANDLER) {
             unpackLootTable(null, false);
             return this.inventoryHandler.cast();
         }

@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
@@ -137,7 +136,7 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
             String formattedCount = numberFormatter.format(stackCount);
 
             MutableComponent newTitle = tooltip.get(0).copy()
-                    .append(new TextComponent(" - ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
                     .append(TextUtil.translate("gui.monobank.count", formattedCount).withStyle(ChatFormatting.GRAY));
             tooltip.set(0, newTitle);
         }

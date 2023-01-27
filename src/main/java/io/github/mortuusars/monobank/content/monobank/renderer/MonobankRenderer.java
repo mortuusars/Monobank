@@ -3,27 +3,20 @@ package io.github.mortuusars.monobank.content.monobank.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import io.github.mortuusars.monobank.Monobank;
-import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraftforge.client.model.data.ModelData;
 
 /**
  * Renders Monobank animated door and stored items inside.
@@ -67,7 +60,7 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
 
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(DOOR_MODEL_LOCATION);
         Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(poseStack.last(),
-                bufferSource.getBuffer(RenderType.solid()), null, model, 1f, 1f, 1f, packedLight, packedOverlay, EmptyModelData.INSTANCE);
+                bufferSource.getBuffer(RenderType.solid()), null, model, 1f, 1f, 1f, packedLight, packedOverlay, ModelData.EMPTY, RenderType.solid());
 
         // Not rendering with AO because shading is broken when there is adjacent solid blocks. Shade is too dark.
 //        Minecraft.getInstance().getBlockRenderer().getModelRenderer().tesselateWithAO(monobankEntity.getLevel(), model,

@@ -59,7 +59,7 @@ public class ReplacementLockItem extends Item {
             return InteractionResult.FAIL;
         }
 
-        NetworkHooks.openGui(((ServerPlayer) player), new MenuProvider() {
+        NetworkHooks.openScreen(((ServerPlayer) player), new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return TextUtil.translate("gui.monobank.lock_replacement", monobankEntity.getName());

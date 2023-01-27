@@ -167,7 +167,7 @@ public class MonobankBlock extends Block implements EntityBlock {
             }
 
             if (player.getItemInHand(InteractionHand.MAIN_HAND).is(Items.MILK_BUCKET)) {
-                monobankBlockEntity.setOwner(new Player(level, pos, 0, new GameProfile(UUID.randomUUID(), "John")) {
+                monobankBlockEntity.setOwner(new Player(level, pos, 0, new GameProfile(UUID.randomUUID(), "John"), null) {
                     @Override
                     public boolean isSpectator() {
                         return false;

@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.event.ContainerScreenEvent;
 
 import javax.annotation.Nullable;
 
@@ -49,7 +50,8 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
         int x = this.leftPos;
         int y = this.topPos;
         this.renderBg(poseStack, partialTick, mouseX, mouseY);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.DrawBackground(this, poseStack, mouseX, mouseY));
+
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, poseStack, mouseX, mouseY));
         RenderSystem.disableDepthTest();
 
         // Replaced call to super (Screen) with its contents:
@@ -82,7 +84,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
         }
 
         this.renderLabels(poseStack, mouseX, mouseY);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.client.event.ContainerScreenEvent.DrawForeground(this, poseStack, mouseX, mouseY));
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, poseStack, mouseX, mouseY));
         ItemStack itemstack = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
         if (!itemstack.isEmpty()) {
             int l1 = 8;

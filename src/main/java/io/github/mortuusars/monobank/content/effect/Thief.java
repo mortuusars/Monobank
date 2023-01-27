@@ -2,13 +2,11 @@ package io.github.mortuusars.monobank.content.effect;
 
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.config.Configuration;
-import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.core.stealth.Stealth;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.goal.BreedGoal;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +15,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -26,10 +24,10 @@ import java.util.List;
 public class Thief {
 
     public static void onEntityInteractEvent(PlayerInteractEvent.EntityInteract event) {
-        if (event.getEntity().level.isClientSide || !(event.getEntity() instanceof LivingEntity livingEntity) || !(event.getTarget() instanceof Villager villager))
+        if (event.getEntity().level.isClientSide || event.getEntity() == null || !(event.getTarget() instanceof Villager villager))
             return;
 
-        @Nullable MobEffectInstance thiefEffect = livingEntity.getEffect(Registry.Effects.THIEF.get());
+        @Nullable MobEffectInstance thiefEffect = event.getEntity().getEffect(Registry.Effects.THIEF.get());
         if (thiefEffect != null) {
             // Villagers will not trade with thieves.
             villager.setUnhappy();
@@ -38,14 +36,13 @@ public class Thief {
     }
 
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if (!(event.getEntity() instanceof LivingEntity livingEntity) || livingEntity.level.isClientSide
-        || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
+        if (event.getEntity() == null || event.getEntity().level.isClientSide || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
-        BlockEntity blockEntityAtPos = livingEntity.level.getBlockEntity(event.getHitVec().getBlockPos());
+        BlockEntity blockEntityAtPos = event.getEntity().level.getBlockEntity(event.getHitVec().getBlockPos());
         if (blockEntityAtPos instanceof RandomizableContainerBlockEntity container && container.lootTable != null
-                && wasSeenCommittingCrime(event.getPlayer()))
-            declareThief(livingEntity, Offence.MODERATE);
+                && wasSeenCommittingCrime(event.getEntity()))
+            declareThief(event.getEntity(), Offence.MODERATE);
     }
 
     public static void onBlockBroken(BlockEvent.BreakEvent event) {

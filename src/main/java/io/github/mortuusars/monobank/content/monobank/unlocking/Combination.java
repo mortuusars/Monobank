@@ -6,7 +6,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -63,7 +62,7 @@ public class Combination {
         if (slot < 0 || slot >= combination.size())
             return false;
 
-        return combination.get(slot).getRegistryName().equals(key.getRegistryName());
+        return ForgeRegistries.ITEMS.getKey(combination.get(slot)).equals(ForgeRegistries.ITEMS.getKey(key));
     }
 
     /**
@@ -80,7 +79,7 @@ public class Combination {
     public ListTag serializeNBT() {
         ListTag list = new ListTag();
         for (int i = 0; i < combination.size(); i++) {
-            StringTag stringTag = StringTag.valueOf(combination.get(i).getRegistryName().toString());
+            StringTag stringTag = StringTag.valueOf(ForgeRegistries.ITEMS.getKey(combination.get(i)).toString());
             list.add(stringTag);
         }
         return list;
@@ -105,7 +104,7 @@ public class Combination {
     public void toBuffer(FriendlyByteBuf buffer) {
         buffer.writeInt(combination.size());
         for (int i = 0; i < combination.size(); i++)
-            buffer.writeUtf(combination.get(i).getRegistryName().toString());
+            buffer.writeUtf(ForgeRegistries.ITEMS.getKey(combination.get(i)).toString());
     }
 
     public static Combination fromBuffer(FriendlyByteBuf buffer) {

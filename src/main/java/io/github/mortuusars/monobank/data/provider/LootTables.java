@@ -5,12 +5,12 @@ import com.google.gson.GsonBuilder;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ConfiguredStructureTags;
+import net.minecraft.tags.StructureTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -29,7 +29,6 @@ import java.nio.file.Path;
 
 public class LootTables extends LootTableProvider {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private final DataGenerator generator;
 
     public LootTables(DataGenerator generator) {
@@ -38,7 +37,7 @@ public class LootTables extends LootTableProvider {
     }
 
     @Override
-    public void run(HashCache cache) {
+    public void run(CachedOutput cache) {
         writeTable(cache, Monobank.resource("blocks/monobank"),
                 LootTable.lootTable()
                     .withPool(LootPool.lootPool()
@@ -139,7 +138,7 @@ public class LootTables extends LootTableProvider {
                                 .apply(SetItemCountFunction.setCount(UniformGenerator.between(1, 3))))
                         .add(LootItem.lootTableItem(Items.MAP)
                                 .apply(ExplorationMapFunction.makeExplorationMap()
-                                        .setDestination(ConfiguredStructureTags.RUINED_PORTAL)
+                                        .setDestination(StructureTags.RUINED_PORTAL)
                                         .setMapDecoration(MapDecoration.Type.RED_X)
                                         .setZoom((byte) 1)
                                         .setSkipKnownStructures(false))
@@ -153,11 +152,11 @@ public class LootTables extends LootTableProvider {
         writeTable(cache, Monobank.resource("monobank/village/savanna"), monobankVillageLoot);
     }
 
-    private void writeTable(HashCache cache, ResourceLocation location, LootTable lootTable) {
+    private void writeTable(CachedOutput cache, ResourceLocation location, LootTable lootTable) {
         Path outputFolder = this.generator.getOutputFolder();
         Path path = outputFolder.resolve("data/" + location.getNamespace() + "/loot_tables/" + location.getPath() + ".json");
         try {
-            DataProvider.save(GSON, cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
+            DataProvider.saveStable(cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
         } catch (IOException e) {
             LOGGER.error("Couldn't write loot lootTable {}", path, e);
         }

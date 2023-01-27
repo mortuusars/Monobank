@@ -6,6 +6,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class ItemModels extends ItemModelProvider {
     public ItemModels(DataGenerator generator, ExistingFileHelper existingFileHelper) {
@@ -14,11 +15,11 @@ public class ItemModels extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        String replacementLock = Registry.Items.REPLACEMENT_LOCK.get().getRegistryName().getPath();
+        String replacementLock = Registry.Items.REPLACEMENT_LOCK.getId().getPath();
         singleTexture(replacementLock, mcLoc("item/generated"),
                 "layer0", modLoc("item/" + replacementLock));
 
-        String monobank = Registry.Blocks.MONOBANK.get().getRegistryName().getPath();
+        String monobank = Registry.Blocks.MONOBANK.getId().getPath();
         getBuilder(monobank)
                 .parent(getExistingFile(modLoc("item/" + monobank + "_unlocked")))
                 .override()
