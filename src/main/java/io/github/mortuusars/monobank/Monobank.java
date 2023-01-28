@@ -1,17 +1,13 @@
 package io.github.mortuusars.monobank;
 
-import com.mojang.brigadier.StringReader;
 import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.event.ClientSetup;
 import io.github.mortuusars.monobank.event.CommonSetup;
 import io.github.mortuusars.monobank.world.VillageStructures;
-import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
@@ -21,7 +17,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class Monobank
 {
     public static final String ID = "monobank";
-    public static final boolean IN_DEBUG = true;
+    public static final boolean IN_DEBUG = false;
 
     public Monobank()
     {
