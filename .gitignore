@@ -17,6 +17,7 @@ out
 build
 .gradle
 mcmodsrepo
+extra-mods*
 
 # other
 eclipse
