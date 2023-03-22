@@ -11,10 +11,12 @@ import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
 import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -104,9 +106,9 @@ public class Registry {
         }
     }
 
-    public static class ItemTags {
-        public static final TagKey<Item> WHITELISTED = net.minecraft.tags.ItemTags.create(Monobank.resource("whitelisted"));
-        public static final TagKey<Item> BLACKLISTED = net.minecraft.tags.ItemTags.create(Monobank.resource("blacklisted"));
+    public static class EntityTags {
+        public static final TagKey<EntityType<?>> THIEF_ATTACKERS =
+                TagKey.create(net.minecraft.core.Registry.ENTITY_TYPE_REGISTRY, Monobank.resource("thief_attackers"));
     }
 
     public static void register(IEventBus modEventBus) {

@@ -19,6 +19,7 @@ public class Configuration {
     public static final ForgeConfigSpec.IntValue THIEF_EFFECT_BASE_DURATION;
     public static final ForgeConfigSpec.BooleanValue THIEF_INCLUDE_OTHER_CONTAINERS;
     public static final ForgeConfigSpec.BooleanValue THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME;
+//    public static final ForgeConfigSpec.ConfigValue<List<String>>
 
     // Structures:
     public static final ForgeConfigSpec.BooleanValue GENERATE_VILLAGE_STRUCTURES;
