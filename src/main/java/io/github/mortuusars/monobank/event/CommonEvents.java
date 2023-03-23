@@ -23,7 +23,8 @@ public class CommonEvents {
     }
 
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if (!(event.getEntity() instanceof LivingEntity opener)
+        if ( !Configuration.THIEF_ENABLED.get() ||
+                !(event.getEntity() instanceof LivingEntity opener)
                 || opener.level.isClientSide
                 || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
@@ -46,7 +47,9 @@ public class CommonEvents {
 
     public static void onBlockBroken(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
-        if (!(player.level instanceof ServerLevel serverLevel) || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
+        if ( !Configuration.THIEF_ENABLED.get()
+             || !(player.level instanceof ServerLevel serverLevel)
+             || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
         BlockEntity blockEntityAtPos = player.level.getBlockEntity(event.getPos());
