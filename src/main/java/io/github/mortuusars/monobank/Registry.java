@@ -23,7 +23,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -112,8 +112,8 @@ public class Registry {
     }
 
     public static class StructureTags {
-        public static final TagKey<ConfiguredStructureFeature<?, ?>> THEFT_PROTECTED =
-                TagKey.create(net.minecraft.core.Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY, Monobank.resource("theft_protected"));
+        public static final TagKey<Structure> THEFT_PROTECTED =
+                TagKey.create(net.minecraft.core.Registry.STRUCTURE_REGISTRY, Monobank.resource("theft_protected"));
     }
 
     public static class EntityTags {

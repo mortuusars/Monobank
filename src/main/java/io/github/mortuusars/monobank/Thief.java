@@ -32,13 +32,11 @@ public class Thief {
         if (!Configuration.THIEF_ONLY_NEAR_PROTECTED_STRUCTURES.get())
             return true; // Anywhere is protected.
 
-        BlockPos nearestProtectedStructure = level.findNearestMapFeature(Registry.StructureTags.THEFT_PROTECTED, thiefPos, 1, false);
+        BlockPos nearestProtectedStructure = level.findNearestMapStructure(Registry.StructureTags.THEFT_PROTECTED, thiefPos, 1, false);
         if (nearestProtectedStructure != null) {
             BlockPos heightmapPos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE_WG, nearestProtectedStructure);
             double distance = Math.sqrt(thiefPos.distSqr(heightmapPos));
-
-            if (distance <= Configuration.THIEF_PROTECTED_STRUCTURE_RANGE.get())
-                return true;
+            return distance <= Configuration.THIEF_PROTECTED_STRUCTURE_RANGE.get();
         }
 
         return false;
@@ -135,8 +133,8 @@ public class Thief {
         MODERATE(1, 1F),
         HEAVY(2, 2F);
 
-        private int amplifier;
-        private float modifier;
+        private final int amplifier;
+        private final float modifier;
 
         Offence(int amplifier, float modifier) {
             this.amplifier = amplifier;

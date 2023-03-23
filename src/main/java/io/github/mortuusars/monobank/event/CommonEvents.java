@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import javax.annotation.Nullable;
@@ -23,15 +23,15 @@ public class CommonEvents {
     }
 
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if ( !Configuration.THIEF_ENABLED.get() ||
-                !(event.getEntity() instanceof LivingEntity opener)
+        Player opener = event.getEntity();
+
+        if ( !Configuration.THIEF_ENABLED.get()
                 || opener.level.isClientSide
                 || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
         BlockEntity blockEntity = opener.level.getBlockEntity(event.getHitVec().getBlockPos());
-        if (blockEntity instanceof RandomizableContainerBlockEntity containerBE && containerBE.lootTable != null
-                && Thief.isInProtectedStructureRange((ServerLevel)opener.getLevel(), opener.blockPosition())) {
+        if (blockEntity instanceof RandomizableContainerBlockEntity containerBE && containerBE.lootTable != null) {
 
             // Lootr compatibility:
             if (blockEntity.getBlockState().is(Registry.BlockTags.LOOTR_CONTAINERS)
@@ -40,7 +40,7 @@ public class CommonEvents {
             }
 
             List<LivingEntity> witnesses = Thief.getWitnesses(opener);
-            if (witnesses.size() > 0)
+            if (witnesses.size() > 0 && Thief.isInProtectedStructureRange((ServerLevel)opener.getLevel(), opener.blockPosition()))
                 Thief.declareThief(opener, witnesses, Thief.Offence.MODERATE);
         }
     }
@@ -63,7 +63,7 @@ public class CommonEvents {
     }
 
     public static void onEntityInteractEvent(PlayerInteractEvent.EntityInteract event) {
-        Player player = event.getPlayer();
+        Player player = event.getEntity();
 
         if (!(player.level instanceof ServerLevel serverLevel))
             return;
