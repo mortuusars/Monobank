@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.config.Configuration;
-import io.github.mortuusars.monobank.content.effect.Thief;
+import io.github.mortuusars.monobank.Thief;
 import io.github.mortuusars.monobank.content.monobank.component.*;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
@@ -247,9 +247,12 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public boolean checkAndPunishForCrime(Player player, Thief.Offence offence) {
         boolean crimeAgainstPlayer = Configuration.THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME.get() && getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player);
         boolean crimeAgainstNPC = getOwner().getType() == Owner.Type.NPC;
-        if ((crimeAgainstPlayer || crimeAgainstNPC) && Thief.wasSeenCommittingCrime(player)) {
-            Thief.declareThief(player, Thief.Offence.LIGHT);
-            return true;
+        if (crimeAgainstPlayer || crimeAgainstNPC) {
+            List<LivingEntity> witnesses = Thief.getWitnesses(player);
+            if (witnesses.size() > 0) {
+                Thief.declareThief(player, witnesses, Thief.Offence.LIGHT);
+                return true;
+            }
         }
         return false;
     }

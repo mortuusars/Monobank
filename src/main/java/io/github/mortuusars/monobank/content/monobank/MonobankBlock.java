@@ -4,7 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.config.Configuration;
-import io.github.mortuusars.monobank.content.effect.Thief;
+import io.github.mortuusars.monobank.Thief;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
