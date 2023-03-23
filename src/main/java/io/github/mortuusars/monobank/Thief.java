@@ -75,7 +75,7 @@ public class Thief {
         int radius = Math.max((int)(32 * Stealth.getValueOf(thief)), 3);
         AABB crimeScene = new AABB(thief.blockPosition()).inflate(radius, radius * 0.33f, radius);
 
-        Monobank.LOGGER.debug(radius + " - thief detection radius.");
+//        Monobank.LOGGER.debug(radius + " - thief detection radius.");
 
         Predicate<LivingEntity> isWitness = witness -> {
             float distance = witness.distanceTo(thief);
@@ -90,7 +90,7 @@ public class Thief {
                 .filter(isWitness)
                 .toList();
 
-        Monobank.LOGGER.debug(witnesses.size() + " witnesses of a theft.");
+//        Monobank.LOGGER.debug(witnesses.size() + " witnesses of a theft.");
 
         return witnesses;
     }
