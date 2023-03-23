@@ -1,9 +1,9 @@
 package io.github.mortuusars.monobank;
 
+import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.config.Configuration;
-import io.github.mortuusars.monobank.content.effect.Thief;
 import io.github.mortuusars.monobank.event.ClientSetup;
-import io.github.mortuusars.monobank.event.CommonSetup;
+import io.github.mortuusars.monobank.event.CommonEvents;
 import io.github.mortuusars.monobank.world.VillageStructures;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -12,11 +12,13 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.slf4j.Logger;
 
 @Mod(Monobank.ID)
 public class Monobank
 {
     public static final String ID = "monobank";
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final boolean IN_DEBUG = false;
 
     public Monobank()
@@ -31,13 +33,13 @@ public class Monobank
             modEventBus.addListener(ClientSetup::registerModels);
         });
 
-        modEventBus.addListener(CommonSetup::onCommonSetup);
+        modEventBus.addListener(CommonEvents::onCommonSetup);
 
         Registry.register(modEventBus);
 
-        MinecraftForge.EVENT_BUS.addListener(Thief::onEntityInteractEvent);
-        MinecraftForge.EVENT_BUS.addListener(Thief::onBlockRightClick);
-        MinecraftForge.EVENT_BUS.addListener(Thief::onBlockBroken);
+        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onEntityInteractEvent);
+        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onBlockRightClick);
+        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onBlockBroken);
 
         MinecraftForge.EVENT_BUS.addListener(VillageStructures::addVillageStructures);
 

@@ -23,6 +23,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -106,7 +107,18 @@ public class Registry {
         }
     }
 
+    public static class BlockTags {
+        public static final TagKey<Block> LOOTR_CONTAINERS = net.minecraft.tags.BlockTags.create(new ResourceLocation("lootr:containers"));
+    }
+
+    public static class StructureTags {
+        public static final TagKey<ConfiguredStructureFeature<?, ?>> THEFT_PROTECTED =
+                TagKey.create(net.minecraft.core.Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY, Monobank.resource("theft_protected"));
+    }
+
     public static class EntityTags {
+        public static final TagKey<EntityType<?>> THEFT_HATERS =
+                TagKey.create(net.minecraft.core.Registry.ENTITY_TYPE_REGISTRY, Monobank.resource("theft_haters"));
         public static final TagKey<EntityType<?>> THIEF_ATTACKERS =
                 TagKey.create(net.minecraft.core.Registry.ENTITY_TYPE_REGISTRY, Monobank.resource("thief_attackers"));
     }
