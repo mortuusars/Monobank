@@ -80,14 +80,32 @@ public class UnlockingMenu extends AbstractContainerMenu {
                 clickedSlot.safeInsert(removedStack);
         }
         else {
-            int matchingKeyway = combination.findMatchingSlot(clickedSlotStack.getItem());
-            if (matchingKeyway >= 0) {
-                Slot slot = slots.get(matchingKeyway);
-                if (!slot.hasItem() && slot.mayPlace(clickedSlotStack))
-                    slot.safeInsert(clickedSlotStack.split(1));
+            for (int i = 0; i < Combination.SIZE; i++) {
+                if (slots.get(i) instanceof UnlockingSlot unlockingSlot
+                        && !unlockingSlot.hasItem()
+                        && unlockingSlot.getKeyway().sameItem(clickedSlotStack)
+                        && unlockingSlot.mayPlace(clickedSlotStack)) {
+                    unlockingSlot.safeInsert(clickedSlotStack.split(1));
+                    break;
+                }
             }
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void removed(Player player) {
+        if (!player.level.isClientSide) {
+            for (int i = 0; i < Combination.SIZE; i++) {
+                IItemHandler unlockingInventory = monobankEntity.getUnlockingInventoryHandler();
+                if (!unlockingInventory.getStackInSlot(i).isEmpty()) {
+                    ItemStack itemStack = unlockingInventory.extractItem(i, 1, false);
+                    player.drop(itemStack, false);
+                }
+            }
+        }
+
+        super.removed(player);
     }
 
     // Called server-side.
