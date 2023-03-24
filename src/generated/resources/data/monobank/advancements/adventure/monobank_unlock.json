@@ -1,24 +1,24 @@
 {
   "parent": "monobank:adventure/monobank",
+  "criteria": {
+    "monobank_unlock": {
+      "conditions": {},
+      "trigger": "monobank:monobank_unlocked"
+    }
+  },
   "display": {
-    "icon": {
-      "item": "monobank:monobank"
-    },
-    "title": {
-      "translate": "monobank.advancement.unlock.title"
-    },
+    "announce_to_chat": false,
     "description": {
       "translate": "monobank.advancement.unlock.description"
     },
     "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "monobank:monobank"
+    },
     "show_toast": true,
-    "announce_to_chat": false,
-    "hidden": false
-  },
-  "criteria": {
-    "monobank_unlock": {
-      "trigger": "monobank:monobank_unlocked",
-      "conditions": {}
+    "title": {
+      "translate": "monobank.advancement.unlock.title"
     }
   },
   "requirements": [

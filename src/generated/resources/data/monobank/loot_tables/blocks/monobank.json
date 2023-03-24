@@ -1,8 +1,12 @@
 {
   "pools": [
     {
-      "rolls": 1.0,
       "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
       "entries": [
         {
           "type": "minecraft:item",
@@ -13,44 +17,40 @@
             },
             {
               "function": "minecraft:copy_nbt",
-              "source": "block_entity",
               "ops": [
                 {
+                  "op": "replace",
                   "source": "Inventory",
-                  "target": "BlockEntityTag.Inventory",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Inventory"
                 },
                 {
+                  "op": "replace",
                   "source": "Lock",
-                  "target": "BlockEntityTag.Lock",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Lock"
                 },
                 {
+                  "op": "replace",
                   "source": "Owner",
-                  "target": "BlockEntityTag.Owner",
-                  "op": "replace"
+                  "target": "BlockEntityTag.Owner"
                 },
                 {
+                  "op": "replace",
                   "source": "LootTable",
-                  "target": "BlockEntityTag.LootTable",
-                  "op": "replace"
+                  "target": "BlockEntityTag.LootTable"
                 },
                 {
+                  "op": "replace",
                   "source": "LootTableSeed",
-                  "target": "BlockEntityTag.LootTableSeed",
-                  "op": "replace"
+                  "target": "BlockEntityTag.LootTableSeed"
                 }
-              ]
+              ],
+              "source": "block_entity"
             }
           ],
           "name": "monobank:monobank"
         }
       ],
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ]
+      "rolls": 1.0
     }
   ]
 }

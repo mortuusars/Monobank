@@ -1,31 +1,31 @@
 {
   "parent": "monobank:adventure/monobank_replace_lock",
-  "display": {
-    "icon": {
-      "item": "monobank:monobank",
-      "nbt": "{BlockEntityTag:{Lock:{Combination:[\"minecraft:air\",\"minecraft:air\",\"minecraft:air\"],Locked:1b}}}"
-    },
-    "title": {
-      "translate": "monobank.advancement.monobank_full.title"
-    },
-    "description": {
-      "translate": "monobank.advancement.monobank_full.description"
-    },
-    "frame": "challenge",
-    "show_toast": true,
-    "announce_to_chat": true,
-    "hidden": false
-  },
   "criteria": {
     "monobank_full": {
-      "trigger": "monobank:inventory_changed",
       "conditions": {
         "item": {
           "count": {
             "min": 2147483647
           }
         }
-      }
+      },
+      "trigger": "monobank:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "monobank.advancement.monobank_full.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "monobank:monobank",
+      "nbt": "{BlockEntityTag:{Lock:{Combination:[\"minecraft:air\",\"minecraft:air\",\"minecraft:air\"],Locked:1b}}}"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "monobank.advancement.monobank_full.title"
     }
   },
   "requirements": [
