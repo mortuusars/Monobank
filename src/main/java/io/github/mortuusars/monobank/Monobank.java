@@ -30,6 +30,7 @@ public class Monobank
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             modEventBus.addListener(ClientSetup::init);
             modEventBus.addListener(ClientSetup::registerRenderers);
+            modEventBus.addListener(ClientSetup::registerTooltipComponents);
             modEventBus.addListener(ClientSetup::registerModels);
         });
 

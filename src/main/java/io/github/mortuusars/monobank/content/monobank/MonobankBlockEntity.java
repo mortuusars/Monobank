@@ -395,6 +395,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         }
     }
     public void open(ServerPlayer player) {
+        unpackLootTable(player, true);
         checkAndPunishForCrime(player, Thief.Offence.MODERATE);
         NetworkHooks.openScreen(player, this.OPEN_MENU_PROVIDER, buffer -> {
             buffer.writeBlockPos(worldPosition);
