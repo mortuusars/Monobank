@@ -6,6 +6,8 @@ import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.config.Configuration;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.SinglePoolElement;
@@ -20,11 +22,11 @@ import java.util.List;
 
 public class VillageStructures {
     private static final ResourceKey<StructureProcessorList> EMPTY_PROCESSOR_LIST_KEY = ResourceKey.create(
-            Registry.PROCESSOR_LIST_REGISTRY, new ResourceLocation("minecraft", "empty"));
+            Registries.PROCESSOR_LIST, new ResourceLocation("minecraft", "empty"));
     private static final ResourceKey<StructureProcessorList> MOSSIFY_10_PROCESSOR_LIST_KEY = ResourceKey.create(
-            Registry.PROCESSOR_LIST_REGISTRY, new ResourceLocation("minecraft", "mossify_10_percent"));
+            Registries.PROCESSOR_LIST, new ResourceLocation("minecraft", "mossify_10_percent"));
     private static final ResourceKey<StructureProcessorList> STREET_PLAINS_PROCESSOR_LIST_KEY = ResourceKey.create(
-            Registry.PROCESSOR_LIST_REGISTRY, new ResourceLocation("minecraft", "street_plains"));
+            Registries.PROCESSOR_LIST, new ResourceLocation("minecraft", "street_plains"));
 
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -32,8 +34,8 @@ public class VillageStructures {
         if (!Configuration.GENERATE_VILLAGE_STRUCTURES.get())
             return;
 
-        Registry<StructureTemplatePool> templatePools = event.getServer().registryAccess().registry(Registry.TEMPLATE_POOL_REGISTRY).get();
-        Registry<StructureProcessorList> processorListsRegistry = event.getServer().registryAccess().registry(Registry.PROCESSOR_LIST_REGISTRY).get();
+        Registry<StructureTemplatePool> templatePools = event.getServer().registryAccess().registry(Registries.TEMPLATE_POOL).get();
+        Registry<StructureProcessorList> processorListsRegistry = event.getServer().registryAccess().registry(Registries.PROCESSOR_LIST).get();
 
 //        Holder<StructureProcessorList> emptyProcessorList = processorListsRegistry.getHolderOrThrow(EMPTY_PROCESSOR_LIST_KEY);
         Holder<StructureProcessorList> mossify10ProcessorList = processorListsRegistry.getHolderOrThrow(MOSSIFY_10_PROCESSOR_LIST_KEY);

@@ -1,7 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -9,6 +9,8 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.joml.Vector3f;
+
 import java.util.List;
 
 public class ItemContentsRenderer {
@@ -46,7 +48,7 @@ public class ItemContentsRenderer {
             Vector3f offset = layout.get(i);
             poseStack.pushPose();
             poseStack.translate(offset.x(), offset.y(), offset.z());
-            poseStack.mulPose(Vector3f.YP.rotationDegrees(180));
+            poseStack.mulPose(Axis.YP.rotationDegrees(180));
             itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
                     packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
             poseStack.popPose();

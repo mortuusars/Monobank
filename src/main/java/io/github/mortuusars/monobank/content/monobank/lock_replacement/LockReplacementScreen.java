@@ -7,6 +7,7 @@ import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerS
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -22,9 +23,11 @@ public class LockReplacementScreen extends PatchedAbstractContainerScreen<LockRe
     @Override
     protected void init() {
         super.init();
-        this.addRenderableWidget(new ImageButton(getGuiLeft() + 128, getGuiTop() + 34,
+        ImageButton button = new ImageButton(getGuiLeft() + 128, getGuiTop() + 34,
                 18, 18, 176, 0, 18, TEXTURE,
-                256, 256, this::onConfirmButtonPress, this::onConfirmButtonTooltip, CONFIRM_TOOLTIP));
+                256, 256, this::onConfirmButtonPress, CONFIRM_TOOLTIP);
+        button.setTooltip(Tooltip.create(CONFIRM_TOOLTIP));
+        this.addRenderableWidget(button);
     }
 
     private void onConfirmButtonTooltip(Button button, PoseStack poseStack, int mouseX, int mouseY) {

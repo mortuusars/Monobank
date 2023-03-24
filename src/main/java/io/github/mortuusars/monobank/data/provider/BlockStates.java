@@ -11,7 +11,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 public class BlockStates extends BlockStateProvider {
     public BlockStates(DataGenerator dataGenerator, ExistingFileHelper exFileHelper) {
-        super(dataGenerator, Monobank.ID, exFileHelper);
+        super(dataGenerator.getPackOutput(), Monobank.ID, exFileHelper);
     }
 
     @Override

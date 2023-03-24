@@ -16,7 +16,7 @@ public class DataGeneration
         DataGenerator generator = event.getGenerator();
         ExistingFileHelper helper = event.getExistingFileHelper();
 
-        generator.addProvider(event.includeServer(), new Advancements(generator, helper));
+        generator.addProvider(event.includeServer(), new Advancements(generator, event.getLookupProvider(), helper));
         generator.addProvider(event.includeServer(), new LootTables(generator));
         generator.addProvider(event.includeServer(), new Recipes(generator));
 

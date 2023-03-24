@@ -11,6 +11,7 @@ import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
 import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
@@ -19,7 +20,6 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -45,13 +45,11 @@ public class Registry {
         public static final RegistryObject<BlockItem> MONOBANK = ITEMS.register("monobank",
                 () -> new BlockItem(Blocks.MONOBANK.get(), new Item.Properties()
                         .stacksTo(1)
-                        .fireResistant()
-                        .tab(CreativeModeTab.TAB_DECORATIONS)));
+                        .fireResistant()));
 
         public static final RegistryObject<Item> REPLACEMENT_LOCK = ITEMS.register("replacement_lock",
                 () -> new ReplacementLockItem(new Item.Properties()
-                        .stacksTo(16)
-                        .tab(CreativeModeTab.TAB_REDSTONE)));
+                        .stacksTo(16)));
     }
 
     public static class BlockEntityTypes {
@@ -91,7 +89,7 @@ public class Registry {
         public static final RegistryObject<SoundEvent> MONOBANK_CLICK = registerSound("block.monobank.click");
 
         private static RegistryObject<SoundEvent> registerSound(String name) {
-            return SOUNDS.register(name, () -> new SoundEvent(Monobank.resource(name)));
+            return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(Monobank.resource(name)));
         }
     }
 
@@ -113,14 +111,14 @@ public class Registry {
 
     public static class StructureTags {
         public static final TagKey<Structure> THEFT_PROTECTED =
-                TagKey.create(net.minecraft.core.Registry.STRUCTURE_REGISTRY, Monobank.resource("theft_protected"));
+                TagKey.create(Registries.STRUCTURE, Monobank.resource("theft_protected"));
     }
 
     public static class EntityTags {
         public static final TagKey<EntityType<?>> THEFT_HATERS =
-                TagKey.create(net.minecraft.core.Registry.ENTITY_TYPE_REGISTRY, Monobank.resource("theft_haters"));
+                TagKey.create(Registries.ENTITY_TYPE, Monobank.resource("theft_haters"));
         public static final TagKey<EntityType<?>> THIEF_ATTACKERS =
-                TagKey.create(net.minecraft.core.Registry.ENTITY_TYPE_REGISTRY, Monobank.resource("thief_attackers"));
+                TagKey.create(Registries.ENTITY_TYPE, Monobank.resource("thief_attackers"));
     }
 
     public static void register(IEventBus modEventBus) {

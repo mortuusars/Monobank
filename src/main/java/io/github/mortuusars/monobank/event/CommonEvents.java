@@ -8,8 +8,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -20,6 +23,16 @@ import java.util.List;
 public class CommonEvents {
     public static void onCommonSetup(final FMLCommonSetupEvent event) {
         Registry.Advancements.register();
+    }
+
+    public static void onCreativeTabsBuild(CreativeModeTabEvent.BuildContents event) {
+        if (event.getTab() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(Registry.Items.MONOBANK.get());
+        }
+
+        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(Registry.Items.REPLACEMENT_LOCK.get());
+        }
     }
 
     public static void onBlockRightClick(PlayerInteractEvent.RightClickBlock event) {

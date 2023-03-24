@@ -1,7 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import net.minecraft.client.Minecraft;
@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
+import org.joml.Vector3f;
 
 /**
  * Renders Monobank animated door and stored items inside.
@@ -45,7 +46,7 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
         // Rotate in facing direction:
         float facingYRotation = blockState.getValue(ChestBlock.FACING).getOpposite().toYRot();
         poseStack.translate(0.5D, 0.5D, 0.5D);
-        poseStack.mulPose(Vector3f.YP.rotationDegrees(-facingYRotation));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-facingYRotation));
         poseStack.translate(-0.5D, -0.5D, -0.5D);
 
         // Rotate door around the hinge:
@@ -55,7 +56,7 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
         float openness = blockEntity.getOpenNess(partialTick); // Get how much door is open. From 0 to 1.
         openness = openness < 0.5 ? 4 * openness * openness * openness : (float) (1 - Math.pow(-2 * openness + 2, 3) / 2); // CubicInOut easing:
         float opennessRotation = openness * 112.5f; // 112.5 is the max door opening rotation degrees.
-        poseStack.mulPose(Vector3f.YP.rotationDegrees(opennessRotation));
+        poseStack.mulPose(Axis.YP.rotationDegrees(opennessRotation));
 
 
         BakedModel model = Minecraft.getInstance().getModelManager().getModel(DOOR_MODEL_LOCATION);

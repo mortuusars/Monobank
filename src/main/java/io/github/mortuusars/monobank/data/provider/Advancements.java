@@ -15,10 +15,12 @@ import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.advancements.AdvancementProvider;
+import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -29,49 +31,53 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class Advancements extends AdvancementProvider
 {
-    private final Path PATH;
-    private ExistingFileHelper existingFileHelper;
+//    private final Path PATH;
+//    private ExistingFileHelper existingFileHelper;
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public Advancements(DataGenerator dataGenerator, ExistingFileHelper existingFileHelper) {
-        super(dataGenerator);
-        PATH = dataGenerator.getOutputFolder();
-        this.existingFileHelper = existingFileHelper;
+    public Advancements(DataGenerator dataGenerator, CompletableFuture<HolderLookup.Provider> provider, ExistingFileHelper existingFileHelper) {
+        super(dataGenerator.getPackOutput(), provider, List.of(new MonobankAdvancements(existingFileHelper)));
+//        PATH = dataGenerator.getOutputFolder();
+//        this.existingFileHelper = existingFileHelper;
     }
 
-    @Override
-    public void run(CachedOutput cache) {
-        Set<ResourceLocation> set = Sets.newHashSet();
-        Consumer<Advancement> consumer = (advancement) -> {
-            if (!set.add(advancement.getId())) {
-                throw new IllegalStateException("Duplicate advancement " + advancement.getId());
-            } else {
-                Path path1 = getPath(PATH, advancement);
 
-                try {
-                    DataProvider.saveStable(cache, advancement.deconstruct().serializeToJson(), path1);
-                }
-                catch (IOException ioexception) {
-                    LOGGER.error("Couldn't save advancement {}", path1, ioexception);
-                }
-            }
-        };
 
-        new MonobankAdvancements(existingFileHelper).accept(consumer);
-    }
+//    @Override
+//    public CompletableFuture run(CachedOutput cache) {
+//        Set<ResourceLocation> set = Sets.newHashSet();
+//        Consumer<Advancement> consumer = (advancement) -> {
+//            if (!set.add(advancement.getId())) {
+//                throw new IllegalStateException("Duplicate advancement " + advancement.getId());
+//            } else {
+//                Path path1 = getPath(PATH, advancement);
+//
+//                try {
+//                    DataProvider.saveStable(cache, advancement.deconstruct().serializeToJson(), path1);
+//                }
+//                catch (IOException ioexception) {
+//                    LOGGER.error("Couldn't save advancement {}", path1, ioexception);
+//                }
+//            }
+//        };
+//
+//        new MonobankAdvancements(existingFileHelper).accept(consumer);
+//    }
 
-    private static Path getPath(Path pathIn, Advancement advancementIn) {
-        return pathIn.resolve("data/" + advancementIn.getId().getNamespace() + "/advancements/" + advancementIn.getId().getPath() + ".json");
-    }
+//    private static Path getPath(Path pathIn, Advancement advancementIn) {
+//        return pathIn.resolve("data/" + advancementIn.getId().getNamespace() + "/advancements/" + advancementIn.getId().getPath() + ".json");
+//    }
 
-    public static class MonobankAdvancements implements Consumer<Consumer<Advancement>>
+    public static class MonobankAdvancements implements AdvancementSubProvider
     {
         private ExistingFileHelper existingFileHelper;
 
@@ -80,8 +86,7 @@ public class Advancements extends AdvancementProvider
         }
 
         @Override
-        public void accept(Consumer<Advancement> advancementConsumer) {
-
+        public void generate(HolderLookup.Provider pRegistries, Consumer<Advancement> advancementConsumer) {
             ItemStack lockedMonobankItemStack = new ItemStack(Registry.Items.MONOBANK.get());
             CompoundTag blockEntityTag = new CompoundTag();
             Lock lock = new Lock(BlockPos.ZERO, () -> {}, integer -> {}, () -> null);

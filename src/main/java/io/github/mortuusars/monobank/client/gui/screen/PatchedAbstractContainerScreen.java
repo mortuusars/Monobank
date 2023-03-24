@@ -8,7 +8,7 @@ import io.github.mortuusars.monobank.core.inventory.IResizeableSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -55,7 +55,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
         RenderSystem.disableDepthTest();
 
         // Replaced call to super (Screen) with its contents:
-        for(Widget widget : this.renderables) {
+        for(Renderable widget : this.renderables) {
             widget.render(poseStack, mouseX, mouseY, partialTick);
         }
 
@@ -176,7 +176,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
             Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
             if (pair != null) {
                 TextureAtlasSprite textureatlassprite = this.minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
-                RenderSystem.setShaderTexture(0, textureatlassprite.atlas().location());
+                RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
                 blit(poseStack, x, y, this.getBlitOffset(), slotWidth, slotHeight, textureatlassprite);
                 flag1 = true;
             }

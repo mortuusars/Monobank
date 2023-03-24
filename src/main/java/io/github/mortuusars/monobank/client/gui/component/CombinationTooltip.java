@@ -2,14 +2,12 @@ package io.github.mortuusars.monobank.client.gui.component;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import io.github.mortuusars.monobank.content.monobank.MonobankScreen;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -35,10 +33,6 @@ public class CombinationTooltip implements ClientTooltipComponent, TooltipCompon
         for (int i = 0; i < items.size(); i++) {
             itemRenderer.renderAndDecorateItem(items.get(i), mouseX + 7 + 18 * i + 3 * i, mouseY + 7);
         }
-    }
-
-    @Override
-    public void renderText(Font pFont, int pX, int pY, Matrix4f pMatrix4f, MultiBufferSource.BufferSource pBufferSource) {
     }
 
     @Override
