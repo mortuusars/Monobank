@@ -30,7 +30,7 @@ public class CommonEvents {
             event.accept(Registry.Items.MONOBANK.get());
         }
 
-        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+        if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(Registry.Items.REPLACEMENT_LOCK.get());
         }
     }

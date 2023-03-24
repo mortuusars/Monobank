@@ -1,10 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    " I ",
-    "ITI",
-    "IBI"
-  ],
+  "category": "misc",
   "key": {
     "B": {
       "tag": "forge:storage_blocks/iron"
@@ -16,6 +12,11 @@
       "item": "minecraft:tripwire_hook"
     }
   },
+  "pattern": [
+    " I ",
+    "ITI",
+    "IBI"
+  ],
   "result": {
     "item": "monobank:replacement_lock"
   }

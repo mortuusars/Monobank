@@ -1,10 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "BIB",
-    "L I",
-    "BIB"
-  ],
+  "category": "misc",
   "key": {
     "B": {
       "tag": "forge:storage_blocks/iron"
@@ -16,6 +12,11 @@
       "item": "monobank:replacement_lock"
     }
   },
+  "pattern": [
+    "BIB",
+    "L I",
+    "BIB"
+  ],
   "result": {
     "item": "monobank:monobank"
   }

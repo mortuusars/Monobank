@@ -29,7 +29,7 @@ public class Recipes extends RecipeProvider {
                 .unlockedBy("has_iron", has(Tags.Items.INGOTS_IRON))
                 .save(recipeConsumer);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Registry.Items.REPLACEMENT_LOCK.get())
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, Registry.Items.REPLACEMENT_LOCK.get())
                 .pattern(" I ")
                 .pattern("ITI")
                 .pattern("IBI")
