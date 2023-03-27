@@ -21,7 +21,7 @@
   "monobank.gui.monobank.tooltip.break_in_succeeded": "Монобанк був зламаний та відкритий невідомою особою",
 
   "monobank.message.lock_replaced": "Замок змінено",
-  "monobank.message.monobank.locking.monobank_is_locked": "Замкнуто. Спробуйте відімкнути замок з SHIFT+Ліва кнопка миші.",
+  "monobank.message.monobank.locking.monobank_is_locked": "Замкнуто. Спробуйте відімкнути замок з %s.",
   "monobank.message.monobank.unlocking": "Монобанк відмикається...",
   "monobank.message.replacement_lock.cannot_replace_not_owner": "Замок у цьому Монобанку неможливо змінити.",
   "monobank.message.replacement_lock.cannot_replace_when_locked": "Неможливо змінити замок: для заміни Монобанк повинен бути відкритим.",
