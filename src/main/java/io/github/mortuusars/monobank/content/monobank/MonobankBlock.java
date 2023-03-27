@@ -6,9 +6,11 @@ import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.Thief;
 import io.github.mortuusars.monobank.util.TextUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -196,12 +198,16 @@ public class MonobankBlock extends Block implements EntityBlock {
     }
 
     private InteractionResult tryOpen(BlockState blockState, Player player, Level level, BlockPos pos, MonobankBlockEntity monobankEntity) {
-        if (level.isClientSide)
-            return InteractionResult.SUCCESS;
-
         if (monobankEntity.getLock().isLocked()) { // Should be unlocked first
-            player.displayClientMessage(TextUtil.translate("message.monobank.locking.monobank_is_locked"), true);
-            monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
+            if (level.isClientSide) {
+                String hotkey = Minecraft.getInstance().options.keyShift.getKey().getDisplayName().getString(999) +
+                        "+" + Minecraft.getInstance().options.keyUse.getKey().getDisplayName().getString(999);
+                player.displayClientMessage(TextUtil.translate("message.monobank.locking.monobank_is_locked", hotkey), true);
+                return InteractionResult.SUCCESS;
+            }
+            else {
+                monobankEntity.playSoundAtDoor(Registry.Sounds.MONOBANK_CLICK.get());
+            }
         }
         else if (player instanceof ServerPlayer serverPlayer) {
             monobankEntity.open(serverPlayer);

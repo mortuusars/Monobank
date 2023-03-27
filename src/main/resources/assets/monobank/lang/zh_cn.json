@@ -17,7 +17,7 @@
   "monobank.gui.monobank.tooltip.break_in_attempted": "有人试图打开这个保险箱，但失败了",
   "monobank.gui.monobank.tooltip.break_in_succeeded": "保险箱被某人打开了",
   "monobank.message.lock_replaced": "密码锁已更换",
-  "monobank.message.monobank.locking.monobank_is_locked": "已上锁。尝试按住Shift键点击它以解锁",
+  "monobank.message.monobank.locking.monobank_is_locked": "已上锁。尝试按住%s键点击它以解锁",
   "monobank.message.monobank.unlocking": "正在解锁保险箱......",
   "monobank.message.replacement_lock.cannot_replace_not_owner": "无法更换这个保险箱的密码锁。",
   "monobank.message.replacement_lock.cannot_replace_when_locked": "无法更换密码锁：必须先解锁这个保险箱。",

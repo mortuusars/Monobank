@@ -21,7 +21,7 @@
   "monobank.gui.monobank.tooltip.break_in_succeeded": "Monobank was opened by someone",
 
   "monobank.message.lock_replaced": "Lock has been replaced",
-  "monobank.message.monobank.locking.monobank_is_locked": "Locked. Try unlocking with SHIFT+Click.",
+  "monobank.message.monobank.locking.monobank_is_locked": "Locked. Try unlocking with %s.",
   "monobank.message.monobank.unlocking": "Monobank is unlocking...",
   "monobank.message.replacement_lock.cannot_replace_not_owner": "Cannot replace lock in this Monobank.",
   "monobank.message.replacement_lock.cannot_replace_when_locked": "Cannot replace lock: Monobank must be unlocked first.",
