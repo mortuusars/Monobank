@@ -40,42 +40,9 @@ import java.util.function.Consumer;
 @MethodsReturnNonnullByDefault
 public class Advancements extends AdvancementProvider
 {
-//    private final Path PATH;
-//    private ExistingFileHelper existingFileHelper;
-    public static final Logger LOGGER = LogManager.getLogger();
-
     public Advancements(DataGenerator dataGenerator, CompletableFuture<HolderLookup.Provider> provider, ExistingFileHelper existingFileHelper) {
         super(dataGenerator.getPackOutput(), provider, List.of(new MonobankAdvancements(existingFileHelper)));
-//        PATH = dataGenerator.getOutputFolder();
-//        this.existingFileHelper = existingFileHelper;
     }
-
-
-
-//    @Override
-//    public CompletableFuture run(CachedOutput cache) {
-//        Set<ResourceLocation> set = Sets.newHashSet();
-//        Consumer<Advancement> consumer = (advancement) -> {
-//            if (!set.add(advancement.getId())) {
-//                throw new IllegalStateException("Duplicate advancement " + advancement.getId());
-//            } else {
-//                Path path1 = getPath(PATH, advancement);
-//
-//                try {
-//                    DataProvider.saveStable(cache, advancement.deconstruct().serializeToJson(), path1);
-//                }
-//                catch (IOException ioexception) {
-//                    LOGGER.error("Couldn't save advancement {}", path1, ioexception);
-//                }
-//            }
-//        };
-//
-//        new MonobankAdvancements(existingFileHelper).accept(consumer);
-//    }
-
-//    private static Path getPath(Path pathIn, Advancement advancementIn) {
-//        return pathIn.resolve("data/" + advancementIn.getId().getNamespace() + "/advancements/" + advancementIn.getId().getPath() + ".json");
-//    }
 
     public static class MonobankAdvancements implements AdvancementSubProvider
     {
