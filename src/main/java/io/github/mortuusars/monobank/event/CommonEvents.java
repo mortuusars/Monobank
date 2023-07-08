@@ -1,18 +1,17 @@
 package io.github.mortuusars.monobank.event;
 
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.Thief;
+import io.github.mortuusars.monobank.config.Configuration;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -25,12 +24,12 @@ public class CommonEvents {
         Registry.Advancements.register();
     }
 
-    public static void onCreativeTabsBuild(CreativeModeTabEvent.BuildContents event) {
-        if (event.getTab() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+    public static void onCreativeTabsBuild(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(Registry.Items.MONOBANK.get());
         }
 
-        if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(Registry.Items.REPLACEMENT_LOCK.get());
         }
     }
@@ -39,11 +38,11 @@ public class CommonEvents {
         Player opener = event.getEntity();
 
         if ( !Configuration.THIEF_ENABLED.get()
-                || opener.level.isClientSide
+                || opener.level().isClientSide
                 || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
-        BlockEntity blockEntity = opener.level.getBlockEntity(event.getHitVec().getBlockPos());
+        BlockEntity blockEntity = opener.level().getBlockEntity(event.getHitVec().getBlockPos());
         if (blockEntity instanceof RandomizableContainerBlockEntity containerBE && containerBE.lootTable != null) {
 
             // Lootr compatibility:
@@ -53,7 +52,7 @@ public class CommonEvents {
             }
 
             List<LivingEntity> witnesses = Thief.getWitnesses(opener);
-            if (witnesses.size() > 0 && Thief.isInProtectedStructureRange((ServerLevel)opener.getLevel(), opener.blockPosition()))
+            if (witnesses.size() > 0 && Thief.isInProtectedStructureRange((ServerLevel)opener.level(), opener.blockPosition()))
                 Thief.declareThief(opener, witnesses, Thief.Offence.MODERATE);
         }
     }
@@ -61,11 +60,11 @@ public class CommonEvents {
     public static void onBlockBroken(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
         if ( !Configuration.THIEF_ENABLED.get()
-             || !(player.level instanceof ServerLevel serverLevel)
+             || !(player.level() instanceof ServerLevel serverLevel)
              || !Configuration.THIEF_INCLUDE_OTHER_CONTAINERS.get())
             return;
 
-        BlockEntity blockEntityAtPos = player.level.getBlockEntity(event.getPos());
+        BlockEntity blockEntityAtPos = player.level().getBlockEntity(event.getPos());
         if (blockEntityAtPos instanceof RandomizableContainerBlockEntity container && container.lootTable != null
                 && Thief.isInProtectedStructureRange(serverLevel, player.blockPosition())) {
 
@@ -78,7 +77,7 @@ public class CommonEvents {
     public static void onEntityInteractEvent(PlayerInteractEvent.EntityInteract event) {
         Player player = event.getEntity();
 
-        if (!(player.level instanceof ServerLevel serverLevel))
+        if (!(player.level() instanceof ServerLevel serverLevel))
             return;
 
         if (Configuration.THIEF_NO_TRADE.get() && event.getTarget() instanceof Villager villager) {

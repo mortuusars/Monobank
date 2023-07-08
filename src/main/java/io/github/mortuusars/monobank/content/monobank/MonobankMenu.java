@@ -38,7 +38,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     public MonobankMenu(final int containerID, final Inventory playerInventory, final MonobankBlockEntity blockEntity, final MonobankExtraInfo extraInfo) {
         super(Registry.MenuTypes.MONOBANK.get(), containerID);
         this.blockEntity = blockEntity;
-        this.level = playerInventory.player.level;
+        this.level = playerInventory.player.level();
         this.canInteractWithCallable = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
         this.extraInfo = extraInfo;
 
@@ -76,7 +76,7 @@ public class MonobankMenu extends AbstractContainerMenu {
             This causes door to close while still in the menu, and not update its openness properly.
             So we are closing only server-side - which is then synchronized to client in OpenersCounter via block update.
          */
-        if (!player.level.isClientSide)
+        if (!player.level().isClientSide)
             this.blockEntity.stopOpen(player);
     }
 
@@ -174,7 +174,7 @@ public class MonobankMenu extends AbstractContainerMenu {
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
-        final BlockEntity blockEntityAtPos = playerInventory.player.level.getBlockEntity(data.readBlockPos());
+        final BlockEntity blockEntityAtPos = playerInventory.player.level().getBlockEntity(data.readBlockPos());
         if (blockEntityAtPos instanceof MonobankBlockEntity monobankBlockEntity) {
             return monobankBlockEntity;
         }

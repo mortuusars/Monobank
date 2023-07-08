@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Vector3f;
@@ -49,8 +50,8 @@ public class ItemContentsRenderer {
             poseStack.pushPose();
             poseStack.translate(offset.x(), offset.y(), offset.z());
             poseStack.mulPose(Axis.YP.rotationDegrees(180));
-            itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
-                    packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
+            itemRenderer.renderStatic(stack, ItemDisplayContext.NONE, packedLight,
+                    packedOverlay, poseStack, bufferSource, null, (int) entity.getBlockPos().asLong());
             poseStack.popPose();
         }
 

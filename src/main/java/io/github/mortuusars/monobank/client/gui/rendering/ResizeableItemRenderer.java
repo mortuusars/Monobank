@@ -8,14 +8,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -54,7 +55,7 @@ public class ResizeableItemRenderer {
             Lighting.setupForFlatItems();
         }
 
-        itemRenderer.render(stack, ItemTransforms.TransformType.GUI, false, newPoseStack, multibuffersource$buffersource, combinedLight, OverlayTexture.NO_OVERLAY, bakedModel);
+        itemRenderer.render(stack, ItemDisplayContext.GUI, false, newPoseStack, multibuffersource$buffersource, combinedLight, OverlayTexture.NO_OVERLAY, bakedModel);
         multibuffersource$buffersource.endBatch();
         RenderSystem.enableDepthTest();
         if (flag) {
@@ -70,14 +71,14 @@ public class ResizeableItemRenderer {
     }
 
     public static void renderGuiItem(ItemStack stack, int x, int y, int width, int height, int combinedLight) {
-        renderGuiItem(stack, x, y, width, height, Minecraft.getInstance().getItemRenderer().blitOffset + 100F, combinedLight, null);
+        renderGuiItem(stack, x, y, width, height, 100F, combinedLight, null);
     }
 
-    public static void renderGuiItemDecorations(Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, String countString, boolean fixDurabilityBarOverlapping) {
-        renderGuiItemDecorations(font, slotItemStack, x, y, slotWidth, slotHeight, 0xFFFFFF, countString, fixDurabilityBarOverlapping);
+    public static void renderGuiItemDecorations(GuiGraphics graphics, Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, String countString, boolean fixDurabilityBarOverlapping) {
+        renderGuiItemDecorations(graphics, font, slotItemStack, x, y, slotWidth, slotHeight, 0xFFFFFF, countString, fixDurabilityBarOverlapping);
     }
 
-    public static void renderGuiItemDecorations(Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, int fontColor, String countString, boolean fixDurabilityBarOverlapping) {
+    public static void renderGuiItemDecorations(GuiGraphics graphics, Font font, ItemStack slotItemStack, int x, int y, int slotWidth, int slotHeight, int fontColor, String countString, boolean fixDurabilityBarOverlapping) {
         if (slotItemStack.isEmpty())
             return;
 
@@ -85,7 +86,6 @@ public class ResizeableItemRenderer {
 
         if (slotItemStack.isBarVisible()) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
             RenderSystem.disableBlend();
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder bufferbuilder = tesselator.getBuilder();
@@ -103,17 +103,18 @@ public class ResizeableItemRenderer {
             int barThickness = Math.max(2, (int) (2 / 16.0f * slotHeight * 0.9f));
             int filledBarThickness = Math.max(1, (int) (1 / 16.0f * slotHeight * 0.9f));
 
-            itemRenderer.fillRect(bufferbuilder, barStartX, barStartY, barWidth, barThickness, 0, 0, 0, 255);
-            itemRenderer.fillRect(bufferbuilder, barStartX, barStartY, filledBarWidth, filledBarThickness, barColor >> 16 & 255, barColor >> 8 & 255, barColor & 255, 255);
+            graphics.fill(barStartX, barStartY, barStartX + barWidth, barStartY + barThickness, 100, 0xFF000000);
+            graphics.fill(barStartX, barStartY, barStartX + filledBarWidth, barStartY + filledBarThickness, 110, barColor | 0xFF << 24);
             RenderSystem.enableBlend();
-            RenderSystem.enableTexture();
             RenderSystem.enableDepthTest();
         }
 
-        PoseStack posestack = new PoseStack();
         if (slotItemStack.getCount() != 1 || countString != null) {
             String countS = countString == null ? String.valueOf(slotItemStack.getCount()) : countString;
-            posestack.translate(0.0D, 0.0D, itemRenderer.blitOffset + 200.0F);
+
+            PoseStack poseStack = graphics.pose();
+            poseStack.pushPose();
+            poseStack.translate(0.0D, 0.0D, 200.0F);
             MultiBufferSource.BufferSource multibuffersource$buffersource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 
             float startX = x + slotWidth + (1 / 16f * slotWidth) - font.width(countS);
@@ -121,9 +122,11 @@ public class ResizeableItemRenderer {
 
             // By default, durability bar renders on top of count. This moves it under.
             if (fixDurabilityBarOverlapping)
-                font.drawShadow(posestack, countS, startX, startY, fontColor);
+                graphics.drawString(font, countS, startX, startY, fontColor, true);
             else
-                font.drawInBatch(countS, startX, startY, fontColor, true, posestack.last().pose(), multibuffersource$buffersource, false, 0, 15728880);
+                font.drawInBatch(countS, startX, startY, fontColor, true, graphics.pose().last().pose(), multibuffersource$buffersource, Font.DisplayMode.NORMAL, 0, 15728880);
+
+            poseStack.popPose();
 
             multibuffersource$buffersource.endBatch();
         }
@@ -132,13 +135,11 @@ public class ResizeableItemRenderer {
         float cooldownPercent = localplayer == null ? 0.0F : localplayer.getCooldowns().getCooldownPercent(slotItemStack.getItem(), Minecraft.getInstance().getFrameTime());
         if (cooldownPercent > 0.0F) {
             RenderSystem.disableDepthTest();
-            RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder bufferBuilder = tesselator.getBuilder();
-            itemRenderer.fillRect(bufferBuilder, x, y + Mth.floor(slotHeight * (1.0F - cooldownPercent)), slotWidth, Mth.ceil(slotHeight * cooldownPercent), 255, 255, 255, 127);
-            RenderSystem.enableTexture();
+            graphics.fill(x, y + Mth.floor(slotHeight * (1.0F - cooldownPercent)), slotWidth, Mth.ceil(slotHeight * cooldownPercent), 0x7FFFFFFF);
             RenderSystem.enableDepthTest();
         }
     }

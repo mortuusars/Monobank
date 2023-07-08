@@ -1,5 +1,5 @@
-// 1.19.3	2023-03-24T02:58:19.3919964	Recipes
-afd06940a04f4450cbe4a556327efd17da63acd0 data/monobank/advancements/recipes/decorations/monobank.json
-f78a4f03802cde4bef28b2026d65edca26fc57d3 data/monobank/advancements/recipes/misc/replacement_lock.json
-b97c5536d27bd1c4b34eb967500862b1fffb8ee2 data/monobank/recipes/monobank.json
-9f1bf79206954d5caafceb7871444de072d6d959 data/monobank/recipes/replacement_lock.json
+// 1.20.1	2023-07-08T05:10:21.7966655	Recipes
+b562c374ee41064d2d970cb761ecb60eb1b6021d data/monobank/advancements/recipes/decorations/monobank.json
+c108513f9813f3d82f86dedaa42c0a8bd1a1f6d4 data/monobank/advancements/recipes/misc/replacement_lock.json
+b49ecb197ec73a139003f50db59ce1bb80d574df data/monobank/recipes/monobank.json
+7ba99ec36fccd5e3f88c4ee64ea3d7e57685865e data/monobank/recipes/replacement_lock.json

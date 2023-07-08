@@ -3,14 +3,15 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.Thief;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.monobank.component.*;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
 import io.github.mortuusars.monobank.util.TextUtil;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -39,7 +40,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -54,6 +55,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"NullableProblems", "unused"})
@@ -75,9 +77,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             return MonobankBlockEntity.this.getName();
         }
 
-        @Nullable
         @Override
-        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+        public @NotNull AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
             return new MonobankMenu(containerID, playerInventory, MonobankBlockEntity.this,
                     MonobankBlockEntity.this.getExtraInfo(player));
         }
@@ -88,9 +89,8 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             return TextUtil.translate("gui.monobank.unlocking", MonobankBlockEntity.this.getName());
         }
 
-        @Nullable
         @Override
-        public AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
+        public @NotNull AbstractContainerMenu createMenu(int containerID, Inventory playerInventory, Player player) {
             return new UnlockingMenu(containerID, playerInventory, MonobankBlockEntity.this,
                     MonobankBlockEntity.this.lock.getCombination());
         }
@@ -180,7 +180,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
      * Starts the countdown after which Monobank will unlock.
      */
     public void startUnlocking() {
-        startUnlocking(getLevel().getRandom().nextInt(20, 61));
+        startUnlocking(Objects.requireNonNull(getLevel()).getRandom().nextInt(20, 61));
     }
 
     /**
@@ -189,6 +189,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public void startUnlocking(int ticks) {
         if (!isUnlocking()) {
 
+            assert level != null;
             List<? extends Player> players = level.players();
             for (Player player : players) {
                 if (player.containerMenu instanceof UnlockingMenu unlockingMenu && unlockingMenu.monobankEntity == this) {
@@ -224,6 +225,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     private void onLockInventoryChanged(Integer slot) {
+        assert level != null;
         if (level.isClientSide)
             return;
 
@@ -238,12 +240,13 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             keys.add(getLock().getInventory().getStackInSlot(i));
         }
 
-        if (combination.matches(keys.stream().map(itemStack -> itemStack.getItem()).collect(Collectors.toList()))) {
+        if (combination.matches(keys.stream().map(ItemStack::getItem).collect(Collectors.toList()))) {
             this.startUnlocking();
             dropItemsAtDoor(keys);
         }
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean checkAndPunishForCrime(Player player, Thief.Offence offence) {
         boolean crimeAgainstPlayer = Configuration.THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME.get() && getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player);
         boolean crimeAgainstNPC = getOwner().getType() == Owner.Type.NPC;
@@ -326,19 +329,21 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
                 return;
             }
 
-            LootTable loottable = this.level.getServer().getLootTables().get(this.lootTable);
+            LootTable loottable = this.level.getServer().getLootData().getLootTable(this.lootTable);
             if (player instanceof ServerPlayer) {
                 CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, this.lootTable);
             }
 
             this.lootTable = null;
-            LootContext.Builder lootContextBuilder = (new LootContext.Builder((ServerLevel)this.level))
-                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition))
-                    .withOptionalRandomSeed(this.lootTableSeed);
-            if (player != null)
-                lootContextBuilder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
 
-            List<ItemStack> randomItems = loottable.getRandomItems(lootContextBuilder.create(LootContextParamSets.CHEST));
+            LootParams.Builder lootParams = (new LootParams.Builder((ServerLevel)this.level))
+                    .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.worldPosition));
+
+            if (player != null)
+                lootParams.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
+
+            ObjectArrayList<ItemStack> randomItems = loottable.getRandomItems(lootParams.create(LootContextParamSets.CHEST), this.lootTableSeed);
+
             if (randomItems.size() > 0) {
                 this.inventory.setStackInSlot(0, randomItems.get(0));
             }
@@ -361,7 +366,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     }
 
     public void onSetPlacedBy(LivingEntity placer, ItemStack stack) {
-        if (!placer.level.isClientSide && placer instanceof Player player) {
+        if (!placer.level().isClientSide && placer instanceof Player player) {
 
             if (this.owner.getType() == Owner.Type.NONE)
                 setOwner(player);
@@ -453,8 +458,9 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         updateFullness();
         this.setChanged();
         // Advancement
+        assert level != null;
         if (!level.isClientSide && getOwner().isPlayerOwned()) {
-            @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(getOwner().getUuid());
+            @Nullable ServerPlayer player = Objects.requireNonNull(level.getServer()).getPlayerList().getPlayer(getOwner().getUuid());
             if (player != null)
                 Registry.Advancements.MONOBANK_INVENTORY_CHANGED.trigger(player, getStoredItemStack());
         }
@@ -488,7 +494,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
                 int current = (int)Math.ceil(Math.log(monobankEntity.unlockingCountdown));
                 int freq = max - current;
                 if (monobankEntity.unlockingCountdown % freq == 0)
-                    monobankEntity.playSoundAtDoor(monobankEntity.getLevel(), monobankEntity.getBlockPos(),
+                    playSoundAtDoor(monobankEntity.getLevel(), monobankEntity.getBlockPos(),
                             monobankEntity.getBlockState(), Registry.Sounds.MONOBANK_CLICK.get(), 0.5f);
 
                 monobankEntity.unlockingCountdown--;
@@ -548,11 +554,13 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         double y = worldPosition.getY() + 0.5D;
         double z = worldPosition.getZ() + 0.5D + (facingNormal.getZ() * 0.6D);
         for (ItemStack stack : items) {
+            assert level != null;
             Containers.dropItemStack(level, x, y, z, stack);
         }
     }
 
     public void playSoundAtDoor(SoundEvent sound, float volume, float pitch) {
+        assert level != null;
         playSoundAtDoor(level, worldPosition, getBlockState(), sound, volume, pitch);
     }
 

@@ -50,12 +50,12 @@ public class ThiefEffect extends MobEffect {
 
     @Override
     public List<ItemStack> getCurativeItems() {
-        return Collections.EMPTY_LIST; // Milk is not strong enough to heal the reputation damage.
+        return Collections.emptyList(); // Milk is not strong enough to heal the reputation damage.
     }
 
     @Override
     public void applyEffectTick(LivingEntity thiefEntity, int amplifier) {
-        Level level = thiefEntity.level;
+        Level level = thiefEntity.level();
         if (level.isClientSide || level.getGameTime() % 10 != 0 || level.getDifficulty() == Difficulty.PEACEFUL)
             return;
 

@@ -34,5 +34,6 @@
     [
       "monobank_get"
     ]
-  ]
+  ],
+  "sends_telemetry_event": true
 }

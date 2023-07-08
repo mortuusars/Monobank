@@ -10,7 +10,7 @@ import net.minecraft.world.level.LightLayer;
 public class DarknessModifier implements IStealthModifier {
     @Override
     public Tuple<Float, Boolean> modify(LivingEntity entity, float previousValue) {
-        Level level = entity.level;
+        Level level = entity.level();
 
         int skyBrightness = level.getBrightness(LightLayer.SKY, entity.blockPosition());
         int blockBrightness = level.getBrightness(LightLayer.BLOCK, entity.blockPosition());

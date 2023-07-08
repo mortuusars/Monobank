@@ -5,17 +5,18 @@ import io.github.mortuusars.monobank.Monobank;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.NotNull;
 
 public class MonobankLockReplacedTrigger extends SimpleCriterionTrigger<MonobankLockReplacedTrigger.TriggerInstance> {
     private static final ResourceLocation ID = Monobank.resource("monobank_lock_replaced");
 
     @Override
-    public ResourceLocation getId() {
+    public @NotNull ResourceLocation getId() {
         return ID;
     }
 
     @Override
-    protected MonobankLockReplacedTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite player, DeserializationContext conditionsParser) {
+    protected MonobankLockReplacedTrigger.@NotNull TriggerInstance createInstance(@NotNull JsonObject json, @NotNull ContextAwarePredicate player, @NotNull DeserializationContext conditionsParser) {
         return new MonobankLockReplacedTrigger.TriggerInstance(player);
     }
 
@@ -25,7 +26,7 @@ public class MonobankLockReplacedTrigger extends SimpleCriterionTrigger<Monobank
 
     public static class TriggerInstance extends AbstractCriterionTriggerInstance
     {
-        public TriggerInstance(EntityPredicate.Composite player) {
+        public TriggerInstance(ContextAwarePredicate player) {
             super(MonobankLockReplacedTrigger.ID, player);
         }
     }

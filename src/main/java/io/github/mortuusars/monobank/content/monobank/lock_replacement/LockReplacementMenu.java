@@ -1,6 +1,5 @@
 package io.github.mortuusars.monobank.content.monobank.lock_replacement;
 
-import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
@@ -26,15 +25,13 @@ import java.util.Objects;
 
 public class LockReplacementMenu extends AbstractContainerMenu {
     private final MonobankBlockEntity monobankEntity;
-    private final Level level;
     private final ContainerLevelAccess canInteractWithCallable;
     private final CombinationContainer combinationContainer;
     public LockReplacementMenu(final int containerID, final Inventory playerInventory,
                                final MonobankBlockEntity monobankEntity) {
         super(Registry.MenuTypes.MONOBANK_LOCK_REPLACEMENT.get(), containerID);
         this.monobankEntity = monobankEntity;
-        this.level = playerInventory.player.level;
-        this.canInteractWithCallable = ContainerLevelAccess.create(monobankEntity.getLevel(), monobankEntity.getBlockPos());
+        this.canInteractWithCallable = ContainerLevelAccess.create(Objects.requireNonNull(monobankEntity.getLevel()), monobankEntity.getBlockPos());
 
         this.combinationContainer = new CombinationContainer();
 
@@ -138,7 +135,7 @@ public class LockReplacementMenu extends AbstractContainerMenu {
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
-        final BlockEntity blockEntityAtPos = playerInventory.player.level.getBlockEntity(data.readBlockPos());
+        final BlockEntity blockEntityAtPos = playerInventory.player.level().getBlockEntity(data.readBlockPos());
         if (blockEntityAtPos instanceof MonobankBlockEntity monobankBlockEntity) {
             return monobankBlockEntity;
         }

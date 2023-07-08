@@ -25,5 +25,6 @@
     [
       "monobank_unlock"
     ]
-  ]
+  ],
+  "sends_telemetry_event": true
 }

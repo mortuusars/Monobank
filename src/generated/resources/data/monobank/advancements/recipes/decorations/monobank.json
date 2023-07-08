@@ -28,5 +28,6 @@
     "recipes": [
       "monobank:monobank"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

@@ -25,5 +25,6 @@
     [
       "monobank_replace_lock"
     ]
-  ]
+  ],
+  "sends_telemetry_event": true
 }

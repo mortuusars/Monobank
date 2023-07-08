@@ -6,6 +6,7 @@ import net.minecraft.advancements.critereon.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class MonobankInventoryChangedTrigger extends SimpleCriterionTrigger<MonobankInventoryChangedTrigger.TriggerInstance> {
     private static final ResourceLocation ID = Monobank.resource("inventory_changed");
@@ -15,12 +16,12 @@ public class MonobankInventoryChangedTrigger extends SimpleCriterionTrigger<Mono
     }
 
     @Override
-    protected TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite player, DeserializationContext conditionsParser) {
+    protected @NotNull TriggerInstance createInstance(JsonObject json, @NotNull ContextAwarePredicate player, @NotNull DeserializationContext conditionsParser) {
         return new TriggerInstance(player, ItemPredicate.fromJson(json.get("item")));
     }
 
     @Override
-    public ResourceLocation getId() {
+    public @NotNull ResourceLocation getId() {
         return ID;
     }
 
@@ -28,7 +29,7 @@ public class MonobankInventoryChangedTrigger extends SimpleCriterionTrigger<Mono
     {
         private ItemPredicate item;
 
-        public TriggerInstance(EntityPredicate.Composite player, ItemPredicate item) {
+        public TriggerInstance(ContextAwarePredicate player, ItemPredicate item) {
             super(MonobankInventoryChangedTrigger.ID, player);
             this.item = item;
         }
@@ -37,14 +38,14 @@ public class MonobankInventoryChangedTrigger extends SimpleCriterionTrigger<Mono
          * Creates a trigger instance with required count set to int.maxValue. This is used for 'Fill monobank to full' advancement.
          */
         public static TriggerInstance full() {
-            return new TriggerInstance(EntityPredicate.Composite.ANY, /*MinMaxBounds.Ints.atLeast(Integer.MAX_VALUE),*/
+            return new TriggerInstance(ContextAwarePredicate.ANY, /*MinMaxBounds.Ints.atLeast(Integer.MAX_VALUE),*/
                     ItemPredicate.Builder.item()
                             .withCount(MinMaxBounds.Ints.atLeast(Integer.MAX_VALUE))
                             .build());
         }
 
         @Override
-        public JsonObject serializeToJson(SerializationContext pConditions) {
+        public @NotNull JsonObject serializeToJson(@NotNull SerializationContext pConditions) {
             JsonObject jsonObject = super.serializeToJson(pConditions);
             jsonObject.add("item", item.serializeToJson());
             return jsonObject;

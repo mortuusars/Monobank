@@ -2,10 +2,7 @@ package io.github.mortuusars.monobank.content.advancement.trigger;
 
 import com.google.gson.JsonObject;
 import io.github.mortuusars.monobank.Monobank;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
-import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.advancements.critereon.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -18,7 +15,7 @@ public class MonobankUnlockedTrigger extends SimpleCriterionTrigger<MonobankUnlo
     }
 
     @Override
-    protected MonobankUnlockedTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite player, DeserializationContext conditionsParser) {
+    protected MonobankUnlockedTrigger.TriggerInstance createInstance(JsonObject json, ContextAwarePredicate player, DeserializationContext conditionsParser) {
         return new MonobankUnlockedTrigger.TriggerInstance(player);
     }
 
@@ -28,7 +25,7 @@ public class MonobankUnlockedTrigger extends SimpleCriterionTrigger<MonobankUnlo
 
     public static class TriggerInstance extends AbstractCriterionTriggerInstance
     {
-        public TriggerInstance(EntityPredicate.Composite player) {
+        public TriggerInstance(ContextAwarePredicate player) {
             super(MonobankUnlockedTrigger.ID, player);
         }
     }

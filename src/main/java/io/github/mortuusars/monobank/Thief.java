@@ -68,7 +68,7 @@ public class Thief {
         if (!Configuration.THIEF_ENABLED.get() || (thief instanceof Player player && (player.isCreative() || player.isSpectator())))
             return Collections.emptyList();
 
-        Level level = thief.level;
+        Level level = thief.level();
 
         int radius = Math.max((int)(32 * Stealth.getValueOf(thief)), 3);
         AABB crimeScene = new AABB(thief.blockPosition()).inflate(radius, radius * 0.33f, radius);
@@ -87,8 +87,6 @@ public class Thief {
                 .stream()
                 .filter(isWitness)
                 .toList();
-
-//        Monobank.LOGGER.debug(witnesses.size() + " witnesses of a theft.");
 
         return witnesses;
     }

@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank.component;
 
 import com.mojang.datafixers.util.Either;
+import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -11,7 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -19,10 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -40,10 +38,10 @@ public class Lock {
     private final ItemStackHandler inventory;
     private boolean locked = false;
 
-    private BlockPos pos;
-    private Runnable onLockedChanged;
-    private Consumer<Integer> onLockInventoryChanged;
-    private Supplier<Level> levelSupplier;
+    private final BlockPos pos;
+    private final Runnable onLockedChanged;
+    private final Consumer<Integer> onLockInventoryChanged;
+    private final Supplier<Level> levelSupplier;
 
     /**
      * @param pos Position of a block entity.
@@ -82,7 +80,7 @@ public class Lock {
 
     public Combination getCombination() {
         if (combination.left().isPresent() && tryUnpackCombinationTable())
-            levelSupplier.get().getBlockEntity(pos).setChanged(); // Save block entity
+            Objects.requireNonNull(levelSupplier.get().getBlockEntity(pos)).setChanged(); // Save block entity
         return combination.right().orElse(Combination.empty());
     }
 
@@ -129,22 +127,22 @@ public class Lock {
 
     public boolean tryUnpackCombinationTable() {
         Level level = levelSupplier.get();
+        if (level.getServer() == null || level.isClientSide)
+            return false;
 
         Optional<ResourceLocation> combinationTable = combination.left();
-        if (!combinationTable.isPresent())
+        if (combinationTable.isEmpty())
             return false;
 
         ResourceLocation lootTable = combinationTable.get();
 
-        if (level.getServer() == null)
-            return false;
 
-        LootTable loottable = level.getServer().getLootTables().get(lootTable);
-        LootContext lootContext = new LootContext.Builder((ServerLevel)level)
+        LootTable loottable = level.getServer().getLootData().getLootTable(lootTable);
+        LootParams lootParams = new LootParams.Builder((ServerLevel) level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(this.pos))
                 .create(LootContextParamSets.CHEST);
 
-        List<ItemStack> randomItems = loottable.getRandomItems(lootContext);
+        List<ItemStack> randomItems = loottable.getRandomItems(lootParams);
         ArrayList<Item> newCombination = new ArrayList<>();
         for (int i = 0; i < Combination.SIZE; i++) {
             if (randomItems.size() <= i)
@@ -154,7 +152,10 @@ public class Lock {
         }
         Collections.shuffle(newCombination);
         this.combination = Either.right(new Combination(newCombination));
-        levelSupplier.get().getBlockEntity(pos).setChanged(); // Save block entity
+
+        if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankBlockEntity)
+            monobankBlockEntity.setChanged();
+
         return true;
     }
 

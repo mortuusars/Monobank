@@ -28,7 +28,7 @@ public class UnlockingMenu extends AbstractContainerMenu {
         super(Registry.MenuTypes.MONOBANK_UNLOCKING.get(), containerID);
         this.monobankEntity = monobankEntity;
         this.combination = combination;
-        this.level = playerInventory.player.level;
+        this.level = playerInventory.player.level();
         this.canInteractWithCallable = ContainerLevelAccess.create(monobankEntity.getLevel(), monobankEntity.getBlockPos());
 
         IItemHandler unlockingInventoryHandler = monobankEntity.getUnlockingInventoryHandler();
@@ -83,7 +83,7 @@ public class UnlockingMenu extends AbstractContainerMenu {
             for (int i = 0; i < Combination.SIZE; i++) {
                 if (slots.get(i) instanceof UnlockingSlot unlockingSlot
                         && !unlockingSlot.hasItem()
-                        && unlockingSlot.getKeyway().sameItem(clickedSlotStack)
+                        && ItemStack.isSameItem(unlockingSlot.getKeyway(), clickedSlotStack)
                         && unlockingSlot.mayPlace(clickedSlotStack)) {
                     unlockingSlot.safeInsert(clickedSlotStack.split(1));
                     break;
@@ -95,7 +95,7 @@ public class UnlockingMenu extends AbstractContainerMenu {
 
     @Override
     public void removed(Player player) {
-        if (!player.level.isClientSide) {
+        if (!player.level().isClientSide) {
             for (int i = 0; i < Combination.SIZE; i++) {
                 IItemHandler unlockingInventory = monobankEntity.getUnlockingInventoryHandler();
                 if (!unlockingInventory.getStackInSlot(i).isEmpty()) {
@@ -118,7 +118,7 @@ public class UnlockingMenu extends AbstractContainerMenu {
     private static MonobankBlockEntity getBlockEntity(final Inventory playerInventory, final FriendlyByteBuf data) {
         Objects.requireNonNull(playerInventory, "playerInventory cannot be null");
         Objects.requireNonNull(data, "data cannot be null");
-        final BlockEntity blockEntityAtPos = playerInventory.player.level.getBlockEntity(data.readBlockPos());
+        final BlockEntity blockEntityAtPos = playerInventory.player.level().getBlockEntity(data.readBlockPos());
         if (blockEntityAtPos instanceof MonobankBlockEntity monobankBlockEntity) {
             return monobankBlockEntity;
         }

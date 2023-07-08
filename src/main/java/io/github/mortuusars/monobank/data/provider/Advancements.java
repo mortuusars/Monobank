@@ -1,6 +1,5 @@
 package io.github.mortuusars.monobank.data.provider;
 
-import com.google.common.collect.Sets;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
@@ -12,27 +11,20 @@ import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
 import net.minecraft.data.advancements.AdvancementProvider;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -80,7 +72,7 @@ public class Advancements extends AdvancementProvider
                             TextUtil.translate("advancement.unlock.description"),
                             null,
                             FrameType.TASK, true, false, false)
-                    .addCriterion("monobank_unlock", new MonobankUnlockedTrigger.TriggerInstance(EntityPredicate.Composite.ANY))
+                    .addCriterion("monobank_unlock", new MonobankUnlockedTrigger.TriggerInstance(ContextAwarePredicate.ANY))
                     .save(advancementConsumer, Monobank.resource("adventure/monobank_unlock"), existingFileHelper);
 
             Advancement replace_lock = Advancement.Builder.advancement()
@@ -90,7 +82,7 @@ public class Advancements extends AdvancementProvider
                             TextUtil.translate("advancement.replace_lock.description"),
                             null,
                             FrameType.TASK, true, false, false)
-                    .addCriterion("monobank_replace_lock", new MonobankLockReplacedTrigger.TriggerInstance(EntityPredicate.Composite.ANY))
+                    .addCriterion("monobank_replace_lock", new MonobankLockReplacedTrigger.TriggerInstance(ContextAwarePredicate.ANY))
                     .save(advancementConsumer, Monobank.resource("adventure/monobank_replace_lock"), existingFileHelper);
 
             Advancement full = Advancement.Builder.advancement()

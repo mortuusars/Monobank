@@ -28,5 +28,6 @@
     "recipes": [
       "monobank:replacement_lock"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

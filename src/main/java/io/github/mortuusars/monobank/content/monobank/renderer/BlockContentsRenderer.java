@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -76,8 +76,8 @@ public class BlockContentsRenderer {
                 poseStack.pushPose();
                 poseStack.translate(itemXOffset, yOffset, zOffset);
                 poseStack.mulPose(Axis.YP.rotationDegrees(180 + yRotations.get(elementIndex)));
-                itemRenderer.renderStatic(stack, ItemTransforms.TransformType.NONE, packedLight,
-                        packedOverlay, poseStack, bufferSource, (int) entity.getBlockPos().asLong());
+                itemRenderer.renderStatic(stack, ItemDisplayContext.NONE, packedLight,
+                        packedOverlay, poseStack, bufferSource, null, (int) entity.getBlockPos().asLong());
                 poseStack.popPose();
 
                 elementIndex++;

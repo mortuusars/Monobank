@@ -8,6 +8,7 @@ import io.github.mortuusars.monobank.core.inventory.IResizeableSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.event.ContainerScreenEvent;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 
 @SuppressWarnings({"NullableProblems", "unused"})
@@ -46,17 +48,17 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
      * It is done to allow for rendering overlays for bigger slot sizes than 16.
      * Why it is so hard to allow for custom-sized slots Mojang? Why?
      */
-    public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         int x = this.leftPos;
         int y = this.topPos;
-        this.renderBg(poseStack, partialTick, mouseX, mouseY);
+        this.renderBg(graphics, partialTick, mouseX, mouseY);
 
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, poseStack, mouseX, mouseY));
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, graphics, mouseX, mouseY));
         RenderSystem.disableDepthTest();
 
         // Replaced call to super (Screen) with its contents:
         for(Renderable widget : this.renderables) {
-            widget.render(poseStack, mouseX, mouseY, partialTick);
+            widget.render(graphics, mouseX, mouseY, partialTick);
         }
 
         PoseStack posestack = RenderSystem.getModelViewStack();
@@ -71,7 +73,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
             Slot slot = this.menu.slots.get(k);
             if (slot.isActive()) {
                 RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                this.renderSlot(poseStack, slot);
+                this.renderSlot(graphics, slot);
             }
 
             if (this.isHovering(slot, mouseX, mouseY) && slot.isActive()) {
@@ -79,12 +81,12 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
                 int slotX = slot.x;
                 int slotY = slot.y;
                 // Call to updated method which can render custom-sized slots:
-                this.renderSlotHighlight(slot, poseStack, slotX, slotY, this.getBlitOffset(), this.getSlotColor(k));
+                this.renderSlotHighlight(slot, graphics, slotX, slotY, 100, this.getSlotColor(k));
             }
         }
 
-        this.renderLabels(poseStack, mouseX, mouseY);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, poseStack, mouseX, mouseY));
+        this.renderLabels(graphics, mouseX, mouseY);
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, graphics, mouseX, mouseY));
         ItemStack itemstack = this.draggingItem.isEmpty() ? this.menu.getCarried() : this.draggingItem;
         if (!itemstack.isEmpty()) {
             int l1 = 8;
@@ -101,7 +103,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
                 }
             }
 
-            this.renderFloatingItem(itemstack, mouseX - x - 8, mouseY - y - i2, s);
+            this.renderFloatingItem(graphics, itemstack, mouseX - x - 8, mouseY - y - i2, s);
         }
 
         if (!this.snapbackItem.isEmpty()) {
@@ -115,7 +117,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
             int k2 = this.snapbackEnd.y - this.snapbackStartY;
             int j1 = this.snapbackStartX + (int)((float)j2 * f);
             int k1 = this.snapbackStartY + (int)((float)k2 * f);
-            this.renderFloatingItem(this.snapbackItem, j1, k1, null);
+            this.renderFloatingItem(graphics, this.snapbackItem, j1, k1, null);
         }
 
         posestack.popPose();
@@ -127,7 +129,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
      * This method is a copy of super-class method, with some minor changes. <br>
      * It is done to allow for rendering slot sizes bigger than 16.
      */
-    protected void renderSlot(PoseStack poseStack, Slot slot) {
+    protected void renderSlot(GuiGraphics graphics, Slot slot) {
         int x = slot.x;
         int y = slot.y;
 
@@ -158,7 +160,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
             if (AbstractContainerMenu.canItemQuickReplace(slot, carriedStack, true) && this.menu.canDragTo(slot)) {
                 itemstack = carriedStack.copy();
                 canQuickReplace = true;
-                AbstractContainerMenu.getQuickCraftSlotCount(this.quickCraftSlots, this.quickCraftingType, itemstack, slot.getItem().isEmpty() ? 0 : slot.getItem().getCount());
+                AbstractContainerMenu.getQuickCraftPlaceCount(this.quickCraftSlots, this.quickCraftingType, itemstack);
                 int k = Math.min(itemstack.getMaxStackSize(), slot.getMaxStackSize(itemstack));
                 if (itemstack.getCount() > k) {
                     countString = ChatFormatting.YELLOW.toString() + k;
@@ -170,31 +172,26 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
             }
         }
 
-        this.setBlitOffset(100);
-        this.itemRenderer.blitOffset = 100.0F;
         if (itemstack.isEmpty() && slot.isActive()) {
             Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
             if (pair != null) {
                 TextureAtlasSprite textureatlassprite = this.minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
-                RenderSystem.setShaderTexture(0, textureatlassprite.atlasLocation());
-                blit(poseStack, x, y, this.getBlitOffset(), slotWidth, slotHeight, textureatlassprite);
+                graphics.blit(x, y, 0, slotWidth, slotHeight, textureatlassprite);
                 flag1 = true;
             }
         }
 
         if (!flag1) {
             if (canQuickReplace)
-                fill(poseStack, x, y, x + slotWidth, y + slotHeight, -2130706433);
+                graphics.fill(x, y, x + slotWidth, y + slotHeight, -2130706433);
 
             RenderSystem.enableDepthTest();
 
-            renderSlotItem(slot, itemstack, this.minecraft.player, x, y);
+            assert this.minecraft != null;
+            renderSlotItem(graphics, slot, itemstack, this.minecraft.player, x, y);
             countString = getCountStringForSlot(slot, itemstack, countString);
-            renderSlotDecorations(slot, itemstack, this.font, x, y, countString);
+            renderSlotDecorations(graphics, slot, itemstack, this.font, x, y, countString);
         }
-
-        this.itemRenderer.blitOffset = 0.0F;
-        this.setBlitOffset(0);
     }
 
     /**
@@ -209,41 +206,45 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
     /**
      * Expanded method to allow rendering custom-sized slots.
      */
-    protected void renderSlotHighlight(Slot slot, PoseStack poseStack, int x, int y, int blitOffset, int slotColor) {
+    protected void renderSlotHighlight(Slot slot, GuiGraphics graphics, int x, int y, int blitOffset, int slotColor) {
         if (slot instanceof IResizeableSlot sizeableSlot)
-            renderHighlightRectangle(poseStack, x, y, sizeableSlot.getWidth(), sizeableSlot.getHeight(), blitOffset, slotColor);
+            renderHighlightRectangle(graphics, x, y, sizeableSlot.getWidth(), sizeableSlot.getHeight(), blitOffset, slotColor);
         else
-            renderHighlightRectangle(poseStack, x, y, 16, 16, blitOffset, slotColor);
+            renderHighlightRectangle(graphics, x, y, 16, 16, blitOffset, slotColor);
     }
 
     /**
      * Expanded method to allow rendering custom-sized slots.
      */
-    protected void renderSlotItem(Slot slot, ItemStack slotStack, LivingEntity entity, int x, int y) {
+    protected void renderSlotItem(GuiGraphics graphics, Slot slot, ItemStack slotStack, LivingEntity entity, int x, int y) {
         if (slot instanceof IResizeableSlot resizeableSlot)
             ResizeableItemRenderer.renderGuiItem(slotStack, x, y, resizeableSlot.getWidth(), resizeableSlot.getHeight());
-        else
-            this.itemRenderer.renderAndDecorateItem(this.minecraft.player, slotStack, x, y, slot.x + slot.y * this.imageWidth);
+        else {
+            assert this.minecraft.player != null;
+            graphics.renderItem(this.minecraft.player, slotStack, x, y, slot.x + slot.y * this.imageWidth);
+        }
     }
 
     /**
      * Expanded method to allow rendering custom-sized slots.
      */
-    protected void renderSlotDecorations(Slot slot, ItemStack slotStack, Font font, int x, int y, String countString) {
+    protected void renderSlotDecorations(GuiGraphics graphics, Slot slot, ItemStack slotStack, Font font, int x, int y, String countString) {
         if (slot instanceof IResizeableSlot resizeableSlot)
-            ResizeableItemRenderer.renderGuiItemDecorations(this.font, slotStack,
+            ResizeableItemRenderer.renderGuiItemDecorations(graphics, this.font, slotStack,
                     x, y, resizeableSlot.getWidth(), resizeableSlot.getHeight(), countString, slotStack.getCount() > 0);
-        else
-            this.itemRenderer.renderGuiItemDecorations(this.font, slotStack, x, y, countString);
+        else {
+            assert Objects.requireNonNull(this.minecraft).player != null;
+            graphics.renderItemDecorations(this.font, slotStack, x, y, countString);
+        }
     }
 
     /**
      * Renders overlay rectangle of specified size.
      */
-    public static void renderHighlightRectangle(PoseStack poseStack, int x, int y, int width, int height, int blitOffset, int slotColor) {
+    public static void renderHighlightRectangle(GuiGraphics graphics, int x, int y, int width, int height, int blitOffset, int slotColor) {
         RenderSystem.disableDepthTest();
         RenderSystem.colorMask(true, true, true, false);
-        fillGradient(poseStack, x, y, x + width, y + height, slotColor, slotColor, blitOffset);
+        graphics.fillGradient(x, y, x + width, y + height, blitOffset + 200, slotColor, slotColor);
         RenderSystem.colorMask(true, true, true, true);
         RenderSystem.enableDepthTest();
     }

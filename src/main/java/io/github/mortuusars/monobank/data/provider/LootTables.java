@@ -12,6 +12,7 @@ import net.minecraft.tags.StructureTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -26,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class LootTables extends LootTableProvider {
@@ -35,6 +37,11 @@ public class LootTables extends LootTableProvider {
     public LootTables(DataGenerator generator) {
         super(generator.getPackOutput(), BuiltInLootTables.all(), Collections.EMPTY_LIST);
         this.generator = generator;
+    }
+
+    @Override
+    public List<SubProviderEntry> getTables() {
+        return super.getTables();
     }
 
     @Override
@@ -159,7 +166,8 @@ public class LootTables extends LootTableProvider {
         Path outputFolder = this.generator.getPackOutput().getOutputFolder();
         Path path = outputFolder.resolve("data/" + location.getNamespace() + "/loot_tables/" + location.getPath() + ".json");
         try {
-            DataProvider.saveStable(cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
+            DataProvider.saveStable(cache, LootDataType.TABLE.parser().toJsonTree(lootTable), path);
+//            DataProvider.saveStable(cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
         } catch (Exception e) {
             LOGGER.error("Couldn't write loot lootTable {}", path, e);
         }
