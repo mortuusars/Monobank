@@ -11,6 +11,7 @@ public class Configuration {
     public static final ForgeConfigSpec.IntValue MONOBANK_CAPACITY;
 
     // Ownership:
+    public static final ForgeConfigSpec.BooleanValue OWNER_CAN_UNLOCK_WITHOUT_COMBINATION;
     public static final ForgeConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_BANK;
     public static final ForgeConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
@@ -46,6 +47,10 @@ public class Configuration {
 
         builder.push("Ownership");
 
+        OWNER_CAN_UNLOCK_WITHOUT_COMBINATION = builder
+                .comment("Owners can unlock their Monobank without combination.")
+                .define("OwnerCanUnlockWithoutCombination", true);
+        
         CAN_RELOCATE_OTHER_PLAYERS_BANK = builder
                 .comment("If enabled - players will be able to break other player's banks.", "If disabled - monobank will be indestructible if other player owns it.")
                 .define("CanRelocateOtherPlayersBanks", false);

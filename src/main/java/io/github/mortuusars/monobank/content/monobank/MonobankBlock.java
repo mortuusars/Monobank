@@ -222,7 +222,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
         boolean isLocked = monobankEntity.getLock().isLocked();
 
-        if (monobankEntity.getOwner().isOwnedBy(player)) { // Lock/Unlock to the heart's content
+        if (Configuration.OWNER_CAN_UNLOCK_WITHOUT_COMBINATION.get() && monobankEntity.getOwner().isOwnedBy(player)) { // Lock/Unlock to the heart's content
             boolean shouldBeLocked = !isLocked;
 
             if (shouldBeLocked) {
