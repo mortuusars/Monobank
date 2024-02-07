@@ -1,9 +1,13 @@
-// 1.20.1	2023-07-08T05:10:21.7966655	Loot Tables
-2ae43d230d6c5a7383713d174e0065e183faeb5c data/monobank/loot_tables/blocks/monobank.json
-c0402823203a3d541cb230709480cd8ed95968c7 data/monobank/loot_tables/combination/default.json
-dc97bd75ffb74288c0303475af529d8bf5468ec6 data/monobank/loot_tables/combination/village/desert.json
-dc97bd75ffb74288c0303475af529d8bf5468ec6 data/monobank/loot_tables/combination/village/plains.json
-dc97bd75ffb74288c0303475af529d8bf5468ec6 data/monobank/loot_tables/combination/village/savanna.json
-dc97bd75ffb74288c0303475af529d8bf5468ec6 data/monobank/loot_tables/combination/village/snowy.json
-dc97bd75ffb74288c0303475af529d8bf5468ec6 data/monobank/loot_tables/combination/village/taiga.json
-7457d9dafc103b2290b4f13f5bfd92c94c6b0a67 data/monobank/loot_tables/monobank/village/plains.json
+// 1.20.1	2024-02-07T04:35:28.6154231	Loot Tables
+d20b14795cae10ca971cbcda1201c9e2d773e663 data/monobank/loot_tables/blocks/monobank.json
+4060f19e957039dfe61949d3144f3b71babd14e3 data/monobank/loot_tables/combination/default.json
+ff7d9b092189934d5da69ac7fea8d2b237930bb2 data/monobank/loot_tables/combination/village/desert.json
+4b8d238c284960573992a8d9760409bb1005e3a6 data/monobank/loot_tables/combination/village/plains.json
+2310d067d96f28bafdea2c60295579b9d931d25e data/monobank/loot_tables/combination/village/savanna.json
+c7983e8124bf367f3ddec140f0e2349c59f50cd3 data/monobank/loot_tables/combination/village/snowy.json
+88a8e63e4ad0255bdf75dc443588e11d37022382 data/monobank/loot_tables/combination/village/taiga.json
+50b892c93384917d53bfb3349237ae2b31de48a7 data/monobank/loot_tables/monobank/village/desert.json
+bcf9c0134dc1d8cab3475f52081186d928e22e80 data/monobank/loot_tables/monobank/village/plains.json
+a039196f55a5e222775506b34853bb46d84fbbe8 data/monobank/loot_tables/monobank/village/savanna.json
+cfec3c204fde6dcb3af43431e2afa18f882613aa data/monobank/loot_tables/monobank/village/snowy.json
+f82328e7eef9ce86a11019cb08b9280f5150aaae data/monobank/loot_tables/monobank/village/taiga.json

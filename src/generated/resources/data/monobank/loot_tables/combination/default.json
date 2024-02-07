@@ -1,4 +1,5 @@
 {
+  "type": "minecraft:chest",
   "pools": [
     {
       "bonus_rolls": 0.0,
@@ -126,5 +127,6 @@
       ],
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "monobank:combination/default"
 }

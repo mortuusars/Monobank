@@ -3,16 +3,13 @@ package io.github.mortuusars.monobank.data.provider;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
 import io.github.mortuusars.monobank.util.TextUtil;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.data.loot.packs.VanillaBlockLoot;
+import net.minecraft.data.loot.packs.VanillaChestLoot;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -21,47 +18,44 @@ import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.registries.ForgeRegistries;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
-public class LootTables extends LootTableProvider {
-    private static final Logger LOGGER = LogManager.getLogger();
-    private final DataGenerator generator;
+public class LootTables {
+    public static class BlockLoot extends VanillaBlockLoot {
+        @Override
+        protected @NotNull Iterable<Block> getKnownBlocks() {
+            return ForgeRegistries.BLOCKS.getEntries().stream()
+                    .filter(e -> e.getKey().location().getNamespace().equals(Monobank.ID))
+                    .map(Map.Entry::getValue)
+                    .collect(Collectors.toList());
+        }
 
-    public LootTables(DataGenerator generator) {
-        super(generator.getPackOutput(), BuiltInLootTables.all(), Collections.EMPTY_LIST);
-        this.generator = generator;
+        @Override
+        protected void generate() {
+            add(Registry.Blocks.MONOBANK.get(), LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .setRolls(ConstantValue.exactly(1.0F))
+                                    .add(LootItem.lootTableItem(Registry.Items.MONOBANK.get())
+                                            .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
+                                            .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
+                                                    .copy("Inventory", "BlockEntityTag.Inventory")
+                                                    .copy("Lock", "BlockEntityTag.Lock")
+                                                    .copy("Owner", "BlockEntityTag.Owner")
+                                                    .copy("LootTable", "BlockEntityTag.LootTable")
+                                                    .copy("LootTableSeed", "BlockEntityTag.LootTableSeed")))
+                                    .when(ExplosionCondition.survivesExplosion())));
+        }
     }
 
-    @Override
-    public List<SubProviderEntry> getTables() {
-        return super.getTables();
-    }
+    public static class ChestLoot extends VanillaChestLoot {
 
-    @Override
-    public CompletableFuture<?> run(CachedOutput cache) {
-        return CompletableFuture.runAsync(() -> {
-            writeTable(cache, Monobank.resource("blocks/monobank"),
-                    LootTable.lootTable()
-                        .withPool(LootPool.lootPool()
-                            .setRolls(ConstantValue.exactly(1.0F))
-                            .add(LootItem.lootTableItem(Registry.Items.MONOBANK.get())
-                                    .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-                                    .apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                            .copy("Inventory", "BlockEntityTag.Inventory")
-                                            .copy("Lock", "BlockEntityTag.Lock")
-                                            .copy("Owner", "BlockEntityTag.Owner")
-                                            .copy("LootTable", "BlockEntityTag.LootTable")
-                                            .copy("LootTableSeed", "BlockEntityTag.LootTableSeed")))
-                            .when(ExplosionCondition.survivesExplosion()))
-                    .build());
-
+        @Override
+        public void generate(@NotNull BiConsumer<ResourceLocation, LootTable.Builder> consumer) {
             // Combination:
 
             LootPool.Builder defaultCombinationPool = LootPool.lootPool()
@@ -76,12 +70,11 @@ public class LootTables extends LootTableProvider {
                     .add(LootItem.lootTableItem(Items.BOOK))
                     .add(LootItem.lootTableItem(Items.BUCKET));
 
-            writeTable(cache, Monobank.resource("combination/default"),
+            consumer.accept(Monobank.resource("combination/default"),
                     LootTable.lootTable()
                             .withPool(defaultCombinationPool)
                             .withPool(defaultCombinationPool)
-                            .withPool(defaultCombinationPool)
-                            .build());
+                            .withPool(defaultCombinationPool));
 
             LootPool.Builder villageCombinationPool = LootPool.lootPool()
                     .setRolls(ConstantValue.exactly(1))
@@ -96,44 +89,39 @@ public class LootTables extends LootTableProvider {
                     .add(LootItem.lootTableItem(Items.BOOK))
                     .add(LootItem.lootTableItem(Items.BUCKET));
 
-            writeTable(cache, Monobank.resource("combination/village/plains"),
+            consumer.accept(Monobank.resource("combination/village/plains"),
                     LootTable.lootTable()
                             .withPool(villageCombinationPool)
                             .withPool(villageCombinationPool)
-                            .withPool(villageCombinationPool)
-                            .build());
+                            .withPool(villageCombinationPool));
 
-            writeTable(cache, Monobank.resource("combination/village/taiga"),
+            consumer.accept(Monobank.resource("combination/village/taiga"),
                     LootTable.lootTable()
                             .withPool(villageCombinationPool)
                             .withPool(villageCombinationPool)
-                            .withPool(villageCombinationPool)
-                            .build());
+                            .withPool(villageCombinationPool));
 
-            writeTable(cache, Monobank.resource("combination/village/desert"),
+            consumer.accept(Monobank.resource("combination/village/desert"),
                     LootTable.lootTable()
                             .withPool(villageCombinationPool)
                             .withPool(villageCombinationPool)
-                            .withPool(villageCombinationPool)
-                            .build());
+                            .withPool(villageCombinationPool));
 
-            writeTable(cache, Monobank.resource("combination/village/snowy"),
+            consumer.accept(Monobank.resource("combination/village/snowy"),
                     LootTable.lootTable()
                             .withPool(villageCombinationPool)
                             .withPool(villageCombinationPool)
-                            .withPool(villageCombinationPool)
-                            .build());
+                            .withPool(villageCombinationPool));
 
-            writeTable(cache, Monobank.resource("combination/village/savanna"),
+            consumer.accept(Monobank.resource("combination/village/savanna"),
                     LootTable.lootTable()
                             .withPool(villageCombinationPool)
                             .withPool(villageCombinationPool)
-                            .withPool(villageCombinationPool)
-                            .build());
+                            .withPool(villageCombinationPool));
 
             // Contents:
 
-            LootTable monobankVillageLoot = LootTable.lootTable()
+            LootTable.Builder monobankVillageLootBuilder = LootTable.lootTable()
                     .withPool(LootPool.lootPool()
                             .add(LootItem.lootTableItem(Items.EMERALD).setWeight(4)
                                     .apply(SetItemCountFunction.setCount(UniformGenerator.between(4, 17))))
@@ -151,25 +139,15 @@ public class LootTables extends LootTableProvider {
                                             .setMapDecoration(MapDecoration.Type.RED_X)
                                             .setZoom((byte) 1)
                                             .setSkipKnownStructures(false))
-                                    .apply(SetNameFunction.setName(TextUtil.translate("filled_map.ruined_portal")))))
-                    .build();
+                                    .apply(SetNameFunction.setName(TextUtil.translate("filled_map.ruined_portal")))));
 
-            writeTable(cache, Monobank.resource("monobank/village/plains"), monobankVillageLoot);
-            writeTable(cache, Monobank.resource("monobank/village/taiga"), monobankVillageLoot);
-            writeTable(cache, Monobank.resource("monobank/village/desert"), monobankVillageLoot);
-            writeTable(cache, Monobank.resource("monobank/village/snowy"), monobankVillageLoot);
-            writeTable(cache, Monobank.resource("monobank/village/savanna"), monobankVillageLoot);
-        });
-    }
+            consumer.accept(Monobank.resource("monobank/village/plains"), monobankVillageLootBuilder);
+            consumer.accept(Monobank.resource("monobank/village/taiga"), monobankVillageLootBuilder);
+            consumer.accept(Monobank.resource("monobank/village/desert"), monobankVillageLootBuilder);
+            consumer.accept(Monobank.resource("monobank/village/snowy"), monobankVillageLootBuilder);
+            consumer.accept(Monobank.resource("monobank/village/savanna"), monobankVillageLootBuilder);
 
-    private void writeTable(CachedOutput cache, ResourceLocation location, LootTable lootTable) {
-        Path outputFolder = this.generator.getPackOutput().getOutputFolder();
-        Path path = outputFolder.resolve("data/" + location.getNamespace() + "/loot_tables/" + location.getPath() + ".json");
-        try {
-            DataProvider.saveStable(cache, LootDataType.TABLE.parser().toJsonTree(lootTable), path);
-//            DataProvider.saveStable(cache, net.minecraft.world.level.storage.loot.LootTables.serialize(lootTable), path);
-        } catch (Exception e) {
-            LOGGER.error("Couldn't write loot lootTable {}", path, e);
+
         }
     }
 }
