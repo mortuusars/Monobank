@@ -1,0 +1,44 @@
+{
+  "block.monobank.monobank": "Monobank",
+  "item.monobank.replacement_lock": "Serrure de Remplacement",
+  "effect.monobank.thief": "Voleur",
+
+  "monobank.filled_map.ruined_portal": "Carte des Ruines de Portail",
+
+  "monobank.tooltip.locked": "Verrouillé",
+  "monobank.tooltip.loot_table": "Table de Butin : %s",
+  "monobank.tooltip.combination_table": "Table de Combinaison : %s",
+
+  "monobank.gui.monobank": "Monobank",
+  "monobank.gui.monobank.unlocking": "Déverrouillage de %s",
+  "monobank.gui.monobank.lock_replacement": "Remplacement du verrou de %s",
+  "monobank.gui.monobank.lock_replacement.confirm.tooltip": "Remplacer le Verrou",
+  "monobank.gui.monobank.count": "Nombre : %s",
+  "monobank.gui.monobank.tooltip.ctrl_take_single": "CTRL : Prendre un seul objet",
+  "monobank.gui.monobank.tooltip.ctrl_shift_take_single": "CTRL+SHIFT : Prendre tous les objets",
+  "monobank.gui.monobank.tooltip.owner": "Vous possédez ce Monobank",
+  "monobank.gui.monobank.tooltip.break_in_attempted": "Quelqu'un a tenté en vain d'ouvrir ce Monobank",
+  "monobank.gui.monobank.tooltip.break_in_succeeded": "Le Monobank a été ouvert par quelqu'un",
+
+  "monobank.message.lock_replaced": "Le verrou a été remplacé",
+  "monobank.message.monobank.locking.monobank_is_locked": "Verrouillé. Essayez de le déverrouiller avec %s.",
+  "monobank.message.monobank.unlocking": "Le Monobank est en train de se déverrouiller...",
+  "monobank.message.replacement_lock.cannot_replace_not_owner": "Impossible de remplacer le verrou dans ce Monobank.",
+  "monobank.message.replacement_lock.cannot_replace_when_locked": "Impossible de remplacer le verrou : le Monobank doit d'abord être déverrouillé.",
+  "monobank.message.thief.you_were_seen": "Vous avez été vu en train de commettre un crime.",
+
+  "monobank.advancement.monobank.title": "Un Pari Sûr",
+  "monobank.advancement.monobank.description": "Obtenez un Monobank pour stocker en toute sécurité votre richesse",
+  "monobank.advancement.unlock.title": "Si On a la Bonne Clé",
+  "monobank.advancement.unlock.description": "Déverrouillez le Monobank en entrant la bonne combinaison",
+  "monobank.advancement.replace_lock.title": "Verrouillage",
+  "monobank.advancement.replace_lock.description": "Remplacez le verrou dans un Monobank",
+  "monobank.advancement.monobank_full.title": "Richesse En Abondance",
+  "monobank.advancement.monobank_full.description": "Remplissez un Monobank au maximum",
+
+  "monobank.subtitles.monobank.lock": "Verrous Monobank",
+  "monobank.subtitles.monobank.unlock": "Déverrouillage Monobank",
+  "monobank.subtitles.monobank.click": "Clic sur le verrou Monobank",
+  "monobank.subtitles.monobank.open": "Ouverture Monobank",
+  "monobank.subtitles.monobank.close": "Fermeture Monobank"
+}
