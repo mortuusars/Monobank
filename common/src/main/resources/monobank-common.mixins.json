@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "${mod_maven_group}.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "plugin": "${mod_maven_group}.mixin.${mod_name}MixinPlugin",
+  "minVersion": "0.8",
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
