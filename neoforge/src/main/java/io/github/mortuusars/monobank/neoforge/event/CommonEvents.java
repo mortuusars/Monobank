@@ -9,8 +9,10 @@ import io.github.mortuusars.monobank.network.packet.S2CPackets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -35,6 +37,16 @@ public class CommonEvents {
             for (CustomPacketPayload.TypeAndCodec<? extends FriendlyByteBuf, ? extends CustomPacketPayload> definition : CommonPackets.getDefinitions()) {
                 registrar.playBidirectional((CustomPacketPayload.Type<Packet>) definition.type(),
                         (StreamCodec<FriendlyByteBuf, Packet>) definition.codec(), PacketsImpl::handle);
+            }
+        }
+
+        @SubscribeEvent
+        public static void buildCreativeTabs(BuildCreativeModeTabContentsEvent event) {
+            if (event.getTabKey().equals(CreativeModeTabs.FUNCTIONAL_BLOCKS)) {
+                event.accept(Monobank.Items.MONOBANK.get());
+            }
+            if (event.getTabKey().equals(CreativeModeTabs.TOOLS_AND_UTILITIES)) {
+                event.accept(Monobank.Items.REPLACEMENT_LOCK.get());
             }
         }
     }

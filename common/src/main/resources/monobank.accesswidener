@@ -1,1 +1,6 @@
 accessWidener   v2  named
+
+accessible method net/minecraft/client/renderer/item/ItemProperties register (Lnet/minecraft/world/item/Item;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/renderer/item/ClampedItemPropertyFunction;)V
+accessible method net/minecraft/advancements/critereon/ItemPredicate count ()Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;
+accessible method net/minecraft/world/entity/player/Player closeContainer ()V
+extendable method net/minecraft/client/gui/screens/inventory/AbstractContainerScreen isHovering (Lnet/minecraft/world/inventory/Slot;DD)Z

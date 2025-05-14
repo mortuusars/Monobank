@@ -1,7 +1,6 @@
 package io.github.mortuusars.monobank.fabric;
 
 import com.google.common.collect.ImmutableMap;
-import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -12,18 +11,14 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public class MonobankMixinPlugin implements IMixinConfigPlugin {
-
     private static final Map<String, Supplier<Boolean>> CONDITIONS = ImmutableMap.of(
-            "io.github.mortuusars.exposure.fabric.mixin.create.RecipeTypesMixin", MonobankMixinPlugin::isCorrectCreateVersion,
-            "io.github.mortuusars.exposure.fabric.mixin.create.SpoutDevelopingMixin", MonobankMixinPlugin::isCorrectCreateVersion,
-            "io.github.mortuusars.exposure.fabric.mixin.create.CreateEmiPluginMixin", () -> FabricLoader.getInstance().isModLoaded("emi") && isCorrectCreateVersion()
     );
 
-    private static boolean isCorrectCreateVersion() {
+    /*private static boolean isCorrectCreateVersion() {
         return FabricLoader.getInstance().getModContainer("create")
                         .map(c -> c.getMetadata().getVersion().getFriendlyString().startsWith("0.5.1-f"))
                         .orElse(false);
-    }
+    }*/
 
     @Override
     public void onLoad(String mixinPackage) {

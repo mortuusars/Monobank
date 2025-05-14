@@ -2,19 +2,29 @@ package io.github.mortuusars.monobank;
 
 import com.google.common.base.Preconditions;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankLockReplacedTrigger;
+import io.github.mortuusars.monobank.content.advancement.trigger.MonobankUnlockedTrigger;
+import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
+import io.github.mortuusars.monobank.world.block.monobank.MonobankBlock;
+import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
+import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
+import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
+import io.github.mortuusars.monobank.content.monobank.unlocking.CombinationMenu;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatFormatter;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,12 +34,15 @@ public class Monobank {
     public static final String ID = "monobank";
     public static final Logger LOGGER = LogUtils.getLogger();
 
+    public static boolean IN_DEBUG = false;
+
     public static void init() {
         Blocks.init();
         BlockEntityTypes.init();
         EntityTypes.init();
         Items.init();
         MenuTypes.init();
+        CriteriaTriggers.init();
         RecipeSerializers.init();
         SoundEvents.init();
         ArgumentTypes.init();
@@ -42,20 +55,31 @@ public class Monobank {
         return ResourceLocation.fromNamespaceAndPath(ID, path);
     }
 
-    public static class EntityAttributes {
-    }
-
     public static class Blocks {
+        public static final Supplier<Block> MONOBANK = Register.block("monobank", MonobankBlock::new);
+
         static void init() {
         }
     }
 
     public static class BlockEntityTypes {
+        public static final Supplier<BlockEntityType<MonobankBlockEntity>> MONOBANK = Register.blockEntityType("monobank",
+                () -> Register.newBlockEntityType(MonobankBlockEntity::new, Blocks.MONOBANK.get()));
+
         static void init() {
         }
     }
 
     public static class Items {
+        public static final Supplier<BlockItem> MONOBANK = Register.item("monobank",
+                () -> new BlockItem(Blocks.MONOBANK.get(), new Item.Properties()
+                        .stacksTo(1)
+                        .fireResistant()));
+
+        public static final Supplier<Item> REPLACEMENT_LOCK = Register.item("replacement_lock",
+                () -> new ReplacementLockItem(new Item.Properties()
+                        .stacksTo(16)));
+
         static void init() {
         }
     }
@@ -66,6 +90,15 @@ public class Monobank {
     }
 
     public static class MenuTypes {
+        public static final Supplier<MenuType<MonobankMenu>> MONOBANK =
+                Register.menuType("monobank", MonobankMenu::fromBuffer);
+
+        public static final Supplier<MenuType<CombinationMenu>> MONOBANK_COMBINATION =
+                Register.menuType("lock_picking", CombinationMenu::fromBuffer);
+
+        public static final Supplier<MenuType<LockReplacementMenu>> MONOBANK_LOCK_REPLACEMENT =
+                Register.menuType("lock_replacement", LockReplacementMenu::fromBuffer);
+
         static void init() {
         }
     }
@@ -76,10 +109,14 @@ public class Monobank {
     }
 
     public static class SoundEvents {
-        private static Supplier<SoundEvent> register(String category, String key) {
-            Preconditions.checkState(category != null && !category.isEmpty(), "'category' should not be empty.");
-            Preconditions.checkState(key != null && !key.isEmpty(), "'key' should not be empty.");
-            String path = category + "." + key;
+        public static final Supplier<SoundEvent> MONOBANK_OPEN = register("block.monobank.open");
+        public static final Supplier<SoundEvent> MONOBANK_CLOSE = register("block.monobank.close");
+        public static final Supplier<SoundEvent> MONOBANK_LOCK = register("block.monobank.lock");
+        public static final Supplier<SoundEvent> MONOBANK_UNLOCK = register("block.monobank.unlock");
+        public static final Supplier<SoundEvent> MONOBANK_CLICK = register("block.monobank.click");
+
+        private static Supplier<SoundEvent> register(String path) {
+            Preconditions.checkState(path != null && !path.isEmpty(), "'path' should not be empty.");
             return Register.soundEvent(path, () -> SoundEvent.createVariableRangeEvent(Monobank.resource(path)));
         }
 
@@ -103,8 +140,12 @@ public class Monobank {
         }
     }
 
-    public static class Advancements {
-        public static void register() {
+    public static class CriteriaTriggers {
+        public static Supplier<MonobankInventoryChangedTrigger> MONOBANK_INVENTORY_CHANGED = Register.criterionTrigger("monobank_inventory_changed", MonobankInventoryChangedTrigger::new);
+        public static Supplier<MonobankUnlockedTrigger> MONOBANK_UNLOCKED = Register.criterionTrigger("monobank_unlocked", MonobankUnlockedTrigger::new);
+        public static Supplier<MonobankLockReplacedTrigger> MONOBANK_LOCK_REPLACED = Register.criterionTrigger("monobank_lock_replaced", MonobankLockReplacedTrigger::new);
+
+        public static void init() {
         }
     }
 
@@ -117,6 +158,11 @@ public class Monobank {
 
         public static class EntityTypes {
         }
+    }
+
+    public static class LootTables {
+        public static final ResourceKey<LootTable> COMBINATION_DEFAULT =
+                ResourceKey.create(Registries.LOOT_TABLE, resource("combination/default"));
     }
 
     public static class ArgumentTypes {
