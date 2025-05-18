@@ -39,5 +39,7 @@
   "monobank.subtitles.monobank.unlock" : "Монобанк відмикається",
   "monobank.subtitles.monobank.click" : "Монобанк цокає",
   "monobank.subtitles.monobank.open" : "Монобанк відчиняється",
-  "monobank.subtitles.monobank.close" : "Монобанк зачиняється"
+  "monobank.subtitles.monobank.close" : "Монобанк зачиняється",
+
+  "monobank.gui.empty": "Пусто"
 }

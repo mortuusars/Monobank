@@ -25,14 +25,9 @@ public class CombinationTooltip implements ClientTooltipComponent, TooltipCompon
 
     @Override
     public void renderImage(@NotNull Font font, int mouseX, int mouseY, GuiGraphics graphics) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, MonobankScreen.TEXTURE);
         graphics.blit(MonobankScreen.TEXTURE, mouseX, mouseY, 176, 12, 72, 30);
-//        GuiComponent.blit(poseStack, mouseX, mouseY, 176, 12, 72, 30, 256, 256);
         for (int i = 0; i < items.size(); i++) {
             graphics.renderItem(items.get(i), mouseX + 7 + 18 * i + 3 * i, mouseY + 7);
-//            itemRenderer.renderAndDecorateItem(items.get(i), mouseX + 7 + 18 * i + 3 * i, mouseY + 7);
         }
     }
 

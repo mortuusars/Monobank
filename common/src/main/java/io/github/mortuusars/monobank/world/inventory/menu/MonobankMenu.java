@@ -64,19 +64,6 @@ public class MonobankMenu extends AbstractContainerMenu {
         }
     }
 
-    @Override
-    public void removed(Player player) {
-        super.removed(player);
-        /*
-            When opening other UI over ours (such as JEI),
-            'removed' is called only client-side (server-side it's still open), when it probably shouldn't.
-            This causes door to close while still in the menu, and not update its openness properly.
-            So we are closing only server-side - which is then synchronized to client in OpenersCounter via block update.
-         */
-        if (!player.level().isClientSide)
-            this.blockEntity.stopOpen(player);
-    }
-
     public MonobankBlockEntity getBlockEntity() {
         return blockEntity;
     }
@@ -161,4 +148,17 @@ public class MonobankMenu extends AbstractContainerMenu {
         return !blockEntity.getLock().isLocked() && blockEntity.stillValid(player);
     }
 
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        /*
+            When opening other UI over ours (such as JEI),
+            'removed' is called only client-side (server-side it's still open), when it probably shouldn't.
+            This causes door to close while still in the menu, and not update its openness properly.
+            So we are closing only server-side - which is then synchronized to client in OpenersCounter via block update.
+         */
+        if (!player.level().isClientSide) {
+            this.blockEntity.stopOpen(player);
+        }
+    }
 }
