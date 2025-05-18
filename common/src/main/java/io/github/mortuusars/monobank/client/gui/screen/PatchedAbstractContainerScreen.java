@@ -1,27 +1,16 @@
 package io.github.mortuusars.monobank.client.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.datafixers.util.Pair;
-import io.github.mortuusars.monobank.client.gui.rendering.ResizeableItemRenderer;
-import io.github.mortuusars.monobank.world.inventory.IResizeableSlot;
-import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import io.github.mortuusars.monobank.world.inventory.ResizeableSlot;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -36,7 +25,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
      */
     @Override
     public boolean isHovering(Slot slot, double mouseX, double mouseY) {
-        return slot instanceof IResizeableSlot resizeableSlot ?
+        return slot instanceof ResizeableSlot resizeableSlot ?
                 isHovering(slot.x, slot.y, resizeableSlot.getWidth(), resizeableSlot.getHeight(), mouseX, mouseY) :
                 super.isHovering(slot, mouseX, mouseY);
     }
@@ -46,7 +35,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
      * It is done to allow for rendering overlays for bigger slot sizes than 16.
      * Why it is so hard to allow for custom-sized slots Mojang? Why?
      */
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+//    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
 //        int x = this.leftPos;
 //        int y = this.topPos;
 //        this.renderBg(graphics, partialTick, mouseX, mouseY);
@@ -121,13 +110,13 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
 //        posestack.popPose();
 //        RenderSystem.applyModelViewMatrix();
 //        RenderSystem.enableDepthTest();
-    }
+//    }
 
     /**
      * This method is a copy of super-class method, with some minor changes. <br>
      * It is done to allow for rendering slot sizes bigger than 16.
      */
-    protected void renderSlot(GuiGraphics graphics, Slot slot) {
+//    protected void renderSlot(GuiGraphics graphics, Slot slot) {
 //        int x = slot.x;
 //        int y = slot.y;
 //
@@ -190,32 +179,13 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
 //            countString = getCountStringForSlot(slot, itemstack, countString);
 //            renderSlotDecorations(graphics, slot, itemstack, this.font, x, y, countString);
 //        }
-    }
-
-    /**
-     * Can be used to modify string displaying the count of the stack in slot.
-     * @param countString Most of the time is 'null', but will
-     *                    have 'yellow [count]' if the stack's count is larger than slot capacity.
-     */
-    protected String getCountStringForSlot(Slot slot, ItemStack itemStack, @Nullable String countString) {
-        return countString;
-    }
-
-    /**
-     * Expanded method to allow rendering custom-sized slots.
-     */
-    protected void renderSlotHighlight(Slot slot, GuiGraphics graphics, int x, int y, int blitOffset, int slotColor) {
-        if (slot instanceof IResizeableSlot sizeableSlot)
-            renderHighlightRectangle(graphics, x, y, sizeableSlot.getWidth(), sizeableSlot.getHeight(), blitOffset, slotColor);
-        else
-            renderHighlightRectangle(graphics, x, y, 16, 16, blitOffset, slotColor);
-    }
+//    }
 
     /**
      * Expanded method to allow rendering custom-sized slots.
      */
     protected void renderSlotItem(GuiGraphics graphics, Slot slot, ItemStack slotStack, LivingEntity entity, int x, int y) {
-        if (slot instanceof IResizeableSlot resizeableSlot) {
+        if (slot instanceof ResizeableSlot resizeableSlot) {
 //            ResizeableItemRenderer.renderGuiItem(slotStack, x, y, resizeableSlot.getWidth(), resizeableSlot.getHeight());
         } else {
             assert this.minecraft.player != null;
@@ -227,7 +197,7 @@ public abstract class PatchedAbstractContainerScreen<T extends AbstractContainer
      * Expanded method to allow rendering custom-sized slots.
      */
     protected void renderSlotDecorations(GuiGraphics graphics, Slot slot, ItemStack slotStack, Font font, int x, int y, String countString) {
-        if (slot instanceof IResizeableSlot resizeableSlot) {
+        if (slot instanceof ResizeableSlot resizeableSlot) {
 //            ResizeableItemRenderer.renderGuiItemDecorations(graphics, this.font, slotStack,
 //                    x, y, resizeableSlot.getWidth(), resizeableSlot.getHeight(), countString, slotStack.getCount() > 0);
         }

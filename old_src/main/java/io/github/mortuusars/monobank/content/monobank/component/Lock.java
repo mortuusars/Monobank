@@ -53,7 +53,7 @@ public class Lock {
         this.onLockedChanged = onLockChanged;
         this.onLockInventoryChanged = onLockInventoryChanged;
         this.levelSupplier = levelSupplier;
-        this.combination = Either.right(Combination.empty());
+        this.combination = Either.right(Combination.EMPTY);
         this.inventory = createLockItemHandler();
     }
 
@@ -74,14 +74,14 @@ public class Lock {
     }
 
     public boolean hasCombinationOrCombinationTable() {
-        boolean b = !combination.right().orElse(Combination.empty()).isEmpty();
+        boolean b = !combination.right().orElse(Combination.EMPTY).isEmpty();
         return combination.left().isPresent() || b;
     }
 
     public Combination getCombination() {
         if (combination.left().isPresent() && tryUnpackCombinationTable())
             Objects.requireNonNull(levelSupplier.get().getBlockEntity(pos)).setChanged(); // Save block entity
-        return combination.right().orElse(Combination.empty());
+        return combination.right().orElse(Combination.EMPTY);
     }
 
     public boolean isLocked() {
@@ -116,7 +116,7 @@ public class Lock {
         if (tag.contains(COMBINATION_TABLE_TAG, CompoundTag.TAG_STRING))
             this.combination = Either.left(new ResourceLocation(tag.getString(COMBINATION_TABLE_TAG)));
         else if (tag.contains(COMBINATION_TAG, CompoundTag.TAG_LIST)) {
-            Combination combination = this.combination.right().orElse(Combination.empty());
+            Combination combination = this.combination.right().orElse(Combination.EMPTY);
             combination.deserializeNBT(tag.getList(COMBINATION_TAG, CompoundTag.TAG_STRING));
             this.combination = Either.right(combination);
         }

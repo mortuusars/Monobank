@@ -1,4 +1,4 @@
-package io.github.mortuusars.monobank.client.gui.component;
+package io.github.mortuusars.monobank.client.gui.tooltip;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mortuusars.monobank.content.monobank.MonobankScreen;

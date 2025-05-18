@@ -1,5 +1,7 @@
 package io.github.mortuusars.monobank.util;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
@@ -20,10 +22,10 @@ public class NumberFormatter {
      * Formats big numbers (>999) to a number with a suffix. eg: 1.2K, 2.6M.
      * Shamelessly stolen from StackOverflow.
      */
-    public static String shortenNumber(long value) {
+    public static String shortenWithSuffix(long value) {
         //Long.MIN_VALUE == -Long.MIN_VALUE, so we need an adjustment here
-        if (value == Long.MIN_VALUE) return shortenNumber(Long.MIN_VALUE + 1);
-        if (value < 0) return "-" + shortenNumber(-value);
+        if (value == Long.MIN_VALUE) return shortenWithSuffix(Long.MIN_VALUE + 1);
+        if (value < 0) return "-" + shortenWithSuffix(-value);
         if (value < 1000) return Long.toString(value); //deal with easy case
 
         Map.Entry<Long, String> e = suffixes.floorEntry(value);
@@ -33,5 +35,15 @@ public class NumberFormatter {
         long truncated = value / (divideBy / 10); //the number part of the output times 10
         boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
         return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+    }
+
+    public static String separateThousands(long number) {
+        if (number > 999) {
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+            symbols.setGroupingSeparator(',');
+            DecimalFormat format = new DecimalFormat("###,###,###", symbols);
+            return format.format(number);
+        }
+        return Long.toString(number);
     }
 }

@@ -9,7 +9,7 @@
       "tag": "c:ingots/iron"
     },
     "L": {
-      "id": "monobank:replacement_lock"
+      "item": "monobank:replacement_lock"
     }
   },
   "pattern": [

@@ -1,7 +1,7 @@
 package io.github.mortuusars.monobank.content.monobank;
 
 import io.github.mortuusars.monobank.Monobank;
-import io.github.mortuusars.monobank.client.gui.component.CombinationTooltip;
+import io.github.mortuusars.monobank.client.gui.tooltip.CombinationTooltip;
 import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerScreen;
 import io.github.mortuusars.monobank.core.inventory.BigItemHandlerSlot;
 import io.github.mortuusars.monobank.util.TextUtil;

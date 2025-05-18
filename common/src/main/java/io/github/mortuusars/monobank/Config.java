@@ -11,13 +11,19 @@ public class Config {
 
         // Monobank
         public static final ModConfigSpec.IntValue MONOBANK_CAPACITY;
-        // Ownership
+
+        // Lock
+        public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_INSERTION;
+        public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_EXTRACTION;
+        public static final ModConfigSpec.BooleanValue ANYONE_CAN_UNLOCK_WITHOUT_COMBINATION;
         public static final ModConfigSpec.BooleanValue OWNER_CAN_UNLOCK_WITHOUT_COMBINATION;
         public static final ModConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_BANK;
         public static final ModConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
         // Combination
-        public static final ModConfigSpec.DoubleValue COMBINATION_OBFUSCATION;
+        public static final ModConfigSpec.BooleanValue COMBINATION_SLOT_ICONS;
+        public static final ModConfigSpec.IntValue COMBINATION_SLOT_ICONS_OPACITY;
+        public static final ModConfigSpec.DoubleValue COMBINATION_SLOT_TOOLTIP_OBFUSCATION;
 
         // Structures
         public static final ModConfigSpec.BooleanValue GENERATE_VILLAGE_STRUCTURES;
@@ -33,6 +39,19 @@ public class Config {
             {
                 builder.push("lock");
 
+                LOCK_PREVENTS_ITEM_INSERTION = builder
+                        .comment(" Locking a Monobank prevents item insertion (with Hoppers, etc)",
+                                " Default: true")
+                        .define("prevent_insertion", true);
+                LOCK_PREVENTS_ITEM_EXTRACTION = builder
+                        .comment(" Locking a Monobank prevents item extraction (with Hoppers, etc).",
+                                " WARNING: when disabled, other players would be able to steal items from a Monobank without entering a combination and opening it.",
+                                " Default: true")
+                        .define("prevent_extraction", true);
+                ANYONE_CAN_UNLOCK_WITHOUT_COMBINATION = builder
+                        .comment(" Any player can unlock a Monobank without entering a combination.",
+                                " Default: false")
+                        .define("anyone_can_unlock_without_combination", false);
                 OWNER_CAN_UNLOCK_WITHOUT_COMBINATION = builder
                         .comment(" Owner can unlock their Monobank without entering a combination.",
                                 " Default: true")
@@ -52,10 +71,18 @@ public class Config {
             {
                 builder.push("combination");
 
-                COMBINATION_OBFUSCATION = builder
-                        .comment(" Percentage of obfuscation in combination tooltips.",
+                COMBINATION_SLOT_ICONS = builder
+                        .comment(" Show partially visible item icon in combination slot.",
                                 " Default: true")
-                        .defineInRange("combination_obfuscation", 0.5, 0.0, 1.0);
+                        .define("slot_icon", true);
+
+                COMBINATION_SLOT_ICONS_OPACITY = builder
+                        .comment(" Opacity percentage of the slot icon.")
+                        .defineInRange("slot_icon_opacity", 30, 0, 100);
+
+                COMBINATION_SLOT_TOOLTIP_OBFUSCATION = builder
+                        .comment(" Chance of a letter being obfuscated in slot tooltip.")
+                        .defineInRange("tooltip_obfuscation_chance", 0.5, 0.0, 1.0);
 
                 builder.pop();
             }

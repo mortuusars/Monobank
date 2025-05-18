@@ -1,9 +1,12 @@
 {
   "required": true,
-  "package": "${mod_maven_group}.fabric.mixin",
+  "package": "io.github.mortuusars.monobank.fabric.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "plugin": "${mod_maven_group}.fabric.${mod_name}MixinPlugin",
+  "plugin": "io.github.mortuusars.monobank.fabric.mixin.MonobankMixinPlugin",
+  "client": [
+    "big_slot.AbstractContainerScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

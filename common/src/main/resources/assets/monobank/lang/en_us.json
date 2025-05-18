@@ -39,5 +39,7 @@
   "monobank.subtitles.monobank.unlock" : "Monobank unlocks",
   "monobank.subtitles.monobank.click" : "Monobank lock clicking",
   "monobank.subtitles.monobank.open" : "Monobank opens",
-  "monobank.subtitles.monobank.close" : "Monobank closes"
+  "monobank.subtitles.monobank.close" : "Monobank closes",
+
+  "monobank.gui.empty": "Empty"
 }

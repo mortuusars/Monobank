@@ -1,9 +1,12 @@
 {
   "required": true,
-  "package": "${mod_maven_group}.mixin",
+  "package": "io.github.mortuusars.monobank.mixin",
   "compatibilityLevel": "JAVA_17",
-  "plugin": "${mod_maven_group}.mixin.${mod_name}MixinPlugin",
+  "plugin": "io.github.mortuusars.monobank.mixin.MonobankMixinPlugin",
   "minVersion": "0.8",
+  "mixins": [
+
+  ],
   "injectors": {
     "defaultRequire": 1
   }

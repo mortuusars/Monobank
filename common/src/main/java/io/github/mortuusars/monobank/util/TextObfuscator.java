@@ -8,15 +8,17 @@ import net.minecraft.util.Mth;
 import java.util.Random;
 
 public class TextObfuscator {
-    public static MutableComponent obfuscate(String text, double obfuscationChance) {
+    public static MutableComponent obfuscate(String text, double obfuscationChance, long seed) {
         if (text.isEmpty()) {
             return Component.literal("");
         }
 
         obfuscationChance = Mth.clamp(obfuscationChance, 0.0, 1.0);
 
-        String[] split = text.split("\\s+"); // Split by white space
-        Random random;
+        // Split to words by white space
+        String[] split = text.split("\\s+");
+        // Creating random with seed to make obfuscation consistent (it should stay the same when obfuscated again, to avoid cheesing)
+        Random random = new Random(seed);
 
         MutableComponent result = Component.empty();
 
@@ -26,8 +28,6 @@ public class TextObfuscator {
             if (word.isEmpty()) {
                 continue;
             }
-
-            random = new Random(word.hashCode());
 
             for (int charIndex = 0; charIndex < word.length(); charIndex++) {
                 MutableComponent character = Component.literal(word.charAt(charIndex) + "");

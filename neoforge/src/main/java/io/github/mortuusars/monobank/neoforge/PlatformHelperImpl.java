@@ -5,12 +5,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.common.ItemAbilities;
 
 import java.util.function.Consumer;
 
 public class PlatformHelperImpl {
+    public static boolean isInDevEnv() {
+        return !FMLEnvironment.production;
+    }
+
     public static boolean canShear(ItemStack stack) {
         return stack.canPerformAction(ItemAbilities.SHEARS_REMOVE_ARMOR);
     }

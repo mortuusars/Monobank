@@ -1,9 +1,12 @@
 {
   "required": true,
-  "package": "${mod_maven_group}.neoforge.mixin",
+  "package": "io.github.mortuusars.monobank.neoforge.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
-  "plugin": "${mod_maven_group}.neoforge.${mod_name}NeoForgeMixinPlugin",
+  "plugin": "io.github.mortuusars.monobank.neoforge.mixin.MonobankNeoForgeMixinPlugin",
+  "client": [
+    "big_slot.AbstractContainerScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

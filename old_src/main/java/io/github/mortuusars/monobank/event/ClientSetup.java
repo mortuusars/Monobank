@@ -2,7 +2,7 @@ package io.github.mortuusars.monobank.event;
 
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.client.gui.component.CombinationTooltip;
+import io.github.mortuusars.monobank.client.gui.tooltip.CombinationTooltip;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.content.monobank.MonobankScreen;
 import io.github.mortuusars.monobank.content.monobank.component.Lock;

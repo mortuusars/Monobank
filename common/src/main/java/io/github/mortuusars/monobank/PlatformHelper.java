@@ -10,6 +10,11 @@ import java.util.function.Consumer;
 
 public class PlatformHelper {
     @ExpectPlatform
+    public static boolean isInDevEnv() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static boolean canShear(ItemStack stack) {
         throw new AssertionError();
     }

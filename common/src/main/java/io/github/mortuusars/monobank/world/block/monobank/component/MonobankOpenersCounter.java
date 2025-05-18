@@ -2,7 +2,7 @@ package io.github.mortuusars.monobank.world.block.monobank.component;
 
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
-import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
+import io.github.mortuusars.monobank.world.inventory.menu.MonobankMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -11,20 +11,20 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MonobankOpenersCounter extends ContainerOpenersCounter {
     public static final int UPDATE_DOOR_EVENT_ID = 1;
-    private final MonobankBlockEntity monobankBlockEntity;
+    private final MonobankBlockEntity blockEntity;
 
-    public MonobankOpenersCounter(MonobankBlockEntity monobankBlockEntity) {
-        this.monobankBlockEntity = monobankBlockEntity;
+    public MonobankOpenersCounter(MonobankBlockEntity blockEntity) {
+        this.blockEntity = blockEntity;
     }
 
     @Override
     protected void onOpen(Level level, BlockPos pos, BlockState state) {
-        MonobankBlockEntity.playSoundAtDoor(level, pos, state, Monobank.SoundEvents.MONOBANK_OPEN.get());
+        blockEntity.playSoundAtDoor(Monobank.SoundEvents.MONOBANK_OPEN.get());
     }
 
     @Override
     protected void onClose(Level level, BlockPos pos, BlockState state) {
-        MonobankBlockEntity.playSoundAtDoor(level, pos, state, Monobank.SoundEvents.MONOBANK_CLOSE.get());
+        blockEntity.playSoundAtDoor(Monobank.SoundEvents.MONOBANK_CLOSE.get());
     }
 
     @Override
@@ -35,6 +35,6 @@ public class MonobankOpenersCounter extends ContainerOpenersCounter {
 
     @Override
     protected boolean isOwnContainer(Player player) {
-        return player.containerMenu instanceof MonobankMenu monobankMenu && monobankMenu.getBlockEntity() == monobankBlockEntity;
+        return player.containerMenu instanceof MonobankMenu monobankMenu && monobankMenu.getBlockEntity() == blockEntity;
     }
 }

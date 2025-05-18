@@ -2,11 +2,11 @@ package io.github.mortuusars.monobank.neoforge.event;
 
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.MonobankClient;
-import io.github.mortuusars.monobank.client.gui.component.CombinationTooltip;
-import io.github.mortuusars.monobank.content.monobank.MonobankScreen;
-import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementScreen;
-import io.github.mortuusars.monobank.content.monobank.renderer.MonobankRenderer;
-import io.github.mortuusars.monobank.content.monobank.unlocking.CombinationScreen;
+import io.github.mortuusars.monobank.client.gui.tooltip.CombinationTooltip;
+import io.github.mortuusars.monobank.client.gui.screen.MonobankScreen;
+import io.github.mortuusars.monobank.client.gui.screen.LockReplacementScreen;
+import io.github.mortuusars.monobank.client.renderer.MonobankRenderer;
+import io.github.mortuusars.monobank.client.gui.screen.CombinationScreen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

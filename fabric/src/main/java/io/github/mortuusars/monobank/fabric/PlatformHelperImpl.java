@@ -21,6 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class PlatformHelperImpl {
+    public static boolean isInDevEnv() {
+        return FabricLoader.getInstance().isDevelopmentEnvironment();
+    }
+
     public static @Nullable MinecraftServer getServer() {
         return MonobankFabric.server;
     }
@@ -61,9 +65,5 @@ public class PlatformHelperImpl {
 
     public static boolean isModLoaded(String modId) {
         return FabricLoader.getInstance().isModLoaded(modId);
-    }
-
-    public static boolean isInDevEnv() {
-        return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 }

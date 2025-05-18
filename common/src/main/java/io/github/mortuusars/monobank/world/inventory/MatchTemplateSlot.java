@@ -17,15 +17,34 @@ public class MatchTemplateSlot extends Slot {
         this.template = template;
     }
 
-    public ItemStack getTemplate() {
+    public ItemStack getTemplateItem() {
         return template;
     }
 
     public Component getTemplateTooltip() {
         if (templateTooltip == null) {
-            templateTooltip = TextObfuscator.obfuscate(template.getHoverName().getString(999),
-                    Config.Server.COMBINATION_OBFUSCATION.get());
+            createTooltip();
         }
         return templateTooltip;
+    }
+
+    public boolean containedItemMatches() {
+        return getTemplateItem().getItem().equals(getItem().getItem());
+    }
+
+    protected void createTooltip() {
+        if (getTemplateItem().isEmpty()) {
+            templateTooltip = Component.translatable("monobank.gui.empty");
+            return;
+        }
+
+        double obfuscationFactor = Config.Server.COMBINATION_SLOT_TOOLTIP_OBFUSCATION.get();
+        if (obfuscationFactor > 0) {
+            String text = template.getHoverName().getString(999);
+            templateTooltip = TextObfuscator.obfuscate(text, obfuscationFactor, text.hashCode() + index);
+            return;
+        }
+
+        templateTooltip = Component.literal(template.getHoverName().getString(999));
     }
 }

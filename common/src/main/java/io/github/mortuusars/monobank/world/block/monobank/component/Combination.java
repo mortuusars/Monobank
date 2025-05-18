@@ -7,78 +7,85 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.OptionalInt;
+import java.util.stream.Stream;
 
 /**
  * Defines item combination which is needed to unlock the Monobank.
  */
-public class Combination {
+public record Combination(Item first, Item second, Item third) implements Iterable<Item> {
     public static final int SIZE = 3;
-    private final List<Item> combination;
+    public static final Combination EMPTY = new Combination(Items.AIR, Items.AIR, Items.AIR);
 
-    public Combination(List<Item> combination) {
-        Preconditions.checkArgument(combination.size() == SIZE,
-                "Combination should have " + SIZE + " items. Provided " + combination.size() + ".");
-        this.combination = new ArrayList<>(combination);
+    public Combination(ItemStack first, ItemStack second, ItemStack third) {
+        this(first.getItem(), second.getItem(), third.getItem());
     }
 
-    public static Combination empty() {
-        return new Combination(List.of(Items.AIR, Items.AIR, Items.AIR));
+    public Item getItem(int slot) {
+        Preconditions.checkElementIndex(slot, 3);
+        return switch (slot) {
+            case 0 -> first();
+            case 1 -> second();
+            case 2 -> third();
+            default -> throw new IllegalStateException("Unexpected value: " + slot);
+        };
     }
 
     public boolean isEmpty() {
-        return combination.stream().allMatch(item -> item == Items.AIR);
+        return first.equals(Items.AIR) && second.equals(Items.AIR) && third.equals(Items.AIR);
     }
 
-    public Item getItemInSlot(int slot) {
-        Preconditions.checkState(slot >= 0 && slot < Combination.SIZE, "Slot is out of bounds.");
-        return combination.get(slot);
+    // -- Match
+
+    public boolean matches(int slot, Item key) {
+        Item item = getItem(slot);
+        return item.equals(Items.AIR) || item.equals(key);
     }
 
-    /**
-     * Checks if the provided sequence are matching the combination in correct order.
-     */
-    public boolean matches(List<Item> sequence) {
-        if (sequence.size() < SIZE)
-            return false;
+    public boolean matches(int slot, ItemStack key) {
+        return matches(slot, key.getItem());
+    }
 
-        for (int i = 0; i < combination.size(); i++) {
-            if (!matches(i, sequence.get(i)))
+    public boolean matches(Container container) {
+        if (isEmpty()) return true;
+
+        for (int i = 0; i < 3; i++) {
+            if (container.getContainerSize() - 1 < i) {
+                if (getItem(i).equals(Items.AIR)) {
+                    continue;
+                } else {
+                    return false;
+                }
+            }
+
+            if (!matches(i, container.getItem(i).getItem())) {
                 return false;
+            }
         }
 
         return true;
     }
 
-    /**
-     * Checks if the key matches specified combination slot.
-     */
-    public boolean matches(int slot, Item key) {
-        Preconditions.checkElementIndex(slot, combination.size());
-        return combination.get(slot).equals(key);
+    // -- Save / Load
+
+    public static Combination load(ListTag listTag) {
+        return new Combination(
+                findItemById(listTag.getString(0)),
+                findItemById(listTag.getString(1)),
+                findItemById(listTag.getString(2)));
     }
 
-    /**
-     * Finds combination slot matching the key or -1 if none found.
-     */
-    public int findMatchingSlot(Item key) {
-        for (int i = 0; i < combination.size(); i++) {
-            if (matches(i, key))
-                return i;
-        }
-        return -1;
-    }
-
-    public ListTag serializeNBT() {
+    public ListTag save() {
         ListTag list = new ListTag();
-        for (Item item : combination) {
+        for (Item item : this) {
             ResourceLocation location = BuiltInRegistries.ITEM.getKey(item);
             StringTag stringTag = StringTag.valueOf(location.toString());
             list.add(stringTag);
@@ -86,51 +93,78 @@ public class Combination {
         return list;
     }
 
-    public void deserializeNBT(ListTag listTag) {
-        int listTagSize = listTag.size();
-        for (int i = 0; i < listTagSize; i++) {
-            String itemRegistryName = listTag.getString(i);
-            ResourceLocation parse = ResourceLocation.parse(itemRegistryName);
-            Item item = BuiltInRegistries.ITEM.get(parse);
-            combination.set(i, item);
-        }
-
-        if (listTagSize < SIZE) {
-            // Add blanks to the end:
-            for (int i = listTagSize; i < SIZE - listTagSize; i++) {
-                combination.set(i, Items.AIR);
-            }
-        }
-    }
-
     public void toBuffer(FriendlyByteBuf buffer) {
-        buffer.writeInt(combination.size());
-        for (Item item : combination) {
-            buffer.writeUtf(BuiltInRegistries.ITEM.getKey(item).toString());
-        }
+        buffer.writeUtf(BuiltInRegistries.ITEM.getKey(first).toString());
+        buffer.writeUtf(BuiltInRegistries.ITEM.getKey(second).toString());
+        buffer.writeUtf(BuiltInRegistries.ITEM.getKey(third).toString());
     }
 
     public static Combination fromBuffer(FriendlyByteBuf buffer) {
-        int size = buffer.readInt();
-        List<Item> combination = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            combination.add(findItemById(buffer.readUtf()));
-        }
-        return new Combination(combination);
+        return new Combination(
+                findItemById(buffer.readUtf()),
+                findItemById(buffer.readUtf()),
+                findItemById(buffer.readUtf()));
     }
+
+    // --
 
     @Override
     public String toString() {
-        return "Combination:[" + combination.stream().map(Item::toString).collect(Collectors.joining(",")) + "]";
+        return "Combination:[" + first.toString() + ", " + second.toString() + ", " + third.toString() + "]";
     }
 
-    protected static @NotNull Item findItemById(String location) {
-        @Nullable Item item = null;
+    // -- Iterable
+
+    @Override
+    public @NotNull Iterator<Item> iterator() {
+        return new Iterator<>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < SIZE;
+            }
+
+            @Override
+            public Item next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return switch (index++) {
+                    case 0 -> first;
+                    case 1 -> second;
+                    case 2 -> third;
+                    default -> throw new IllegalStateException();
+                };
+            }
+        };
+    }
+
+    public Stream<Item> stream() {
+        return Stream.of(first, second, third);
+    }
+
+    // -- Util
+
+    /**
+     * Finds combination slot matching the key or -1 if none found.
+     */
+    public OptionalInt findMatchingSlot(Item key) {
+        for (int i = 0; i < SIZE; i++) {
+            if (matches(i, key)) {
+                return OptionalInt.of(i);
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    private static @NotNull Item findItemById(String location) {
+        if (location.isBlank()) {
+            return Items.AIR;
+        }
         try {
-            item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(location));
+            return BuiltInRegistries.ITEM.get(ResourceLocation.parse(location));
         } catch (Exception e) {
             Monobank.LOGGER.error("Unknown item in combination: {}", location);
+            return Items.AIR;
         }
-        return item != null ? item : Items.AIR;
     }
 }

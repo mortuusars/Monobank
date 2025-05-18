@@ -2,15 +2,15 @@ package io.github.mortuusars.monobank;
 
 import com.google.common.base.Preconditions;
 import com.mojang.logging.LogUtils;
-import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
-import io.github.mortuusars.monobank.content.advancement.trigger.MonobankLockReplacedTrigger;
-import io.github.mortuusars.monobank.content.advancement.trigger.MonobankUnlockedTrigger;
-import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
+import io.github.mortuusars.monobank.advancement.trigger.MonobankInventoryChangedTrigger;
+import io.github.mortuusars.monobank.advancement.trigger.MonobankLockReplacedTrigger;
+import io.github.mortuusars.monobank.advancement.trigger.MonobankUnlockedTrigger;
+import io.github.mortuusars.monobank.world.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
-import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
-import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
-import io.github.mortuusars.monobank.content.monobank.unlocking.CombinationMenu;
+import io.github.mortuusars.monobank.world.inventory.menu.MonobankMenu;
+import io.github.mortuusars.monobank.world.inventory.menu.LockReplacementMenu;
+import io.github.mortuusars.monobank.world.inventory.menu.CombinationMenu;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -18,11 +18,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatFormatter;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
 
@@ -33,8 +37,6 @@ import java.util.function.Supplier;
 public class Monobank {
     public static final String ID = "monobank";
     public static final Logger LOGGER = LogUtils.getLogger();
-
-    public static boolean IN_DEBUG = false;
 
     public static void init() {
         Blocks.init();
@@ -56,7 +58,12 @@ public class Monobank {
     }
 
     public static class Blocks {
-        public static final Supplier<Block> MONOBANK = Register.block("monobank", MonobankBlock::new);
+        public static final Supplier<Block> MONOBANK = Register.block("monobank",
+                () -> new MonobankBlock(BlockBehaviour.Properties.of()
+                        .mapColor(MapColor.COLOR_BLACK)
+                        .strength(8F, 1200F)
+                        .noOcclusion()
+                        .sound(SoundType.NETHERITE_BLOCK)));
 
         static void init() {
         }
@@ -151,6 +158,7 @@ public class Monobank {
 
     public static class Tags {
         public static class Items {
+            public static final TagKey<Item> LOCK_BLACKLIST = TagKey.create(Registries.ITEM, resource("lock_blacklist"));
         }
 
         public static class Blocks {
