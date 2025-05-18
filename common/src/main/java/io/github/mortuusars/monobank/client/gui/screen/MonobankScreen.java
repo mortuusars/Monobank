@@ -33,7 +33,7 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
 
     protected final Component CTRL_TOOLTIP = Component.translatable("monobank.gui.monobank.tooltip.ctrl_take_single")
             .withStyle(ChatFormatting.DARK_GRAY);
-    protected final Component CTRL_SHIFT_TOOLTIP = Component.translatable("monobank.gui.monobank.tooltip.ctrl_shift_take_single")
+    protected final Component CTRL_SHIFT_TOOLTIP = Component.translatable("monobank.gui.monobank.tooltip.ctrl_shift_take_all")
             .withStyle(ChatFormatting.DARK_GRAY);
     protected final Component OWNER_TOOLTIP = Component.translatable("monobank.gui.monobank.tooltip.owner");
     protected final Component BREAK_IN_ATTEMPTED_TOOLTIP = Component.translatable("monobank.gui.monobank.tooltip.break_in_attempted");

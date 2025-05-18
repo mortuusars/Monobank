@@ -16,7 +16,7 @@ import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 
 public class CombinationScreen extends AbstractContainerScreen<CombinationMenu> {
-    public static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_unlocking.png");
+    public static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_combination.png");
 
     public CombinationScreen(CombinationMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -92,7 +92,7 @@ public class CombinationScreen extends AbstractContainerScreen<CombinationMenu> 
                         x + h * 4,
                         y + v * 4,
                         x + h * 4 + 4,
-                        y + v * 4 + 4, 5, color);
+                        y + v * 4 + 4, 50, color);
             }
         }
     }

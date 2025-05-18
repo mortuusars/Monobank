@@ -15,17 +15,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LockReplacementScreen extends AbstractContainerScreen<LockReplacementMenu> {
     public static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_lock_replacement.png");
     public static final WidgetSprites CONFIRM_SPRITES = new WidgetSprites(Monobank.resource("confirm_button"),
             Monobank.resource("confirm_button_disabled"),
             Monobank.resource("confirm_button_highlighted"));
-    private ImageButton confirmButton;
+
+    protected ImageButton confirmButton;
 
     public LockReplacementScreen(LockReplacementMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);

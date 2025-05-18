@@ -45,7 +45,7 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
 
         // Rotate door around the hinge:
         poseStack.pushPose();
-        poseStack.translate(pixel * 2, 0d, 0d); // Shift X by 2 pixels to place at the center.
+        poseStack.translate(pixel * 2, 0f, 0f); // Shift X by 2 pixels to place at the center.
 
         float openness = blockEntity.getOpenNess(partialTick); // Get how much door is open. From 0 to 1.
         openness = openness < 0.5 ? 4 * openness * openness * openness : (float) (1 - Math.pow(-2 * openness + 2, 3) / 2); // CubicInOut easing:
@@ -55,12 +55,6 @@ public class MonobankRenderer <T extends BlockEntity & LidBlockEntity> implement
         BakedModel model = PlatformHelperClient.getModel(MonobankClient.Models.MONOBANK_DOOR);
         Minecraft.getInstance().getBlockRenderer().getModelRenderer().renderModel(poseStack.last(),
                 bufferSource.getBuffer(RenderType.solid()), null, model, 1f, 1f, 1f, packedLight, packedOverlay);
-
-        // Not rendering with AO because shading is broken when there is adjacent solid blocks. Shade is too dark.
-//        Minecraft.getInstance().getBlockRenderer().getModelRenderer().tesselateWithAO(monobankEntity.getLevel(), model,
-//                monobankEntity.getBlockState(), monobankEntity.getBlockPos().relative(monobankEntity.getBlockState().getValue(MonobankBlock.FACING)),
-//                poseStack, bufferSource.getBuffer(RenderType.cutout()), true,
-//                monobankEntity.getLevel().getRandom(), 0, packedOverlay, EmptyModelData.INSTANCE);
 
         poseStack.popPose();
 
