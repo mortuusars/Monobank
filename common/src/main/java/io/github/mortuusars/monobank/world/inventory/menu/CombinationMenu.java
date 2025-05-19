@@ -6,6 +6,7 @@ import io.github.mortuusars.monobank.world.block.monobank.component.Combination;
 import io.github.mortuusars.monobank.world.inventory.MatchTemplateSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -157,6 +158,9 @@ public class CombinationMenu extends AbstractContainerMenu implements ContainerL
 
         if (getCombination().matches(keyContainer)) {
             blockEntity.startUnlocking(player);
+            if (player instanceof ServerPlayer serverPlayer) {
+                Monobank.CriteriaTriggers.MONOBANK_UNLOCKED.get().trigger(serverPlayer, blockEntity);
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import io.github.mortuusars.monobank.world.inventory.MatchTemplateSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -74,10 +75,10 @@ public class CombinationScreen extends AbstractContainerScreen<CombinationMenu> 
 
         // Ghost (template) item
         ExtendedSlotRenderer.renderFakeItem(guiGraphics, slot.getTemplateItem(), x, y,
-                0, 0, 0xCC0055, 16, 16);
+                0, 0, LightTexture.FULL_BRIGHT, 16, 16);
 
         double opacity1 = Config.Server.COMBINATION_SLOT_ICONS_OPACITY.get() / 100.0;
-        double opacity2 = opacity1 * opacity1 * opacity1;
+        double opacity2 = opacity1 * opacity1 * opacity1 * opacity1;
         int alpha1 = (int) ((1.0 - opacity1) * 255);
         int alpha2 = (int) ((1.0 - opacity2) * 255);
 

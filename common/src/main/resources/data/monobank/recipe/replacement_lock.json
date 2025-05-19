@@ -9,7 +9,7 @@
       "tag": "c:ingots/iron"
     },
     "T": {
-      "id": "minecraft:tripwire_hook"
+      "item": "minecraft:tripwire_hook"
     }
   },
   "pattern": [

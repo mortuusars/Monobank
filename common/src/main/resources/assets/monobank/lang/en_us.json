@@ -4,9 +4,9 @@
 
   "monobank.filled_map.ruined_portal": "Portal Ruins Map",
 
-  "monobank.tooltip.locked": "Locked",
-  "monobank.tooltip.loot_table": "Loot Table: %s",
-  "monobank.tooltip.combination_table": "Combination Table: %s",
+  "monobank.tooltip.locked": "§7Locked",
+  "monobank.tooltip.loot_table": "§8Loot Table: %s",
+  "monobank.tooltip.combination_table": "§8Combination Table: %s",
 
   "monobank.gui.monobank": "Monobank",
   "monobank.gui.monobank.unlocking": "Unlocking %s",
@@ -20,7 +20,7 @@
   "monobank.gui.monobank.tooltip.break_in_succeeded": "Monobank was opened by someone",
 
   "monobank.message.lock_replaced": "Lock has been replaced",
-  "monobank.message.monobank.locking.monobank_is_locked": "Locked. Try unlocking with %s.",
+  "monobank.message.monobank.locking.monobank_is_locked": "§cLocked. Try unlocking with [Sneak+Use].",
   "monobank.message.monobank.unlocking": "Monobank is unlocking...",
   "monobank.message.replacement_lock.cannot_replace_not_owner": "§cCannot replace lock in this Monobank.",
   "monobank.message.replacement_lock.cannot_replace_when_locked": "§cCannot replace lock: Monobank must be unlocked first.",

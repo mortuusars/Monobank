@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank.neoforge.event;
 
+import io.github.mortuusars.monobank.event.ServerEvents;
 import io.github.mortuusars.monobank.network.neoforge.PacketsImpl;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.network.packet.C2SPackets;
@@ -13,6 +14,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -51,6 +53,11 @@ public class CommonEvents {
         }
     }
 
+    @EventBusSubscriber(modid = Monobank.ID, bus = EventBusSubscriber.Bus.GAME)
     public static class GameBus {
+        @SubscribeEvent
+        public static void serverAboutToStart(ServerAboutToStartEvent event) {
+            ServerEvents.serverStart(event.getServer());
+        }
     }
 }

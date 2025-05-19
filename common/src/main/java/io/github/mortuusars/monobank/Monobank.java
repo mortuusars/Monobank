@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.advancement.trigger.MonobankInventoryChangedTrigger;
 import io.github.mortuusars.monobank.advancement.trigger.MonobankLockReplacedTrigger;
 import io.github.mortuusars.monobank.advancement.trigger.MonobankUnlockedTrigger;
+import io.github.mortuusars.monobank.world.block.monobank.component.Lock;
 import io.github.mortuusars.monobank.world.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
@@ -12,6 +13,7 @@ import io.github.mortuusars.monobank.world.inventory.menu.MonobankMenu;
 import io.github.mortuusars.monobank.world.inventory.menu.LockReplacementMenu;
 import io.github.mortuusars.monobank.world.inventory.menu.CombinationMenu;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -30,6 +32,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
 
+import javax.xml.crypto.Data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -43,6 +46,7 @@ public class Monobank {
         BlockEntityTypes.init();
         EntityTypes.init();
         Items.init();
+        DataComponents.init();
         MenuTypes.init();
         CriteriaTriggers.init();
         RecipeSerializers.init();
@@ -86,6 +90,13 @@ public class Monobank {
         public static final Supplier<Item> REPLACEMENT_LOCK = Register.item("replacement_lock",
                 () -> new ReplacementLockItem(new Item.Properties()
                         .stacksTo(16)));
+
+        static void init() {
+        }
+    }
+
+    public static class DataComponents {
+        public static final DataComponentType<Lock> LOCK = Register.dataComponentType("lock", arg -> arg.persistent(Lock.CODEC));
 
         static void init() {
         }

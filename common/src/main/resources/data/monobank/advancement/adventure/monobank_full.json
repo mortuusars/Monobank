@@ -9,7 +9,7 @@
           }
         }
       },
-      "trigger": "monobank:inventory_changed"
+      "trigger": "monobank:monobank_inventory_changed"
     }
   },
   "display": {
@@ -20,8 +20,15 @@
     "frame": "challenge",
     "hidden": false,
     "icon": {
-      "item": "monobank:monobank",
-      "nbt": "{BlockEntityTag:{Lock:{Combination:[\"minecraft:air\",\"minecraft:air\",\"minecraft:air\"],Locked:1b}}}"
+      "id": "monobank:monobank",
+      "components": {
+        "minecraft:block_entity_data": {
+          "Lock": {
+            "Locked": true
+          },
+          "id": "monobank:monobank"
+        }
+      }
     },
     "show_toast": true,
     "title": {

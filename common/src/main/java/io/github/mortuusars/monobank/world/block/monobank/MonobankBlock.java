@@ -4,10 +4,13 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.PlatformHelper;
-import io.github.mortuusars.monobank.client.util.ClientUtil;
+import io.github.mortuusars.monobank.world.block.monobank.component.Lock;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -19,6 +22,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -150,9 +154,8 @@ public class MonobankBlock extends Block implements EntityBlock {
     protected InteractionResult tryOpen(Player player, MonobankBlockEntity blockEntity) {
         if (blockEntity.getLock().isLocked()) {
             if (player.level().isClientSide) {
-                String sneakUseKey = ClientUtil.getSneakUseKeyTranslation();
                 player.displayClientMessage(Component.translatable(
-                        "monobank.message.monobank.locking.monobank_is_locked", sneakUseKey), true);
+                        "monobank.message.monobank.locking.monobank_is_locked"), true);
             } else {
                 blockEntity.playSoundAtDoor(Monobank.SoundEvents.MONOBANK_CLICK.get());
             }
@@ -203,7 +206,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     @Override
     public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        if (canBreak(player, pos, state)) {
+        if (!canBreak(player, pos, state)) {
             return 0f; // Indestructible
         }
         return super.getDestroyProgress(state, player, level, pos);
@@ -212,9 +215,6 @@ public class MonobankBlock extends Block implements EntityBlock {
     @Override
     public @NotNull BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
-            //TODO: test if unpacking loot table is needed.
-            // monobankEntity.unpackLootTable(player, true);
-
             //TODO: Crime for breaking
             // monobankEntity.checkAndPunishForCrime(player, Thief.Offence.HEAVY);
         }
@@ -256,29 +256,28 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     // --
 
+    @SuppressWarnings("deprecation")
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> components, TooltipFlag flag) {
-        /*                CompoundTag tag = stack.getOrCreateTag();
-        if (tag.contains("BlockEntityTag", CompoundTag.TAG_COMPOUND)) {
-            CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
-            if (blockEntityTag.contains(LOCK_TAG, CompoundTag.TAG_COMPOUND)) {
-                CompoundTag lockTag = blockEntityTag.getCompound(LOCK_TAG);
-                boolean locked = lockTag.getBoolean("Locked");
-                if (locked)
-                    tooltip.add(TextUtil.translate("tooltip.locked").withStyle(ChatFormatting.GRAY));
+        CustomData tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+        if (tag.getUnsafe().contains(MonobankBlockEntity.LOCK_TAG, Tag.TAG_COMPOUND)) {
+            CompoundTag lockTag = tag.getUnsafe().getCompound(MonobankBlockEntity.LOCK_TAG);
+            if (lockTag.getBoolean(Lock.LOCKED_TAG)) {
+                components.add(Component.translatable("monobank.tooltip.locked"));
+            }
 
-                if (blockEntityTag.contains(LOOT_TABLE_TAG, CompoundTag.TAG_STRING)) {
-                    String lootTable = blockEntityTag.getString(LOOT_TABLE_TAG);
-                    tooltip.add(TextUtil.translate("tooltip.loot_table", lootTable)
-                            .withStyle(ChatFormatting.DARK_GRAY));
+            if (flag.isAdvanced()) {
+                if (tag.getUnsafe().contains(MonobankBlockEntity.LOOT_TABLE_TAG, Tag.TAG_STRING)) {
+                    String lootTable = tag.getUnsafe().getString(MonobankBlockEntity.LOOT_TABLE_TAG);
+                    components.add(Component.translatable("monobank.tooltip.loot_table", lootTable));
                 }
 
                 if (lockTag.contains("CombinationTable", CompoundTag.TAG_STRING)) {
-                    tooltip.add(TextUtil.translate("tooltip.combination_table", lockTag.getString("CombinationTable"))
-                            .withStyle(ChatFormatting.DARK_GRAY));
+                    components.add(Component.translatable("monobank.tooltip.combination_table",
+                            lockTag.getString("CombinationTable")));
                 }
             }
-        }*/
+        }
     }
 
     @Override

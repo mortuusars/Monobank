@@ -13,37 +13,13 @@
           "type": "minecraft:item",
           "functions": [
             {
-              "function": "minecraft:copy_name",
-              "source": "block_entity"
-            },
-            {
-              "function": "minecraft:copy_nbt",
-              "ops": [
-                {
-                  "op": "replace",
-                  "source": "Inventory",
-                  "target": "BlockEntityTag.Inventory"
-                },
-                {
-                  "op": "replace",
-                  "source": "Lock",
-                  "target": "BlockEntityTag.Lock"
-                },
-                {
-                  "op": "replace",
-                  "source": "Owner",
-                  "target": "BlockEntityTag.Owner"
-                },
-                {
-                  "op": "replace",
-                  "source": "LootTable",
-                  "target": "BlockEntityTag.LootTable"
-                },
-                {
-                  "op": "replace",
-                  "source": "LootTableSeed",
-                  "target": "BlockEntityTag.LootTableSeed"
-                }
+              "function": "minecraft:copy_components",
+              "include": [
+                "minecraft:custom_name",
+                "minecraft:container",
+                "minecraft:lock",
+                "minecraft:container_loot",
+                "minecraft:block_entity_data"
               ],
               "source": "block_entity"
             }
@@ -54,5 +30,5 @@
       "rolls": 1.0
     }
   ],
-  "random_sequence": "monobank:blocks/monobank"
+  "random_sequence": "minecraft:blocks/monobank"
 }

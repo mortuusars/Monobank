@@ -1,5 +1,7 @@
 package io.github.mortuusars.monobank.world.block.monobank.component;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -33,7 +35,14 @@ public class Lock {
     public static final String UNLOCKING_TIME_TAG = "UnlockingTime";
     public static final String UNLOCKING_COUNTDOWN_TAG = "UnlockingCountdown";
 
-    protected final Runnable onLockedChanged;
+    public static final Codec<Lock> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            ResourceKey.codec(Registries.LOOT_TABLE).optionalFieldOf("combination_table", null).forGetter(Lock::getCombinationTable),
+            Combination.CODEC.optionalFieldOf("combination", Combination.EMPTY).forGetter(Lock::getCombination),
+            Codec.BOOL.optionalFieldOf("has_combination", false).forGetter(Lock::hasCombination),
+            Codec.BOOL.optionalFieldOf("locked", false).forGetter(Lock::isLocked),
+            Codec.INT.optionalFieldOf("unlocking_time", 0).forGetter(Lock::getUnlockingTime),
+            Codec.INT.optionalFieldOf("unlocking_countdown", 0).forGetter(Lock::getUnlockingCountdown)
+    ).apply(instance, Lock::new));
 
     protected @Nullable ResourceKey<LootTable> combinationTable = null; // set to 'null' when unpacked
     protected Combination combination = Combination.EMPTY;
@@ -41,6 +50,18 @@ public class Lock {
     protected boolean locked = false;
     protected int unlockingTime = 0;
     protected int unlockingCountdown = 0;
+
+    protected Runnable onLockedChanged = () -> {};
+
+    public Lock(@Nullable ResourceKey<LootTable> combinationTable, Combination combination,
+                boolean hasCombination, boolean locked, int unlockingTime, int unlockingCountdown) {
+        this.combinationTable = combinationTable;
+        this.combination = combination;
+        this.hasCombination = hasCombination;
+        this.locked = locked;
+        this.unlockingTime = unlockingTime;
+        this.unlockingCountdown = unlockingCountdown;
+    }
 
     public Lock(Runnable onLockChanged) {
         this.onLockedChanged = onLockChanged;
@@ -94,6 +115,11 @@ public class Lock {
         unlockingCountdown = ticks;
     }
 
+    public Lock setOnLockedChanged(Runnable onLockedChanged) {
+        this.onLockedChanged = onLockedChanged;
+        return this;
+    }
+
     // -- Tick
 
     public void tick(ServerLevel level, MonobankBlockEntity blockEntity) {
@@ -111,6 +137,8 @@ public class Lock {
 
             if (unlockingCountdown <= 0) {
                 setLocked(false);
+                unlockingTime = 0;
+                unlockingCountdown = 0;
             }
         }
     }
@@ -122,9 +150,7 @@ public class Lock {
         if (combinationTable != null) {
             tag.putString(COMBINATION_TABLE_TAG, combinationTable.location().toString());
         }
-        if (!combination.isEmpty()) {
-            tag.put(COMBINATION_TAG, combination.save());
-        }
+        tag.put(COMBINATION_TAG, combination.save());
         if (hasCombination) {
             tag.putBoolean(HAS_COMBINATION_TAG, true);
         }
@@ -182,7 +208,7 @@ public class Lock {
         Item third = items.size() >= 3 ? items.get(2).getItem() : Items.AIR;
 
         this.combination = new Combination(first, second, third);
-
+        this.combinationTable = null;
         hasCombination = true;
 
         if (level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankBlockEntity) {

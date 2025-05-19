@@ -1,6 +1,8 @@
 package io.github.mortuusars.monobank.world.block.monobank.component;
 
 import com.google.common.base.Preconditions;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.mortuusars.monobank.Monobank;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.ListTag;
@@ -24,6 +26,12 @@ import java.util.stream.Stream;
 public record Combination(Item first, Item second, Item third) implements Iterable<Item> {
     public static final int SIZE = 3;
     public static final Combination EMPTY = new Combination(Items.AIR, Items.AIR, Items.AIR);
+
+    public static final Codec<Combination> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("first", Items.AIR).forGetter(Combination::first),
+            BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("second", Items.AIR).forGetter(Combination::second),
+            BuiltInRegistries.ITEM.byNameCodec().optionalFieldOf("third", Items.AIR).forGetter(Combination::third)
+    ).apply(instance, Combination::new));
 
     public Combination(ItemStack first, ItemStack second, ItemStack third) {
         this(first.getItem(), second.getItem(), third.getItem());

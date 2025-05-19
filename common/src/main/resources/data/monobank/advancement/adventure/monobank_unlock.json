@@ -1,7 +1,7 @@
 {
   "parent": "monobank:adventure/monobank",
   "criteria": {
-    "monobank_unlock": {
+    "unlock_monobank": {
       "conditions": {},
       "trigger": "monobank:monobank_unlocked"
     }
@@ -14,7 +14,7 @@
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "monobank:monobank"
+      "id": "monobank:monobank"
     },
     "show_toast": true,
     "title": {
@@ -23,7 +23,7 @@
   },
   "requirements": [
     [
-      "monobank_unlock"
+      "unlock_monobank"
     ]
   ],
   "sends_telemetry_event": true

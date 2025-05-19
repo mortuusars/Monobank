@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.fabric;
 import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.event.ServerEvents;
 import io.github.mortuusars.monobank.network.fabric.FabricC2SPackets;
 import io.github.mortuusars.monobank.network.fabric.FabricS2CPackets;
 import net.fabricmc.api.ModInitializer;
@@ -22,6 +23,7 @@ public class MonobankFabric implements ModInitializer {
         NeoForgeConfigRegistry.INSTANCE.register(Monobank.ID, ModConfig.Type.SERVER, Config.Server.SPEC);
         NeoForgeConfigRegistry.INSTANCE.register(Monobank.ID, ModConfig.Type.CLIENT, Config.Client.SPEC);
 
+        ServerLifecycleEvents.SERVER_STARTING.register(ServerEvents::serverStart);
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             MonobankFabric.server = server;
         });

@@ -11,6 +11,8 @@ import io.github.mortuusars.monobank.world.block.monobank.component.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -27,6 +29,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -94,6 +97,7 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
 
         if (!getLock().isLocked()) {
             unpackLootTable(null);
+            setChanged();
         }
     }
 
@@ -133,6 +137,8 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
             Monobank.CriteriaTriggers.MONOBANK_LOCK_REPLACED.get().trigger(serverPlayer, this);
         }
 
+        setChanged();
+
         return true;
     }
 
@@ -155,10 +161,6 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
 
         if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
             breakInSucceeded = true;
-        }
-
-        if (player instanceof ServerPlayer serverPlayer) {
-            Monobank.CriteriaTriggers.MONOBANK_UNLOCKED.get().trigger(serverPlayer, this);
         }
 
         getLock().startUnlocking(ticks);
@@ -275,12 +277,11 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     @Override
     public void setRemoved() {
         super.setRemoved();
-//        inventoryHandler.invalidate();
     }
 
     public void inventoryChanged() {
         updateFullness();
-        this.setChanged();
+        setChanged();
         // Advancement
         if (level != null && !level.isClientSide && level.getServer() != null && getOwner().isPlayerOwned()) {
             @Nullable ServerPlayer player = level.getServer().getPlayerList().getPlayer(getOwner().getUuid());
@@ -312,14 +313,15 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
         if (level != null && !this.remove && !player.isSpectator()) {
             this.openersCounter.decrementOpeners(player, level, this.getBlockPos(), this.getBlockState());
 
-            // Reset warnings:
             if (getOwner().isOwnedBy(player)) {
-                if (warningsSeenCount > 3) {
+                if (breakInAttempted || breakInSucceeded) {
+                    warningsSeenCount++;
+                }
+
+                if (warningsSeenCount >= 3) {
                     breakInAttempted = false;
                     breakInSucceeded = false;
                     warningsSeenCount = 0;
-                } else {
-                    warningsSeenCount++;
                 }
             }
         }
@@ -390,8 +392,7 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
             item = ItemStack.EMPTY;
         }
 
-        setChanged();
-
+        inventoryChanged();
         return stack;
     }
 
@@ -407,13 +408,13 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     public void setItem(int slot, ItemStack stack) {
         checkSlotIndex(slot);
         item = stack;
-        setChanged();
+        inventoryChanged();
     }
 
     @Override
     public void clearContent() {
         item = ItemStack.EMPTY;
-        setChanged();
+        inventoryChanged();
     }
 
     protected void checkSlotIndex(int slot) {
@@ -453,6 +454,18 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     }
 
     // -- Save / Load
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        if (level != null) {
+            components.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(saveWithId(level.registryAccess())));
+        }
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput componentInput) {
+        super.applyImplicitComponents(componentInput);
+    }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
