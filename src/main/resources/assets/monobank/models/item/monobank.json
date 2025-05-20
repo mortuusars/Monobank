@@ -4,7 +4,7 @@
     {
       "model": "monobank:item/monobank_locked",
       "predicate": {
-        "minecraft:locked": 1.0
+        "monobank:locked": 1
       }
     }
   ]

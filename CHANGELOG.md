@@ -1,6 +1,7 @@
 # Changelog
 
 ### 1.1.5 - 2025-05-20
+- Updated Monobank textures.
 - Removed all thief-related functionality in favor of integration with `Thief` mod.
 - Monobanks are no longer carryable with `Carry On` mod.
 - Fixed 'Break In Attempted' or 'Break In Successful' warnings being resettable by a player that does not own the Monobank.
