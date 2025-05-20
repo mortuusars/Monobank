@@ -10,6 +10,7 @@ public class Configuration {
 
     // Monobank:
     public static final ForgeConfigSpec.IntValue MONOBANK_CAPACITY;
+    public static final ForgeConfigSpec.BooleanValue COMBINATION_ENABLED;
 
     // Ownership:
     public static final ForgeConfigSpec.BooleanValue OWNER_CAN_UNLOCK_WITHOUT_COMBINATION;
@@ -33,8 +34,12 @@ public class Configuration {
         builder.push("Monobank");
 
         MONOBANK_CAPACITY = builder
-                .comment("Maximum amount of items that can be stored in Monobank.")
+                .comment("Maximum amount of items that can be stored in Monobank. Default: 8192")
                 .defineInRange("Capacity", 8192, 1, Integer.MAX_VALUE);
+
+        COMBINATION_ENABLED = builder
+                .comment("Combination is required to unlock a Monobank. Default: true")
+                .define("CombinationEnabled", true);
 
         builder.pop();
 
@@ -43,15 +48,15 @@ public class Configuration {
         builder.push("Ownership");
 
         OWNER_CAN_UNLOCK_WITHOUT_COMBINATION = builder
-                .comment("Owners can unlock their Monobank without combination.")
+                .comment("Owners can unlock their Monobank without combination. Default: true")
                 .define("OwnerCanUnlockWithoutCombination", true);
         
         CAN_RELOCATE_OTHER_PLAYERS_BANK = builder
-                .comment("If enabled - players will be able to break other player's banks.", "If disabled - monobank will be indestructible if other player owns it.")
+                .comment("If enabled - players will be able to break other player's banks.", "If disabled - monobank will be indestructible if other player owns it. Default: false")
                 .define("CanRelocateOtherPlayersBanks", false);
 
         CAN_REPLACE_OTHER_PLAYERS_LOCKS = builder
-                .comment("If enabled - players will be able to change locks in other player's banks.")
+                .comment("If enabled - players will be able to change locks in other player's banks. Default: false")
                 .define("CanReplaceOtherPlayersLocks", false);
 
         builder.pop();
@@ -96,7 +101,24 @@ public class Configuration {
         COMMON_CONFIG_SPEC = builder.build();
     }
 
+    public static class Server {
+        public static final ForgeConfigSpec SPEC;
+
+        public static final ForgeConfigSpec.BooleanValue SHOW_HINT_ICON;
+
+        static {
+            ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+
+            SHOW_HINT_ICON = builder
+                    .comment("Show item hint icon un unlocking screen. Default: true")
+                    .define("ShowHintIcon" , true);
+
+            SPEC = builder.build();
+        }
+    }
+
     public static void register() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, COMMON_CONFIG_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Server.SPEC);
     }
 }

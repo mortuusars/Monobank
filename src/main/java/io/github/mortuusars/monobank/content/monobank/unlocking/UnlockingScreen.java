@@ -3,6 +3,7 @@ package io.github.mortuusars.monobank.content.monobank.unlocking;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.client.gui.rendering.ResizeableItemRenderer;
 import io.github.mortuusars.monobank.client.gui.screen.PatchedAbstractContainerScreen;
+import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.core.inventory.UnlockingSlot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -13,16 +14,10 @@ import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
 
 public class UnlockingScreen extends PatchedAbstractContainerScreen<UnlockingMenu> {
-
     private static final ResourceLocation TEXTURE = Monobank.resource("textures/gui/monobank_unlocking.png");
 
     public UnlockingScreen(UnlockingMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
-    }
-
-    @Override
-    protected void init() {
-        super.init();
     }
 
     @Override
@@ -38,19 +33,20 @@ public class UnlockingScreen extends PatchedAbstractContainerScreen<UnlockingMen
 
     @Override
     protected void renderSlot(GuiGraphics graphics, Slot slot) {
-        if (slot instanceof UnlockingSlot unlockingSlot/* && !unlockingSlot.hasItem()*/) {
-            ResizeableItemRenderer.renderGuiItem(unlockingSlot.getKeyway(), unlockingSlot.x, unlockingSlot.y, 16, 16, 0, 0xCC00CC, null);
+        if (slot instanceof UnlockingSlot unlockingSlot) {
             int x = unlockingSlot.x;
             int y = unlockingSlot.y;
 
-            int color = 0x9F8B8B8B; // gray
             if (unlockingSlot.hasItem()) {
                 int index = menu.slots.indexOf(unlockingSlot);
-                if (!menu.combination.matches(index, unlockingSlot.getItem().getItem()))
-                    color = 0x9Fad422f; // red
+                if (!menu.combination.matches(index, unlockingSlot.getItem().getItem())) {
+                    graphics.fill(x, y, x + 16, y + 16, 100, 0x9FAD422F); // Red overlay
+                }
+            } else if (Configuration.Server.SHOW_HINT_ICON.get()) {
+                ResizeableItemRenderer.renderGuiItem(unlockingSlot.getKeyway(), unlockingSlot.x, unlockingSlot.y, 16, 16, 0, 0xCC00CC, null);
+                graphics.fill(x, y, x + 16, y + 16, 100, 0xDD8B8B8B); // Gray overlay
             }
 
-            graphics.fill(x, y, x + 16, y + 16, 5, color);
             super.renderSlot(graphics, slot);
         }
         else
@@ -62,8 +58,9 @@ public class UnlockingScreen extends PatchedAbstractContainerScreen<UnlockingMen
         if (hoveredSlot instanceof UnlockingSlot unlockingSlot && !unlockingSlot.hasItem()) {
             graphics.renderTooltip(Minecraft.getInstance().font, unlockingSlot.getKeywayTooltip(), x, y);
         }
-        else
+        else {
             super.renderTooltip(graphics, x, y);
+        }
     }
 
     @Override
