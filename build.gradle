@@ -84,6 +84,9 @@ subprojects {
             name = "Mortuusars Github Maven"
             url = "https://raw.githubusercontent.com/mortuusars/resources/main/maven/"
         }
+
+        maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+        maven { url = "https://mvn.devos.one/snapshots" } // Registrate
     }
 
     dependencies {

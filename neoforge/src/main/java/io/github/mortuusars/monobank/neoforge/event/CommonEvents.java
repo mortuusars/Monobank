@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.neoforge.event;
 
 import io.github.mortuusars.monobank.event.ServerEvents;
+import io.github.mortuusars.monobank.neoforge.ItemHandlerCapabilityBlockEntity;
 import io.github.mortuusars.monobank.network.neoforge.PacketsImpl;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.network.packet.C2SPackets;
@@ -13,6 +14,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -50,6 +53,13 @@ public class CommonEvents {
             if (event.getTabKey().equals(CreativeModeTabs.TOOLS_AND_UTILITIES)) {
                 event.accept(Monobank.Items.REPLACEMENT_LOCK.get());
             }
+        }
+
+        @SubscribeEvent
+        public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,
+                    Monobank.BlockEntityTypes.MONOBANK.get(),
+                    (be, context) -> be instanceof ItemHandlerCapabilityBlockEntity cbe ? cbe.monobank$getItemHandlerCapability() : null);
         }
     }
 

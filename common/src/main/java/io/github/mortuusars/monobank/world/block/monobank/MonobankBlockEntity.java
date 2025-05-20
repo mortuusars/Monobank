@@ -361,6 +361,12 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
 
     // -- Inventory
 
+
+    @Override
+    public int getMaxStackSize() {
+        return getCapacity();
+    }
+
     public ItemStack getItem() {
         return item;
     }
