@@ -87,7 +87,7 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
                 combinationTooltip = Optional.of(new CombinationTooltip(blockEntity.getLock().getCombination()));
             graphics.renderTooltip(font, List.of(OWNER_TOOLTIP), combinationTooltip, x, y);
         }
-        else if (getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
+        else if (getMenu().extraInfo.isOwner && getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
             if (getMenu().extraInfo.breakInSucceeded)
                 graphics.renderTooltip(font, BREAK_IN_SUCCEEDED_TOOLTIP, x, y);
             else if (getMenu().extraInfo.breakInAttempted)
