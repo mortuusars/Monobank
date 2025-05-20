@@ -128,7 +128,8 @@ subprojects {
                 mod_page                     : mod_page,
                 mod_github                   : mod_github,
                 mod_license                  : mod_license,
-                mod_maven_group              : mod_maven_group
+                mod_maven_group              : mod_maven_group,
+                thief_version_range          : thief_version_range
         ]
         filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', "*.mixins.json"]) {
             expand expandProps
