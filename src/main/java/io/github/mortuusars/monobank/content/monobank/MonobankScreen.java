@@ -59,8 +59,7 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
             if (Screen.hasControlDown() && Screen.hasShiftDown()) {
                 pMouseButton = -102;
                 pType = ClickType.QUICK_MOVE;
-            }
-            else if (Screen.hasControlDown()) {
+            } else if (Screen.hasControlDown()) {
                 pMouseButton = -101;
                 pType = ClickType.QUICK_MOVE;
             }
@@ -80,17 +79,17 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-        if (getMenu().extraInfo.isOwner)
+        if (getMenu().extraInfo.isOwner) {
             graphics.blit(TEXTURE, getGuiLeft() + 161, getGuiTop() + 3, 176, 0, 12, 12);
 
-        if (getMenu().extraInfo.hasWarning()) {
-            if (getMenu().extraInfo.breakInSucceeded) {
-                if (minecraft.level.getGameTime() % 10 > 5) // Blinking fast
-                    graphics.blit(TEXTURE, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
-            }
-            else if (getMenu().extraInfo.breakInAttempted) {
-                if (minecraft.level.getGameTime() % 26 > 12) // Blinking slowly
-                    graphics.blit(TEXTURE, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
+            if (getMenu().extraInfo.hasWarning()) {
+                if (getMenu().extraInfo.breakInSucceeded) {
+                    if (minecraft.level.getGameTime() % 10 > 5) // Blinking fast
+                        graphics.blit(TEXTURE, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
+                } else if (getMenu().extraInfo.breakInAttempted) {
+                    if (minecraft.level.getGameTime() % 26 > 12) // Blinking slowly
+                        graphics.blit(TEXTURE, getGuiLeft() + 151, getGuiTop() + 38, 188, 0, 10, 10);
+                }
             }
         }
     }
@@ -100,19 +99,16 @@ public class MonobankScreen extends PatchedAbstractContainerScreen<MonobankMenu>
         if (this.menu.getCarried().isEmpty() && hoveredSlot != null &&
                 hoveredSlot instanceof BigItemHandlerSlot bankSlot && bankSlot.hasItem()) {
             renderBankSlotTooltip(bankSlot.getItem(), graphics, x, y);
-        }
-        else if (getMenu().extraInfo.isOwner && isHovering(161, 3, 12, 12, x, y)) { // Owner
+        } else if (getMenu().extraInfo.isOwner && isHovering(161, 3, 12, 12, x, y)) { // Owner
             if (combinationTooltip.isEmpty() && !blockEntity.getLock().getCombination().isEmpty())
                 combinationTooltip = Optional.of(new CombinationTooltip(blockEntity.getLock().getCombination()));
             graphics.renderTooltip(font, List.of(OWNER_TOOLTIP), combinationTooltip, x, y);
-        }
-        else if (getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
+        } else if (getMenu().extraInfo.isOwner && getMenu().extraInfo.hasWarning() && isHovering(151, 38, 10, 10, x, y)) { // Warning
             if (getMenu().extraInfo.breakInSucceeded)
                 graphics.renderTooltip(font, BREAK_IN_SUCCEEDED_TOOLTIP, x, y);
             else if (getMenu().extraInfo.breakInAttempted)
                 graphics.renderTooltip(font, BREAK_IN_ATTEMPTED_TOOLTIP, x, y);
-        }
-        else
+        } else
             super.renderTooltip(graphics, x, y);
     }
 

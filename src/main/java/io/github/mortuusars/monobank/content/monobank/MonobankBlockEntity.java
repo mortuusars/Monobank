@@ -3,13 +3,14 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.logging.LogUtils;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.Thief;
 import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.content.monobank.component.*;
 import io.github.mortuusars.monobank.content.monobank.unlocking.Combination;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import io.github.mortuusars.monobank.core.base.SyncedBlockEntity;
 import io.github.mortuusars.monobank.core.inventory.MonobankItemStackHandler;
+import io.github.mortuusars.monobank.integration.Mods;
+import io.github.mortuusars.monobank.integration.thief.ThiefIntegration;
 import io.github.mortuusars.monobank.util.TextUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.ChatFormatting;
@@ -68,6 +69,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public static final String LOOT_TABLE_SEED_TAG = "LootTableSeed";
     public static final String BREAK_IN_SUCCEEDED_TAG = "BreakInSucceeded";
     public static final String BREAK_IN_ATTEMPTED_TAG = "BreakInAttempted";
+    public static final String WARNINGS_SEEN_COUNT_TAG = "WarningsSeenCount";
 
     private static final int UPDATE_DOOR_EVENT_ID = 1;
 
@@ -109,6 +111,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     private Owner owner;
     private Component customName;
     public boolean breakInAttempted, breakInSucceeded;
+    protected int warningsSeenCount;
 
     private float fullness = -1;
 
@@ -193,7 +196,11 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             List<? extends Player> players = level.players();
             for (Player player : players) {
                 if (player.containerMenu instanceof UnlockingMenu unlockingMenu && unlockingMenu.monobankEntity == this) {
-                    checkAndPunishForCrime(player, Thief.Offence.HEAVY);
+
+                    if (Mods.THIEF.isLoaded() && player instanceof ServerPlayer serverPlayer) {
+                        ThiefIntegration.unlocked(serverPlayer, this);
+                    }
+
                     if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
                         breakInSucceeded = true;
                         setChanged();
@@ -246,21 +253,6 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         }
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    public boolean checkAndPunishForCrime(Player player, Thief.Offence offence) {
-        boolean crimeAgainstPlayer = Configuration.THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME.get() && getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player);
-        boolean crimeAgainstNPC = getOwner().getType() == Owner.Type.NPC;
-        if (crimeAgainstPlayer || crimeAgainstNPC) {
-            List<LivingEntity> witnesses = Thief.getWitnesses(player);
-            if (witnesses.size() > 0) {
-                Thief.declareThief(player, witnesses, Thief.Offence.LIGHT);
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     // Save/Load
 
     @Override
@@ -275,8 +267,15 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             tag.putString(CUSTOM_NAME_TAG, Component.Serializer.toJson(this.customName));
 
         if (getOwner().isPlayerOwned()) {
-            tag.putBoolean(BREAK_IN_SUCCEEDED_TAG, breakInSucceeded);
-            tag.putBoolean(BREAK_IN_ATTEMPTED_TAG, breakInAttempted);
+            if (warningsSeenCount > 0) {
+                tag.putInt(WARNINGS_SEEN_COUNT_TAG, warningsSeenCount);
+            }
+            if (breakInAttempted) {
+                tag.putBoolean(BREAK_IN_ATTEMPTED_TAG, true);
+            }
+            if (breakInSucceeded) {
+                tag.putBoolean(BREAK_IN_SUCCEEDED_TAG, true);
+            }
         }
     }
 
@@ -292,6 +291,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
             this.customName = Component.Serializer.fromJson(tag.getString(CUSTOM_NAME_TAG));
         breakInSucceeded = tag.getBoolean(BREAK_IN_SUCCEEDED_TAG);
         breakInAttempted = tag.getBoolean(BREAK_IN_ATTEMPTED_TAG);
+        warningsSeenCount = tag.getInt(WARNINGS_SEEN_COUNT_TAG);
         updateFullness();
         doorOpennessController.setLocked(lock.isLocked());
     }
@@ -344,7 +344,7 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
 
             ObjectArrayList<ItemStack> randomItems = loottable.getRandomItems(lootParams.create(LootContextParamSets.CHEST), this.lootTableSeed);
 
-            if (randomItems.size() > 0) {
+            if (!randomItems.isEmpty()) {
                 this.inventory.setStackInSlot(0, randomItems.get(0));
             }
         }
@@ -378,35 +378,39 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
         }
     }
 
-
     // GUI
+
     public void openUnlockingGui(ServerPlayer player) {
-        if (lock.isLocked()) {
+        if (!lock.isLocked()) return;
 
-            checkAndPunishForCrime(player, Thief.Offence.LIGHT);
+        if (Mods.THIEF.isLoaded()) {
+            ThiefIntegration.unlockingGuiOpened(player, this);
+        }
 
-            if (getLock().getCombination().isEmpty())
-                startUnlocking(); // Open straight up when no combination is set:
-            else {
-                if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
-                    breakInAttempted = true;
-                    setChanged();
-                }
-                NetworkHooks.openScreen(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
-                    buffer.writeBlockPos(worldPosition);
-                    lock.getCombination().toBuffer(buffer);
-                });
+        if (getLock().getCombination().isEmpty())
+            startUnlocking(); // Open straight up when no combination is set:
+        else {
+            if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
+                breakInAttempted = true;
+                setChanged();
             }
+            NetworkHooks.openScreen(player, this.UNLOCKING_MENU_PROVIDER, buffer -> {
+                buffer.writeBlockPos(worldPosition);
+                lock.getCombination().toBuffer(buffer);
+            });
         }
     }
+
     public void open(ServerPlayer player) {
-        checkAndPunishForCrime(player, Thief.Offence.MODERATE);
+        if (Mods.THIEF.isLoaded()) {
+            ThiefIntegration.opened(player, this);
+        }
+
         NetworkHooks.openScreen(player, this.OPEN_MENU_PROVIDER, buffer -> {
             buffer.writeBlockPos(worldPosition);
             getExtraInfo(player).toBuffer(buffer);
         });
     }
-
 
     // Inventory
 
@@ -516,9 +520,18 @@ public class MonobankBlockEntity extends SyncedBlockEntity implements Nameable, 
     public void stopOpen(Player player) {
         if (level != null && !this.remove && !player.isSpectator()) {
             this.openersCounter.decrementOpeners(player, level, this.getBlockPos(), this.getBlockState());
-            // Reset warnings:
-            this.breakInAttempted = false;
-            this.breakInSucceeded = false;
+
+            if (getOwner().isOwnedBy(player)) {
+                if (breakInAttempted || breakInSucceeded) {
+                    warningsSeenCount++;
+                }
+
+                if (warningsSeenCount >= 3) {
+                    breakInAttempted = false;
+                    breakInSucceeded = false;
+                    warningsSeenCount = 0;
+                }
+            }
         }
     }
 

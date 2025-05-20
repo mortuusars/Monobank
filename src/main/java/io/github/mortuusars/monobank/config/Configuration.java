@@ -1,5 +1,6 @@
 package io.github.mortuusars.monobank.config;
 
+import io.github.mortuusars.monobank.integration.thief.ThiefCrime;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -16,15 +17,9 @@ public class Configuration {
     public static final ForgeConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
     // Thief:
-    public static final ForgeConfigSpec.BooleanValue THIEF_ENABLED;
-    public static final ForgeConfigSpec.IntValue THIEF_EFFECT_BASE_DURATION;
-    public static final ForgeConfigSpec.BooleanValue THIEF_INCLUDE_OTHER_CONTAINERS;
-    public static final ForgeConfigSpec.BooleanValue THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME;
-    public static final ForgeConfigSpec.BooleanValue THIEF_ONLY_NEAR_PROTECTED_STRUCTURES;
-    public static final ForgeConfigSpec.IntValue THIEF_PROTECTED_STRUCTURE_RANGE;
-    public static final ForgeConfigSpec.BooleanValue THIEF_NO_TRADE;
-    public static final ForgeConfigSpec.BooleanValue THIEF_NO_TRADE_ONLY_NEAR_PROTECTED_STRUCTURES;
-
+    public static final ForgeConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_UNLOCKING_ATTEMPT;
+    public static final ForgeConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_UNLOCKING;
+    public static final ForgeConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_OPENING;
 
     // Structures:
     public static final ForgeConfigSpec.BooleanValue GENERATE_VILLAGE_STRUCTURES;
@@ -65,44 +60,20 @@ public class Configuration {
 
         builder.push("Thief");
 
-        THIEF_ENABLED = builder
-                .comment("Player will be marked as Thief if it was seen stealing from a village.",
-                        "Entities with tag 'monobank:theft_haters' should be a witness of a theft to mark a player as Thief.")
-                .define("ThiefEnabled", true);
+        THIEF_CRIME_FOR_UNLOCKING_ATTEMPT = builder
+                .comment("Crime severity for attempting to unlock a Monobank (opening combination UI).",
+                        "Default: LIGHT")
+                .defineEnum("crime_severity_for_unlocking_attempt", ThiefCrime.LIGHT);
 
-        THIEF_EFFECT_BASE_DURATION = builder
-                .comment("Base duration (in seconds) of a 'Thief' debuff.")
-                .defineInRange("ThiefDurationSeconds", 360, 1, Integer.MAX_VALUE);
+        THIEF_CRIME_FOR_UNLOCKING = builder
+                .comment("Crime severity for unlocking a Monobank.",
+                        "Default: MEDIUM")
+                .defineEnum("crime_severity_for_unlocking", ThiefCrime.MEDIUM);
 
-        THIEF_OPENING_PLAYER_OWNED_IS_A_CRIME = builder
-                .comment("Opening, unlocking or breaking player-owned Monobank is considered a crime (same as the npc-owned ones).")
-                .define("OpeningPlayerOwnedBankCountsAsTheft", false);
-
-        THIEF_INCLUDE_OTHER_CONTAINERS = builder
-                .comment("Opening or breaking containers (chests, barrels, etc..) is also counts as a crime.",
-                        "Player is marked as Thief only when container has a LootTable and has not been opened before. (Only on first open)")
-                .define("StealingFromContainersIsACrime", true);
-
-        THIEF_ONLY_NEAR_PROTECTED_STRUCTURES = builder
-                .comment("Player is marked as Thief only near 'protected' structures. Defined in a 'monobank:theft_protected' structure tag.",
-                        "If disabled - you will be marked as a Thief anywhere in the world, as long as there's a witness of your crime.")
-                .define("ThiefOnlyNearProtectedStructures", true);
-
-        THIEF_PROTECTED_STRUCTURE_RANGE = builder
-                .comment("Distance to nearest protected structure in blocks that defines 'being near a protected structure'.",
-                        "Distance is measured same as in /locate command. Not to the border of a village, but to the center.",
-                        "Same as with /locate command structure coordinates will only have x and z values. Y value will be the highest surface point.",
-                        "This is fine for villages (they spawn on a surface) but can have an effect if the structure is deep underground.")
-                .defineInRange("ProtectedStructureRange", 128, 1, Integer.MAX_VALUE);
-
-        THIEF_NO_TRADE = builder
-                .comment("Villagers will refuse to trade with a player marked as Thief.")
-                .define("VillagersHateThieves", true);
-
-        THIEF_NO_TRADE_ONLY_NEAR_PROTECTED_STRUCTURES = builder
-                .comment("Villagers will check if they are near a protected structure before refusing to trade with a player marked as Thief.",
-                        "This setting will have no effect if 'ThiefOnlyNearProtectedStructures' is disabled.")
-                .define("VillagersCheckRangeBeforeHatingThieves", false);
+        THIEF_CRIME_FOR_OPENING = builder
+                .comment("Crime severity for opening a Monobank.",
+                        "Default: HEAVY")
+                .defineEnum("crime_severity_for_opening", ThiefCrime.HEAVY);
 
         builder.pop();
 

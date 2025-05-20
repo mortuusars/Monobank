@@ -3,7 +3,6 @@ package io.github.mortuusars.monobank;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankInventoryChangedTrigger;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankLockReplacedTrigger;
 import io.github.mortuusars.monobank.content.advancement.trigger.MonobankUnlockedTrigger;
-import io.github.mortuusars.monobank.content.effect.ThiefEffect;
 import io.github.mortuusars.monobank.content.item.ReplacementLockItem;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.content.monobank.MonobankBlockEntity;
@@ -11,19 +10,12 @@ import io.github.mortuusars.monobank.content.monobank.MonobankMenu;
 import io.github.mortuusars.monobank.content.monobank.lock_replacement.LockReplacementMenu;
 import io.github.mortuusars.monobank.content.monobank.unlocking.UnlockingMenu;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
@@ -73,12 +65,6 @@ public class Registry {
                 .register("lock_replacement", () -> IForgeMenuType.create(LockReplacementMenu::fromBuffer));
     }
 
-    public static class Effects {
-        private static final DeferredRegister<MobEffect> EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, Monobank.ID);
-        public static final RegistryObject<MobEffect> THIEF = EFFECTS.register("thief",
-                () -> new ThiefEffect(MobEffectCategory.HARMFUL, 0x222222));
-    }
-
     public static class Sounds {
         private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, Monobank.ID);
 
@@ -105,28 +91,11 @@ public class Registry {
         }
     }
 
-    public static class BlockTags {
-        public static final TagKey<Block> LOOTR_CONTAINERS = net.minecraft.tags.BlockTags.create(new ResourceLocation("lootr:containers"));
-    }
-
-    public static class StructureTags {
-        public static final TagKey<Structure> THEFT_PROTECTED =
-                TagKey.create(Registries.STRUCTURE, Monobank.resource("theft_protected"));
-    }
-
-    public static class EntityTags {
-        public static final TagKey<EntityType<?>> THEFT_HATERS =
-                TagKey.create(Registries.ENTITY_TYPE, Monobank.resource("theft_haters"));
-        public static final TagKey<EntityType<?>> THIEF_ATTACKERS =
-                TagKey.create(Registries.ENTITY_TYPE, Monobank.resource("thief_attackers"));
-    }
-
     public static void register(IEventBus modEventBus) {
         Blocks.BLOCKS.register(modEventBus);
         Items.ITEMS.register(modEventBus);
         BlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
         MenuTypes.MENU_TYPES.register(modEventBus);
-        Effects.EFFECTS.register(modEventBus);
         Sounds.SOUNDS.register(modEventBus);
     }
 }

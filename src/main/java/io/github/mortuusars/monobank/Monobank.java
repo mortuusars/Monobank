@@ -5,6 +5,7 @@ import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.event.ClientSetup;
 import io.github.mortuusars.monobank.event.CommonEvents;
 import io.github.mortuusars.monobank.world.VillageStructures;
+import io.github.mortuusars.thief.Thief;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -38,10 +39,6 @@ public class Monobank
         modEventBus.addListener(CommonEvents::onCreativeTabsBuild);
 
         Registry.register(modEventBus);
-
-        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onEntityInteractEvent);
-        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onBlockRightClick);
-        MinecraftForge.EVENT_BUS.addListener(CommonEvents::onBlockBroken);
 
         MinecraftForge.EVENT_BUS.addListener(VillageStructures::addVillageStructures);
 

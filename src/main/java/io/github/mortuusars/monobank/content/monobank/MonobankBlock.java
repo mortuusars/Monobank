@@ -3,7 +3,6 @@ package io.github.mortuusars.monobank.content.monobank;
 import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.Registry;
-import io.github.mortuusars.monobank.Thief;
 import io.github.mortuusars.monobank.config.Configuration;
 import io.github.mortuusars.monobank.util.TextUtil;
 import net.minecraft.client.Minecraft;
@@ -119,7 +118,6 @@ public class MonobankBlock extends Block implements EntityBlock {
     public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
             monobankEntity.unpackLootTable(player, true);
-            monobankEntity.checkAndPunishForCrime(player, Thief.Offence.HEAVY);
         }
         super.playerWillDestroy(level, pos, state, player);
     }
