@@ -43,6 +43,8 @@ dependencies {
 
     modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
 
+    modImplementation("io.github.mortuusars.thief:thief-${minecraft_version}-fabric:${thief_version}")
+
     modCompileOnlyApi("mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}")
 
     modRuntimeOnly("mezz.jei:jei-${minecraft_version}-fabric:${jei_version}")

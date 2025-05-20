@@ -63,9 +63,10 @@ subprojects {
         }
         maven { url = "https://jitpack.io/" } // Mixin Extras, Fabric ASM
         maven {
+            // Forge Config API Port
             name = "Fuzs Mod Resources"
             url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
-        } // Forge Config API Port
+        }
         maven {
             name = "Modrinth"
             url = "https://api.modrinth.com/maven"
@@ -78,6 +79,10 @@ subprojects {
             content {
                 includeGroup "curse.maven"
             }
+        }
+        maven {
+            name = "Mortuusars Github Maven"
+            url = "https://raw.githubusercontent.com/mortuusars/resources/main/maven/"
         }
     }
 
