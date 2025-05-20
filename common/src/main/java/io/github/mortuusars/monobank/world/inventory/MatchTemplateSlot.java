@@ -38,7 +38,7 @@ public class MatchTemplateSlot extends Slot {
             return;
         }
 
-        double obfuscationFactor = Config.Server.COMBINATION_SLOT_TOOLTIP_OBFUSCATION.get();
+        double obfuscationFactor = Config.Server.COMBINATION_HINT_TOOLTIP_OBFUSCATION.get();
         if (obfuscationFactor > 0) {
             String text = template.getHoverName().getString(999);
             templateTooltip = TextObfuscator.obfuscate(text, obfuscationFactor, text.hashCode() + index);

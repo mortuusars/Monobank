@@ -4,8 +4,6 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.PlatformHelper;
-import io.github.mortuusars.monobank.integration.Mods;
-import io.github.mortuusars.monobank.integration.thief.ThiefIntegration;
 import io.github.mortuusars.monobank.world.block.monobank.component.Lock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -71,7 +69,7 @@ public class MonobankBlock extends Block implements EntityBlock {
     }
 
     public boolean canBreak(Player player, MonobankBlockEntity blockEntity) {
-        if (Config.Server.CAN_RELOCATE_OTHER_PLAYERS_BANK.get()) return true;
+        if (Config.Server.CAN_RELOCATE_OTHER_PLAYERS_MONOBANK.get()) return true;
         return blockEntity.getOwner().isNpcOwned() || blockEntity.getOwner().isOwnedBy(player);
     }
 

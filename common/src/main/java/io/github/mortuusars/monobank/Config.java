@@ -16,7 +16,7 @@ public class Config {
         // Lock
         public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_INSERTION;
         public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_EXTRACTION;
-        public static final ModConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_BANK;
+        public static final ModConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_MONOBANK;
         public static final ModConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
         // Combination
@@ -25,12 +25,12 @@ public class Config {
         public static final ModConfigSpec.BooleanValue SKIP_COMBINATION_IF_NOT_OWNER;
         public static final ModConfigSpec.BooleanValue SKIP_COMBINATION_FOR_NPC_OWNED;
         public static final ModConfigSpec.BooleanValue PLAYER_UNLOCKING;
-        public static final ModConfigSpec.BooleanValue COMBINATION_SLOT_ICONS;
-        public static final ModConfigSpec.DoubleValue COMBINATION_SLOT_ICONS_OPACITY;
-        public static final ModConfigSpec.DoubleValue COMBINATION_SLOT_TOOLTIP_OBFUSCATION;
+        public static final ModConfigSpec.BooleanValue COMBINATION_HINT_ICON;
+        public static final ModConfigSpec.DoubleValue COMBINATION_HINT_ICON_OPACITY;
+        public static final ModConfigSpec.DoubleValue COMBINATION_HINT_TOOLTIP_OBFUSCATION;
 
         // Thief
-        public static final ModConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_UNLOCKING_GUI;
+        public static final ModConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_UNLOCKING_ATTEMPT;
         public static final ModConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_UNLOCKING;
         public static final ModConfigSpec.EnumValue<ThiefCrime> THIEF_CRIME_FOR_OPENING;
 
@@ -57,10 +57,10 @@ public class Config {
                                 " WARNING: when disabled, other players would be able to steal items from a Monobank without entering a combination and opening it.",
                                 " Default: true")
                         .define("prevent_extraction", true);
-                CAN_RELOCATE_OTHER_PLAYERS_BANK = builder
+                CAN_RELOCATE_OTHER_PLAYERS_MONOBANK = builder
                         .comment(" Players can break and pickup a Monobank that is owned by another player.",
                                 " Default: false")
-                        .define("can_break_other_players_banks", false);
+                        .define("can_break_other_players_monobanks", false);
                 CAN_REPLACE_OTHER_PLAYERS_LOCKS = builder
                         .comment(" Players can change lock in a Monobank that is owned by another player.",
                                 " Default: false")
@@ -77,7 +77,7 @@ public class Config {
                     PLAYER_UNLOCKING = builder
                             .comment(" Players can enter a combination to unlock a Monobank that is owned by someone else.",
                                     " If disabled, only owner can open their Monobank.",
-                                    " NPC owned Monobanks are not affected by this. They can still be opened by everyone.",
+                                    " NPC owned Monobanks are not affected by this. They can still be unlocked by everyone.",
                                     " Default: true")
                             .define("player_unlocking", true);
 
@@ -102,16 +102,16 @@ public class Config {
                 {
                     builder.push("combination_ui");
 
-                    COMBINATION_SLOT_ICONS = builder
-                            .comment(" Show partially visible item icon in combination slot.",
+                    COMBINATION_HINT_ICON = builder
+                            .comment(" Show partially visible hint icon in combination slot.",
                                     " Default: true")
-                            .define("slot_icon", true);
+                            .define("hint_icon", true);
 
-                    COMBINATION_SLOT_ICONS_OPACITY = builder
-                            .comment(" Opacity percentage of the slot icon.")
-                            .defineInRange("slot_icon_opacity", 0.3, 0.0, 1.0);
+                    COMBINATION_HINT_ICON_OPACITY = builder
+                            .comment(" Opacity percentage of the hint icon.")
+                            .defineInRange("hint_icon_opacity", 0.3, 0.0, 1.0);
 
-                    COMBINATION_SLOT_TOOLTIP_OBFUSCATION = builder
+                    COMBINATION_HINT_TOOLTIP_OBFUSCATION = builder
                             .comment(" Chance of a letter being obfuscated in slot tooltip.")
                             .defineInRange("tooltip_obfuscation_chance", 0.5, 0.0, 1.0);
 
@@ -124,10 +124,10 @@ public class Config {
             {
                 builder.push("thief");
 
-                THIEF_CRIME_FOR_UNLOCKING_GUI = builder
+                THIEF_CRIME_FOR_UNLOCKING_ATTEMPT = builder
                         .comment(" Crime severity for attempting to unlock a Monobank (opening combination UI).",
                                  " Default: LIGHT")
-                        .defineEnum("crime_severity_for_unlocking_gui", ThiefCrime.LIGHT);
+                        .defineEnum("crime_severity_for_unlocking_attempt", ThiefCrime.LIGHT);
 
                 THIEF_CRIME_FOR_UNLOCKING = builder
                         .comment(" Crime severity for unlocking a Monobank.",

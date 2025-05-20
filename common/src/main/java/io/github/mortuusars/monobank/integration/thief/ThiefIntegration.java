@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class ThiefIntegration {
     public static void unlockingGuiOpened(ServerPlayer player, MonobankBlockEntity blockEntity) {
-        convertCrime(Config.Server.THIEF_CRIME_FOR_UNLOCKING_GUI.get()).ifPresent(crime ->
+        convertCrime(Config.Server.THIEF_CRIME_FOR_UNLOCKING_ATTEMPT.get()).ifPresent(crime ->
                 crime.commit(player.serverLevel(), player, blockEntity.getBlockPos()));
     }
 
