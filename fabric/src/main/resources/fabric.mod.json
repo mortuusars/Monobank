@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.mortuusars.${mod_id}.fabric.${mod_name}kFabric"
+      "io.github.mortuusars.${mod_id}.fabric.${mod_name}Fabric"
     ],
     "client": [
       "io.github.mortuusars.${mod_id}.fabric.${mod_name}FabricClient"

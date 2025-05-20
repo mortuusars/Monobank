@@ -42,7 +42,8 @@ public class Config {
             ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
             MONOBANK_CAPACITY = builder
-                    .comment(" Maximum amount of items that can be stored in a Monobank.")
+                    .comment(" Maximum amount of items that can be stored in a Monobank.",
+                             " Default: 8192")
                     .defineInRange("capacity", 8192, 1, Integer.MAX_VALUE);
 
             {

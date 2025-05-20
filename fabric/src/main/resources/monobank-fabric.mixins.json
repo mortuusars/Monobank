@@ -9,5 +9,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "hopper_insert_fix.HopperBlockEntityMixin"
+  ]
 }

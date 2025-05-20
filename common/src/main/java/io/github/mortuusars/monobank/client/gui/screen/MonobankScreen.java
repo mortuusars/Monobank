@@ -61,17 +61,18 @@ public class MonobankScreen extends AbstractContainerScreen<MonobankMenu> {
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
-        if (getMenu().extraInfo.isOwner)
+        if (getMenu().extraInfo.isOwner) {
             graphics.blit(TEXTURE, leftPos + 161, topPos + 3, 176, 0, 12, 12);
 
-        if (getMenu().extraInfo.hasWarning()) {
-            if (getMenu().extraInfo.breakInSucceeded) {
-                if (level.getGameTime() % 10 > 5) // Blinking fast
-                    graphics.blit(TEXTURE, leftPos + 151, topPos + 38, 188, 0, 10, 10);
-            }
-            else if (getMenu().extraInfo.breakInAttempted) {
-                if (level.getGameTime() % 26 > 12) // Blinking slowly
-                    graphics.blit(TEXTURE, leftPos + 151, topPos + 38, 188, 0, 10, 10);
+            if (getMenu().extraInfo.hasWarning()) {
+                if (getMenu().extraInfo.breakInSucceeded) {
+                    if (level.getGameTime() % 10 > 5) // Blinking fast
+                        graphics.blit(TEXTURE, leftPos + 151, topPos + 38, 188, 0, 10, 10);
+                }
+                else if (getMenu().extraInfo.breakInAttempted) {
+                    if (level.getGameTime() % 26 > 12) // Blinking slowly
+                        graphics.blit(TEXTURE, leftPos + 151, topPos + 38, 188, 0, 10, 10);
+                }
             }
         }
     }

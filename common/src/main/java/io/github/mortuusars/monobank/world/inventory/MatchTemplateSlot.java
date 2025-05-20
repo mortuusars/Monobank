@@ -47,4 +47,9 @@ public class MatchTemplateSlot extends Slot {
 
         templateTooltip = Component.literal(template.getHoverName().getString(999));
     }
+
+    @Override
+    public int getMaxStackSize() {
+        return 1;
+    }
 }
