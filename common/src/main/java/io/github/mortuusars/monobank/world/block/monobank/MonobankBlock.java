@@ -4,6 +4,8 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.PlatformHelper;
+import io.github.mortuusars.monobank.integration.Mods;
+import io.github.mortuusars.monobank.integration.thief.ThiefIntegration;
 import io.github.mortuusars.monobank.world.block.monobank.component.Lock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -218,15 +220,6 @@ public class MonobankBlock extends Block implements EntityBlock {
             return 0f; // Indestructible
         }
         return super.getDestroyProgress(state, player, level, pos);
-    }
-
-    @Override
-    public @NotNull BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity) {
-            //TODO: Crime for breaking
-            // monobankEntity.checkAndPunishForCrime(player, Thief.Offence.HEAVY);
-        }
-        return super.playerWillDestroy(level, pos, state, player);
     }
 
     // -- State

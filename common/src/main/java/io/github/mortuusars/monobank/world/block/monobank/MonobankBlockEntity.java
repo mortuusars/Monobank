@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.PlatformHelper;
+import io.github.mortuusars.monobank.integration.Mods;
+import io.github.mortuusars.monobank.integration.thief.ThiefIntegration;
 import io.github.mortuusars.monobank.world.inventory.menu.MonobankMenu;
 import io.github.mortuusars.monobank.world.block.monobank.component.Combination;
 import io.github.mortuusars.monobank.world.inventory.menu.CombinationMenu;
@@ -156,8 +158,9 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     public void startUnlocking(Player player, int ticks) {
         if (getLock().isUnlocking()) return;
 
-        // TODO: Thief commit crime
-        // checkAndPunishForCrime(player, Thief.Offence.HEAVY);
+        if (Mods.THIEF.isLoaded() && player instanceof ServerPlayer serverPlayer) {
+            ThiefIntegration.unlocked(serverPlayer, this);
+        }
 
         if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
             breakInSucceeded = true;
@@ -218,16 +221,18 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
 
         getLock().unpackCombinationTableIfNeeded(player.serverLevel(), getBlockPos());
 
-        //TODO: Thief commit crime
-        //checkAndPunishForCrime(player, Thief.Offence.LIGHT);
-
         if (getLock().getCombination().isEmpty()) {
             startUnlocking(player);
         } else {
+            if (Mods.THIEF.isLoaded()) {
+                ThiefIntegration.unlockingGuiOpened(player, this);
+            }
+
             if (getOwner().isPlayerOwned() && !getOwner().isOwnedBy(player)) {
                 breakInAttempted = true;
                 setChanged();
             }
+
             PlatformHelper.openMenu(player, new MenuProvider() {
                 @Override
                 public @NotNull Component getDisplayName() {
@@ -247,8 +252,9 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     }
 
     public void open(ServerPlayer player) {
-        //TODO: Thief commit crime
-        //checkAndPunishForCrime(player, Thief.Offence.MODERATE);
+        if (Mods.THIEF.isLoaded() && player instanceof ServerPlayer serverPlayer) {
+            ThiefIntegration.opened(serverPlayer, this);
+        }
 
         PlatformHelper.openMenu(player, new MenuProvider() {
             @Override
