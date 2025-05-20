@@ -8,6 +8,7 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
@@ -18,6 +19,7 @@ plugins {
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
+apply plugin: 'org.spongepowered.mixin'
 
 version = "${mod_version}"
 group = 'io.github.mortuusars.monobank' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -38,8 +40,8 @@ minecraft {
         client {
             workingDirectory project.file('run')
 
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property("mixin.env.remapRefMap", "true")
+            property("mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg")
 
             // Recommended logging data for a userdev environment
             // The markers can be added/remove as needed separated by commas.
@@ -167,12 +169,15 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    maven { url = "https://maven.createmod.net" } // Create, Ponder, Flywheel
+    maven { url = "https://maven.tterrag.com" } // Registrate
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.0.49'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.1.3'
 
-//    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
     // compile against the JEI API but do not include it at runtime
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
@@ -181,6 +186,14 @@ dependencies {
     runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
 
     implementation fg.deobf("curse.maven:thief-839159:6537475")
+
+    implementation(fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false })
+    implementation(fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}"))
+    compileOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-api-${minecraft_version}:${flywheel_version}"))
+    runtimeOnly(fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}"))
+    implementation(fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}"))
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
 
     // Locally sourced extra mods for runtime (i.e. testing) - thanks AE2 for this idea
     for (extraModJar in fileTree(dir: extraModsDir, include: '*.jar')) {
@@ -193,14 +206,14 @@ dependencies {
     }
 }
 
-//mixin {
-//    // MixinGradle Settings
-//    add sourceSets.main, 'mixins.monobank.refmap.json'
-//    config 'mixins.monobank.json'
-//
-//    debug.verbose = true
-//    debug.export = true
-//}
+mixin {
+    // MixinGradle Settings
+    add sourceSets.main, 'mixins.monobank.refmap.json'
+    config 'mixins.monobank.json'
+
+    debug.verbose = true
+    debug.export = true
+}
 
 // Example for how to get properties into the manifest for reading at runtime.
 jar {
