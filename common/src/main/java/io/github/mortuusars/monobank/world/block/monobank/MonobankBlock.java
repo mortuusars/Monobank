@@ -5,7 +5,6 @@ import io.github.mortuusars.monobank.Config;
 import io.github.mortuusars.monobank.Monobank;
 import io.github.mortuusars.monobank.PlatformHelper;
 import io.github.mortuusars.monobank.world.block.monobank.component.Lock;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -56,17 +55,22 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     // --
 
-    public boolean canUnlockWithoutCombination(Player player, MonobankBlockEntity blockEntity) {
-        if (Config.Server.ANYONE_CAN_UNLOCK_WITHOUT_COMBINATION.get()) return true;
-        return Config.Server.OWNER_CAN_UNLOCK_WITHOUT_COMBINATION.get()
-                && blockEntity.getOwner().isOwnedBy(player);
+    public boolean canUnlockWithCombination(Player player, MonobankBlockEntity blockEntity) {
+        if (!blockEntity.getOwner().isPlayerOwned()) return true;
+        if (blockEntity.getOwner().isOwnedBy(player)) return true;
+        return Config.Server.PLAYER_UNLOCKING.get();
     }
 
-    public boolean canBreak(Player player, BlockPos pos, BlockState state) {
+    public boolean canUnlockWithoutCombination(Player player, MonobankBlockEntity blockEntity) {
+        if (!Config.Server.COMBINATION_ENABLED.get()) return true;
+        if (blockEntity.getOwner().isNpcOwned()) return Config.Server.SKIP_COMBINATION_FOR_NPC_OWNED.get();
+        if (blockEntity.getOwner().isOwnedBy(player)) return Config.Server.SKIP_COMBINATION_IF_OWNER.get();
+        return Config.Server.SKIP_COMBINATION_IF_NOT_OWNER.get();
+    }
+
+    public boolean canBreak(Player player, MonobankBlockEntity blockEntity) {
         if (Config.Server.CAN_RELOCATE_OTHER_PLAYERS_BANK.get()) return true;
-        return player.level().getBlockEntity(pos) instanceof MonobankBlockEntity monobankEntity
-                && monobankEntity.getOwner().isPlayerOwned()
-                && monobankEntity.getOwner().isOwnedBy(player);
+        return blockEntity.getOwner().isNpcOwned() || blockEntity.getOwner().isOwnedBy(player);
     }
 
     // -- Use
@@ -128,7 +132,7 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (player.level().isClientSide) return InteractionResult.SUCCESS;
 
         if (blockEntity.getLock().isUnlocking()) {
-            player.displayClientMessage(Component.translatable("monobank.message.monobank.unlocking"), true);
+            player.displayClientMessage(Component.translatable("monobank.message.monobank.already_unlocking"), true);
             return InteractionResult.SUCCESS;
         }
 
@@ -137,11 +141,15 @@ public class MonobankBlock extends Block implements EntityBlock {
             return InteractionResult.SUCCESS;
         }
 
+        if (!canUnlockWithCombination(player, blockEntity)) {
+            player.displayClientMessage(Component.translatable("monobank.message.monobank.cannot_unlock"), true);
+            return InteractionResult.SUCCESS;
+        }
+
         if (player instanceof ServerPlayer serverPlayer) {
             blockEntity.openUnlockingGui(serverPlayer);
             blockEntity.playSoundAtDoor(Monobank.SoundEvents.MONOBANK_CLICK.get());
         }
-
         return InteractionResult.SUCCESS;
     }
 
@@ -155,7 +163,7 @@ public class MonobankBlock extends Block implements EntityBlock {
         if (blockEntity.getLock().isLocked()) {
             if (player.level().isClientSide) {
                 player.displayClientMessage(Component.translatable(
-                        "monobank.message.monobank.locking.monobank_is_locked"), true);
+                        "monobank.message.monobank.monobank_is_locked"), true);
             } else {
                 blockEntity.playSoundAtDoor(Monobank.SoundEvents.MONOBANK_CLICK.get());
             }
@@ -206,7 +214,7 @@ public class MonobankBlock extends Block implements EntityBlock {
 
     @Override
     public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        if (!canBreak(player, pos, state)) {
+        if (level.getBlockEntity(pos) instanceof MonobankBlockEntity blockEntity && !canBreak(player, blockEntity)) {
             return 0f; // Indestructible
         }
         return super.getDestroyProgress(state, player, level, pos);

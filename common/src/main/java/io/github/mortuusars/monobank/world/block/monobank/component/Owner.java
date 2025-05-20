@@ -59,6 +59,10 @@ public class Owner {
         return type == Type.PLAYER && !uuid.equals(Util.NIL_UUID);
     }
 
+    public boolean isNpcOwned() {
+        return type == Type.NPC;
+    }
+
     public boolean isOwnedBy(Player player) {
         return isPlayerOwned() && uuid.equals(player.getUUID());
     }

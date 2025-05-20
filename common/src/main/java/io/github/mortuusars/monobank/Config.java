@@ -15,14 +15,17 @@ public class Config {
         // Lock
         public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_INSERTION;
         public static final ModConfigSpec.BooleanValue LOCK_PREVENTS_ITEM_EXTRACTION;
-        public static final ModConfigSpec.BooleanValue ANYONE_CAN_UNLOCK_WITHOUT_COMBINATION;
-        public static final ModConfigSpec.BooleanValue OWNER_CAN_UNLOCK_WITHOUT_COMBINATION;
         public static final ModConfigSpec.BooleanValue CAN_RELOCATE_OTHER_PLAYERS_BANK;
         public static final ModConfigSpec.BooleanValue CAN_REPLACE_OTHER_PLAYERS_LOCKS;
 
         // Combination
+        public static final ModConfigSpec.BooleanValue COMBINATION_ENABLED;
+        public static final ModConfigSpec.BooleanValue SKIP_COMBINATION_IF_OWNER;
+        public static final ModConfigSpec.BooleanValue SKIP_COMBINATION_IF_NOT_OWNER;
+        public static final ModConfigSpec.BooleanValue SKIP_COMBINATION_FOR_NPC_OWNED;
+        public static final ModConfigSpec.BooleanValue PLAYER_UNLOCKING;
         public static final ModConfigSpec.BooleanValue COMBINATION_SLOT_ICONS;
-        public static final ModConfigSpec.IntValue COMBINATION_SLOT_ICONS_OPACITY;
+        public static final ModConfigSpec.DoubleValue COMBINATION_SLOT_ICONS_OPACITY;
         public static final ModConfigSpec.DoubleValue COMBINATION_SLOT_TOOLTIP_OBFUSCATION;
 
         // Structures
@@ -48,14 +51,6 @@ public class Config {
                                 " WARNING: when disabled, other players would be able to steal items from a Monobank without entering a combination and opening it.",
                                 " Default: true")
                         .define("prevent_extraction", true);
-                ANYONE_CAN_UNLOCK_WITHOUT_COMBINATION = builder
-                        .comment(" Any player can unlock a Monobank without entering a combination.",
-                                " Default: false")
-                        .define("anyone_can_unlock_without_combination", false);
-                OWNER_CAN_UNLOCK_WITHOUT_COMBINATION = builder
-                        .comment(" Owner can unlock their Monobank without entering a combination.",
-                                " Default: true")
-                        .define("owner_can_unlock_without_combination", true);
                 CAN_RELOCATE_OTHER_PLAYERS_BANK = builder
                         .comment(" Players can break and pickup a Monobank that is owned by another player.",
                                 " Default: false")
@@ -65,24 +60,57 @@ public class Config {
                                 " Default: false")
                         .define("can_replace_other_players_locks", false);
 
-                builder.pop();
-            }
+                {
+                    builder.push("combination");
 
-            {
-                builder.push("combination");
+                    COMBINATION_ENABLED = builder
+                            .comment(" Combination must be entered to unlock a Monobank.",
+                                    " Default: true")
+                            .define("enabled", true);
 
-                COMBINATION_SLOT_ICONS = builder
-                        .comment(" Show partially visible item icon in combination slot.",
-                                " Default: true")
-                        .define("slot_icon", true);
+                    PLAYER_UNLOCKING = builder
+                            .comment(" Players can enter a combination to unlock a Monobank that is owned by someone else.",
+                                    " If disabled, only owner can open their Monobank.",
+                                    " NPC owned Monobanks are not affected by this. They can still be opened by everyone.",
+                                    " Default: true")
+                            .define("player_unlocking", true);
 
-                COMBINATION_SLOT_ICONS_OPACITY = builder
-                        .comment(" Opacity percentage of the slot icon.")
-                        .defineInRange("slot_icon_opacity", 30, 0, 100);
+                    SKIP_COMBINATION_IF_OWNER = builder
+                            .comment(" Owner can unlock their Monobank without entering a combination.",
+                                    " Default: true")
+                            .define("skip_combination_if_owner", true);
 
-                COMBINATION_SLOT_TOOLTIP_OBFUSCATION = builder
-                        .comment(" Chance of a letter being obfuscated in slot tooltip.")
-                        .defineInRange("tooltip_obfuscation_chance", 0.5, 0.0, 1.0);
+                    SKIP_COMBINATION_IF_NOT_OWNER = builder
+                            .comment(" Any player can unlock a Monobank (player owned) without entering a combination.",
+                                    " Default: false")
+                            .define("skip_combination_if_not_owner", false);
+
+                    SKIP_COMBINATION_FOR_NPC_OWNED = builder
+                            .comment(" NPC-owned Monobanks (villages, etc) can be unlocked without entering a combination.",
+                                    " Default: false")
+                            .define("skip_combination_for_npc_owned", false);
+
+                    builder.pop();
+                }
+
+                {
+                    builder.push("combination_ui");
+
+                    COMBINATION_SLOT_ICONS = builder
+                            .comment(" Show partially visible item icon in combination slot.",
+                                    " Default: true")
+                            .define("slot_icon", true);
+
+                    COMBINATION_SLOT_ICONS_OPACITY = builder
+                            .comment(" Opacity percentage of the slot icon.")
+                            .defineInRange("slot_icon_opacity", 0.3, 0.0, 1.0);
+
+                    COMBINATION_SLOT_TOOLTIP_OBFUSCATION = builder
+                            .comment(" Chance of a letter being obfuscated in slot tooltip.")
+                            .defineInRange("tooltip_obfuscation_chance", 0.5, 0.0, 1.0);
+
+                    builder.pop();
+                }
 
                 builder.pop();
             }

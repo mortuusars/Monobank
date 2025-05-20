@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.world.inventory.menu;
 
 import io.github.mortuusars.monobank.Monobank;
+import io.github.mortuusars.monobank.world.block.monobank.MonobankBlock;
 import io.github.mortuusars.monobank.world.block.monobank.MonobankBlockEntity;
 import io.github.mortuusars.monobank.world.block.monobank.component.Combination;
 import io.github.mortuusars.monobank.world.inventory.CombinationContainer;
@@ -104,10 +105,9 @@ public class LockReplacementMenu extends AbstractContainerMenu {
             return true;
         }
 
-        boolean replaced = monobankEntity.replaceLock(player,
-                new Combination(slots.get(0).getItem(), slots.get(1).getItem(), slots.get(2).getItem()));
-        if (replaced) {
-            player.displayClientMessage(Component.translatable("monobank.message.lock_replaced"), true);
+        Combination newCombination = new Combination(slots.get(0).getItem(), slots.get(1).getItem(), slots.get(2).getItem());
+        if (monobankEntity.replaceLock(player, newCombination)) {
+            player.displayClientMessage(Component.translatable("monobank.message.replacement_lock.replaced"), true);
 
             // Consume item:
             ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -122,6 +122,8 @@ public class LockReplacementMenu extends AbstractContainerMenu {
             player.closeContainer();
             return true;
         }
+
+        Monobank.LOGGER.info("Lock in monobank at {} has not been replaced.", monobankEntity.getBlockPos());
 
         return false;
     }

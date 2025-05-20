@@ -77,7 +77,7 @@ public class CombinationScreen extends AbstractContainerScreen<CombinationMenu> 
         ExtendedSlotRenderer.renderFakeItem(guiGraphics, slot.getTemplateItem(), x, y,
                 0, 0, LightTexture.FULL_BRIGHT, 16, 16);
 
-        double opacity1 = Config.Server.COMBINATION_SLOT_ICONS_OPACITY.get() / 100.0;
+        double opacity1 = Config.Server.COMBINATION_SLOT_ICONS_OPACITY.get();
         double opacity2 = opacity1 * opacity1 * opacity1 * opacity1;
         int alpha1 = (int) ((1.0 - opacity1) * 255);
         int alpha2 = (int) ((1.0 - opacity2) * 255);

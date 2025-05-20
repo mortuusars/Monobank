@@ -28,8 +28,9 @@ public class VillageStructures {
 
 
     public static void addVillageStructures(MinecraftServer server) {
-        if (!Config.Server.GENERATE_VILLAGE_STRUCTURES.get())
+        if (!Config.Server.GENERATE_VILLAGE_STRUCTURES.get()) {
             return;
+        }
 
         Registry<StructureTemplatePool> templatePools = server.registryAccess().registry(Registries.TEMPLATE_POOL).orElseThrow();
         Registry<StructureProcessorList> processorListsRegistry = server.registryAccess().registry(Registries.PROCESSOR_LIST).orElseThrow();

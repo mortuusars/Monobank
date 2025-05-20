@@ -66,7 +66,7 @@ public class Monobank {
                 () -> new MonobankBlock(BlockBehaviour.Properties.of()
                         .mapColor(MapColor.COLOR_BLACK)
                         .strength(8F, 1200F)
-                        .noOcclusion()
+                        .noOcclusion() // Without this door and items inside will be black.
                         .sound(SoundType.NETHERITE_BLOCK)));
 
         static void init() {

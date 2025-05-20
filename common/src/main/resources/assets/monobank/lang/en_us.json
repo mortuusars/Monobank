@@ -19,9 +19,10 @@
   "monobank.gui.monobank.tooltip.break_in_attempted": "Someone unsuccessfully attempted to open this Monobank",
   "monobank.gui.monobank.tooltip.break_in_succeeded": "Monobank was opened by someone",
 
-  "monobank.message.lock_replaced": "Lock has been replaced",
-  "monobank.message.monobank.locking.monobank_is_locked": "§cLocked. Try unlocking with [Sneak+Use].",
-  "monobank.message.monobank.unlocking": "Monobank is unlocking...",
+  "monobank.message.replacement_lock.replaced": "Lock has been replaced",
+  "monobank.message.monobank.monobank_is_locked": "§cLocked. Try unlocking with [Sneak+Use].",
+  "monobank.message.monobank.cannot_unlock": "§cLock is too difficult to break.",
+  "monobank.message.monobank.already_unlocking": "Monobank is unlocking...",
   "monobank.message.replacement_lock.cannot_replace_not_owner": "§cCannot replace lock in this Monobank.",
   "monobank.message.replacement_lock.cannot_replace_when_locked": "§cCannot replace lock: Monobank must be unlocked first.",
 

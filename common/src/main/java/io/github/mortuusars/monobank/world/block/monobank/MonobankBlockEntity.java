@@ -95,7 +95,7 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
     public void tick(ServerLevel serverLevel) {
         getLock().tick(serverLevel, this);
 
-        if (!getLock().isLocked()) {
+        if (!getLock().isLocked() && getLootTable() != null) {
             unpackLootTable(null);
             setChanged();
         }
@@ -504,10 +504,14 @@ public class MonobankBlockEntity extends BlockEntity implements Nameable, LidBlo
         super.loadAdditional(tag, registries);
         if (!tryLoadLootTable(tag)) {
             CompoundTag itemTag = tag.getCompound(ITEM_TAG);
-            ItemStack.parse(registries, itemTag).ifPresent(stack -> {
-                item = stack;
-                stack.setCount(tag.getInt(ITEM_COUNT_TAG));
-            });
+            if (itemTag.isEmpty()) {
+                item = ItemStack.EMPTY;
+            } else {
+                ItemStack.parse(registries, itemTag).ifPresent(stack -> {
+                    item = stack;
+                    stack.setCount(tag.getInt(ITEM_COUNT_TAG));
+                });
+            }
         }
         lock.load(tag.getCompound(LOCK_TAG));
         if (tag.contains(OWNER_TAG, CompoundTag.TAG_COMPOUND)) {
