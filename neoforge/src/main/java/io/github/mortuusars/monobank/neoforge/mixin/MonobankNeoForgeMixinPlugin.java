@@ -1,6 +1,7 @@
 package io.github.mortuusars.monobank.neoforge.mixin;
 
 import com.google.common.collect.ImmutableMap;
+import io.github.mortuusars.monobank.PlatformHelper;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -12,6 +13,7 @@ import java.util.function.Supplier;
 
 public class MonobankNeoForgeMixinPlugin implements IMixinConfigPlugin {
     private static final Map<String, Supplier<Boolean>> CONDITIONS = ImmutableMap.of(
+            "io.github.mortuusars.monobank.neoforge.mixin.create.ThresholdSwitchBlockEntityMixin", () -> PlatformHelper.isModLoading("create")
     );
 
     @Override
