@@ -57,5 +57,6 @@
   "monobank.subtitles.monobank.unlock": "Monobank unlocks",
   "monobank.tooltip.combination_table": "§8Combination Table: %s",
   "monobank.tooltip.locked": "§7Locked",
-  "monobank.tooltip.loot_table": "§8Loot Table: %s"
+  "monobank.tooltip.loot_table": "§8Loot Table: %s",
+  "tag.item.monobank.lock_blacklist": "Lock Blacklist"
 }
